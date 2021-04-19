@@ -1,9 +1,12 @@
 import openmct from 'openmct';
 import apresTimeline from './apresTimeline/plugin'
+import apresActivities from './apresActivities/plugin';
+import { activityTypes } from '../config/action_types';
 
 function initializeApp() {
     installDefaultPlugins();
-    openmct.install(apresTimeline());
+
+    openmct.install(apresActivities(activityTypes));
     openmct.start();
 }
 
