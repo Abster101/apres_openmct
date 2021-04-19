@@ -32,17 +32,17 @@ export default class activityViewProvider {
                         }
                     },
                     provide: {
-                        openmct,
                         domainObject,
                         objectPath
                     }
-                    /*,
+                    ,
                     template:
                     `
-                      <timeline-component
+                        <timeline-component
                           :isEditing="isEditing"
-                       domain-object>
-                      </timeline-component>`*/
+                        >
+                        </timeline-component>
+                    `
                 });
             },
             onEditModeChange: (isEditing) => {
