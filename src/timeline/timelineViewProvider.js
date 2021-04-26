@@ -30,8 +30,8 @@ export default class TimelineViewProvider{
                     },
                     data() {
                         return {
-                            isEditing: isEditing,
-                            domainObject: domainObject
+                            isEditing,
+                            domainObject
                         }
                     },
                     provide: {
@@ -41,14 +41,13 @@ export default class TimelineViewProvider{
                     template: ` <timeline-component
                                     :isEditing="isEditing"
                                     :domainObject="domainObject"
-                                >
-                                </timeline-component>`
+                                /> `
                 });
             },
             onEditModeChange: (isEditing) => {
                 component.isEditing = isEditing;
             },
-            destroy: () => {
+            destroy() {
                 component.$destroy();
             }
         }

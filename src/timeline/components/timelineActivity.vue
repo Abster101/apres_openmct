@@ -87,9 +87,6 @@ export default {
         let boundingClientRect = this.$el.getBoundingClientRect();
         
         this.activityHeight = boundingClientRect.height;
-    },
-    beforeDestroy() {
-        this.unsubscribeFromDomainObjectChanges();
     }
 }
 </script>

@@ -47,20 +47,24 @@ export default {
     data() {
         return {
             activities: [],
-            chronicles: [],
-            composition: this.openmct.composition.get(this.domainObject),
-            activityHeight: 0
+            chronicles: []
         }
     },
     mounted() {
-        this.composition.on('add', this.addActivity);
-        this.composition.on('remove', this.removeActivity);
-        this.composition.on('reorder', this.reorderActivities);
-        this.composition.load();
+        const composition = this.openmct.composition.get(this.domainObject);
+
+        composition.on('add', this.addActivity);
+        composition.on('remove', this.removeActivity);
+        composition.on('reorder', this.reorderActivities);
+        composition.load();
+
+        this.unsubscribeFromComposition = () => {
+            composition.off('add', this.addActivity);
+            composition.off('remove', this.removeActivity);
+        }
     },
     beforeDestroy() {
-        this.composition.off('add', this.addActivity);
-        this.composition.off('remove', this.removeActivity);
+        this.unsubscribeFromComposition();
     }
 }
 </script>
