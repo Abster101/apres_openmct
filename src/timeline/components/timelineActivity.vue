@@ -1,6 +1,7 @@
 <template>
     <li 
         :style="activityStyle"
+        :title="name"
         @mousedown="onMouseDown"
     >
         {{ name }}
@@ -51,7 +52,8 @@ export default {
                 'max-height': `${ACTIVITY_HEIGHT}px`,
                 'min-height': `${ACTIVITY_HEIGHT}px`,
                 'display': 'flex',
-                'align-items': 'center'
+                'align-items': 'center',
+                'cursor': this.isEditing ? 'grab' : 'auto'
             };
         },
         leftPosition() {
