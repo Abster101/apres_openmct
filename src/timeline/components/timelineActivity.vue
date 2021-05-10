@@ -8,7 +8,8 @@
 </template>
 <script>
 import activityViewVue from '../../apresActivities/components/activityView.vue';
-const PIXEL_MULTIPLIER = 0.05;
+
+const ACTIVITY_HEIGHT = 40;
 
 export default {
     inject: ['openmct'],
@@ -27,18 +28,34 @@ export default {
         },
         isEditing: {
             type: Boolean
+        },
+        startBounds: {
+            type: Number
+        },
+        endBounds: {
+            type: Number
+        },
+        pixelMultiplier: {
+            type: Number
         }
     },
     computed: {
         activityStyle() {
             return {
                 'position': 'absolute',
-                'top': `${this.index * (this.activityHeight + 4)}px`,
-                'left': `${this.start * PIXEL_MULTIPLIER}px`,
+                'top': `${this.index * (ACTIVITY_HEIGHT + 4)}px`,
+                'left': `${this.leftPosition}px`,
                 'backgroundColor': this.color,
-                'width': `${this.end * PIXEL_MULTIPLIER}px`,
-                'padding': '10px'
+                'width': `${this.duration * this.pixelMultiplier * 100}px`,
+                'padding': '10px',
+                'max-height': `${ACTIVITY_HEIGHT}px`,
+                'min-height': `${ACTIVITY_HEIGHT}px`,
+                'display': 'flex',
+                'align-items': 'center'
             };
+        },
+        leftPosition() {
+            return (this.start - this.startBounds) * this.pixelMultiplier;
         }
     },
     data() {
@@ -65,7 +82,7 @@ export default {
             this.clientX = event.clientX;
         },
         move(event) {
-            let delta = (event.clientX - this.clientX) / PIXEL_MULTIPLIER;
+            let delta = (event.clientX - this.clientX) / this.pixelMultiplier;
 
             this.start += delta;
             this.end = this.start + this.width;
@@ -79,8 +96,7 @@ export default {
             this.persistMove();
         },
         persistMove() {
-            console.log('persist');
-            // this.openmct.objects.mutate(this.domainObject, 'configuration.startTime', this.start);
+            this.openmct.objects.mutate(this.domainObject, 'configuration.startTime', this.start);
         }
     },
     mounted() {
