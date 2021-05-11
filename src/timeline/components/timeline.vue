@@ -19,6 +19,15 @@
             :endBounds="bounds.end"
             :pixelMultiplier="pixelMultiplier"
         />
+        
+        <Error 
+            v-for="(error, index) in errors"
+            :key="index"
+            :startTime="error.startTime"
+            :startBounds="bounds.start"
+            :endBounds="bounds.end"
+            :pixelMultiplier="pixelMultiplier"
+        />
     </ul>
   </div>
 </template>
@@ -26,6 +35,8 @@
 <script>
 import TimelineActivity from './timelineActivity.vue';
 import TimelineAxis from './timeSystemAxis.vue';
+import Error from './error.vue';
+
 const PIXEL_MULTIPLIER = 0.05;
 
 export default {
@@ -40,7 +51,8 @@ export default {
     },
     components: {
         TimelineActivity,
-        TimelineAxis
+        TimelineAxis,
+        Error
     },
     computed: {
         inBoundsActivities() {
@@ -49,6 +61,12 @@ export default {
                     activity.configuration.startTime <= this.bounds.end
                 );
             })
+        },
+        inBoundErrors() {
+            return this.errors.filter(error => {
+                return (error.startTime <= this.bounds.end &&
+                    error.startTime >= this.bounds.start);
+            });
         },
         style() {
             return {
@@ -60,6 +78,15 @@ export default {
     methods: {
         addActivity(activityDomainObject) {
             this.activities.push(activityDomainObject);
+
+            if (this.activities.length === 2) {
+                // this.addError(activityDomainObject);
+            }
+        },
+        addError(activityDomainObject) {
+            this.errors.push({
+                startTime: activityDomainObject.configuration.startTime
+            });
         },
         removeActivity(activityIdentifier) {
             console.log(activityIdentifier);
@@ -95,7 +122,8 @@ export default {
             chronicles: [],
             bounds: {},
             timeSystem: {},
-            pixelMultiplier: PIXEL_MULTIPLIER
+            pixelMultiplier: PIXEL_MULTIPLIER,
+            errors: []
         }
     },
     mounted() {
