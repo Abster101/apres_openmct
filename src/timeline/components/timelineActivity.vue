@@ -1,10 +1,11 @@
 <template>
     <li 
         :style="activityStyle"
-        :title="name"
+        :title="domainObject.name"
+        class="timeline-activity"
         @mousedown="onMouseDown"
     >
-        {{ name }}
+        {{ domainObject.name }}
     </li>
 </template>
 <script>
@@ -43,16 +44,12 @@ export default {
     computed: {
         activityStyle() {
             return {
-                'position': 'absolute',
                 'top': `${this.index * (ACTIVITY_HEIGHT + 4)}px`,
                 'left': `${this.leftPosition}px`,
-                'backgroundColor': this.color,
-                'width': `${this.duration * this.pixelMultiplier * 100}px`,
-                'padding': '10px',
+                'backgroundColor': this.domainObject.configuration.colorHex,
+                'width': `${this.domainObject.configuration.duration * this.pixelMultiplier * 100}px`,
                 'max-height': `${ACTIVITY_HEIGHT}px`,
                 'min-height': `${ACTIVITY_HEIGHT}px`,
-                'display': 'flex',
-                'align-items': 'center',
                 'cursor': this.isEditing ? 'grab' : 'auto'
             };
         },
@@ -64,17 +61,17 @@ export default {
         let configuration = this.domainObject.configuration;
 
         return {
-            name: this.domainObject.name,
             start: configuration.startTime,
-            duration: configuration.duration,
             end: configuration.startTime + configuration.duration,
-            color: configuration.colorHex,
             activityHeight: 0
         }
     },
     methods: {
+        isElementSelected() {
+            return !!this.$el.attributes.getNamedItem('s-selected');
+        },
         onMouseDown(event) {
-            if (!this.isEditing) {
+            if (!this.isEditing || !this.isElementSelected()) {
                 return;
             }
             event.preventDefault();
@@ -99,12 +96,24 @@ export default {
         },
         persistMove() {
             this.openmct.objects.mutate(this.domainObject, 'configuration.startTime', this.start);
+        },
+        initializeSelectable() {
+            let context = {
+                item: this.domainObject
+            };
+
+            this.removeSelectable = this.openmct.selection.selectable(this.$el, context);
         }
     },
     mounted() {
         let boundingClientRect = this.$el.getBoundingClientRect();
         
         this.activityHeight = boundingClientRect.height;
+
+        this.initializeSelectable();
+    },
+    beforeDestroy() {
+        this.removeSelectable();
     }
 }
 </script>
