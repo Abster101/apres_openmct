@@ -1,4 +1,5 @@
 import TimelineViewProvider from './timelineViewProvider';
+import viewActions from './viewActions';
 
 export default function () {
     return function plugin (openmct) {
@@ -15,5 +16,9 @@ export default function () {
         );
 
         openmct.objectViews.addProvider(new TimelineViewProvider(openmct));
+
+        viewActions.forEach(action => {
+            openmct.actions.register(action);
+        });
     }
 }

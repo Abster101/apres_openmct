@@ -21,7 +21,7 @@ export default class TimelineViewProvider{
     view(domainObject, objectPath, isEditing) {
         let component;
 
-        return {
+        const view =  {
             show: (element) => {
                 component = new Vue({
                     el: element,
@@ -39,6 +39,7 @@ export default class TimelineViewProvider{
                         objectPath
                     },
                     template: ` <timeline-component
+                                    ref="timelineComponent"
                                     :isEditing="isEditing"
                                     :domainObject="domainObject"
                                 /> `
@@ -47,9 +48,20 @@ export default class TimelineViewProvider{
             onEditModeChange: (isEditing) => {
                 component.isEditing = isEditing;
             },
+            getViewContext() {
+                if (component) {
+                    return component.$refs.timelineComponent.getViewContext();
+                } else {
+                    return {
+                        type: 'timeline-component'
+                    };
+                }
+            },
             destroy() {
                 component.$destroy();
             }
         }
+
+        return view;
     }
 };

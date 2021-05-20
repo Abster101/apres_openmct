@@ -36,8 +36,11 @@
 import TimelineActivity from './timelineActivity.vue';
 import TimelineAxis from './timeSystemAxis.vue';
 import Error from './error.vue';
+import Moment from 'moment';
 
 const PIXEL_MULTIPLIER = 0.05;
+const TIMELINE_PADDING = 1000 * 60 * 30; // 5 mins of padding for timeline center action
+const TIME_FORMAT = 'YYYY-MM-DD HH:mm:ss:SSS';
 
 export default {
     inject: ['openmct', 'objectPath'],
@@ -73,6 +76,16 @@ export default {
                 'min-width': '100%',
                 'overflow': 'hidden'
             }
+        }
+    },
+    data() {
+        return {
+            activities: [],
+            chronicles: [],
+            bounds: {},
+            timeSystem: {},
+            pixelMultiplier: PIXEL_MULTIPLIER,
+            errors: []
         }
     },
     methods: {
@@ -112,18 +125,50 @@ export default {
             let boundingClientRect = container.getBoundingClientRect();
             let width = boundingClientRect.width;
             let boundsDiff = this.bounds.end - this.bounds.start;
-
+            
             this.pixelMultiplier = width / boundsDiff;
-        }
-    },
-    data() {
-        return {
-            activities: [],
-            chronicles: [],
-            bounds: {},
-            timeSystem: {},
-            pixelMultiplier: PIXEL_MULTIPLIER,
-            errors: []
+        },
+        getViewContext() {
+            return {
+                type: 'timeline-component',
+                centerTimeline: this.centerTimeline
+            }
+        },
+        getTimelineCenterBounds() {
+            if (!this.activities.length) {
+                return;
+            }
+
+            let start = 0;
+            let end = 0;
+
+            this.activities.forEach((activity, index) => {
+                const startTime = activity.configuration.startTime;
+                const endTime = startTime + activity.configuration.duration;
+
+                if (index === 0) {
+                    start = startTime;
+                    end = endTime;
+                } else {
+                    if (startTime < start) {
+                        start = startTime;
+                    }
+                    
+                    if (endTime > end) {
+                        end = endTime;
+                    }
+                }
+            });
+            
+            start = Math.ceil(start - TIMELINE_PADDING);
+            end = Math.ceil(end + TIMELINE_PADDING);
+
+            return [start, end];
+        },
+        centerTimeline() {
+            const [start, end] = this.getTimelineCenterBounds();
+            
+            this.openmct.time.bounds({start, end});
         }
     },
     mounted() {
