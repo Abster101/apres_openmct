@@ -43,18 +43,22 @@ export default {
     },
     computed: {
         activityStyle() {
+
             return {
                 'top': `${this.index * (ACTIVITY_HEIGHT + 4)}px`,
                 'left': `${this.leftPosition}px`,
                 'backgroundColor': this.domainObject.configuration.colorHex,
-                'width': `${this.domainObject.configuration.duration * this.pixelMultiplier * 100}px`,
+                'width': `${this.width}px`,
                 'max-height': `${ACTIVITY_HEIGHT}px`,
                 'min-height': `${ACTIVITY_HEIGHT}px`,
                 'cursor': this.isEditing ? 'grab' : 'auto'
             };
         },
         leftPosition() {
-            return (this.start - this.startBounds) * this.pixelMultiplier;
+            return Math.floor((this.start - this.startBounds) / this.pixelMultiplier);
+        },
+        width() {
+            return Math.floor(this.domainObject.configuration.duration / this.pixelMultiplier);
         }
     },
     data() {
@@ -81,7 +85,7 @@ export default {
             this.clientX = event.clientX;
         },
         move(event) {
-            let delta = (event.clientX - this.clientX) / this.pixelMultiplier;
+            let delta = (event.clientX - this.clientX) * this.pixelMultiplier;
 
             this.start += delta;
             this.end = this.start + this.width;
@@ -91,6 +95,9 @@ export default {
         endMove() {
             document.removeEventListener('mousemove', this.move);
             document.removeEventListener('mouseup', this.endMove);
+            
+            this.start = Math.floor(this.start);
+            this.end = Math.floor(this.end);
 
             this.persistMove();
         },

@@ -39,7 +39,7 @@ import Error from './error.vue';
 import Moment from 'moment';
 
 const PIXEL_MULTIPLIER = 0.05;
-const TIMELINE_PADDING = 1000 * 60 * 30; // 5 mins of padding for timeline center action
+const TIMELINE_PADDING = 1000 * 60 * 15; //  mins of padding for timeline center action
 const TIME_FORMAT = 'YYYY-MM-DD HH:mm:ss:SSS';
 
 export default {
@@ -125,8 +125,8 @@ export default {
             let boundingClientRect = container.getBoundingClientRect();
             let width = boundingClientRect.width;
             let boundsDiff = this.bounds.end - this.bounds.start;
-            
-            this.pixelMultiplier = width / boundsDiff;
+
+            this.pixelMultiplier = boundsDiff / width;
         },
         getViewContext() {
             return {
@@ -159,8 +159,8 @@ export default {
                     }
                 }
             });
-            
-            start = Math.ceil(start - TIMELINE_PADDING);
+
+            start = Math.floor(start - TIMELINE_PADDING);
             end = Math.ceil(end + TIMELINE_PADDING);
 
             return [start, end];
