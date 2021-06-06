@@ -1,6 +1,6 @@
 <template>
 <div :style="legendLabelStyle">
-    {{title}}
+    <span>{{title}}</span>
 </div>
 </template>
 

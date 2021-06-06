@@ -5,7 +5,7 @@
         class="timeline-activity"
         @mousedown="onMouseDown"
     >
-        {{ domainObject.name }}
+        <span class="align-self-center">{{domainObject.name}}</span>
     </li>
 </template>
 <script>
@@ -43,7 +43,6 @@ export default {
     },
     computed: {
         activityStyle() {
-
             return {
                 'top': `${this.index * (ACTIVITY_HEIGHT + 4)}px`,
                 'left': `${this.leftPosition}px`,
@@ -65,6 +64,7 @@ export default {
         let configuration = this.domainObject.configuration;
 
         return {
+            duration: configuration.duration,
             start: configuration.startTime,
             end: configuration.startTime + configuration.duration,
             activityHeight: 0
@@ -84,10 +84,23 @@ export default {
 
             this.clientX = event.clientX;
         },
+        setStart(delta) {
+            let start = this.start + delta;
+            let end = start + this.duration
+
+            if (start <= this.startBounds) {
+                this.start = this.startBounds;
+            } else if (end >= this.endBounds) {
+                this.start = this.endBounds - this.duration;
+            } else {
+                this.start = start;
+            }
+        },
         move(event) {
             let delta = (event.clientX - this.clientX) * this.pixelMultiplier;
 
-            this.start += delta;
+            this.setStart(delta);
+
             this.end = this.start + this.width;
 
             this.clientX = event.clientX;

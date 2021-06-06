@@ -50,7 +50,9 @@ export default class TimelineViewProvider{
             },
             getViewContext() {
                 if (component) {
-                    return component.$refs.timelineComponent.getViewContext();
+                    let ref = component.$refs.timelineComponent;
+
+                    return ref && ref.getViewContext();
                 } else {
                     return {
                         type: 'timeline-component'

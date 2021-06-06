@@ -56,6 +56,7 @@ import Moment from 'moment';
 
 const PIXEL_MULTIPLIER = 0.05;
 const TIMELINE_PADDING = 1000 * 60 * 15; //  mins of padding for timeline center action
+const TIME_ZOOM_FACTOR = 1000 * 60 * 5;
 const TIME_FORMAT = 'YYYY-MM-DD HH:mm:ss:SSS';
 
 export default {
@@ -159,7 +160,9 @@ export default {
         getViewContext() {
             return {
                 type: 'timeline-component',
-                centerTimeline: this.centerTimeline
+                centerTimeline: this.centerTimeline,
+                zoomIn: this.zoomIn,
+                zoomOut: this.zoomOut
             }
         },
         getTimelineCenterBounds() {
@@ -196,6 +199,18 @@ export default {
         centerTimeline() {
             const [start, end] = this.getTimelineCenterBounds();
             
+            this.openmct.time.bounds({start, end});
+        },
+        zoomIn() {
+            const start = this.bounds.start + TIME_ZOOM_FACTOR;
+            const end = this.bounds.end - TIME_ZOOM_FACTOR;
+
+            this.openmct.time.bounds({start, end});
+        },
+        zoomOut() {
+            const start = this.bounds.start - TIME_ZOOM_FACTOR;
+            const end = this.bounds.end + TIME_ZOOM_FACTOR;
+
             this.openmct.time.bounds({start, end});
         }
     },

@@ -9,8 +9,32 @@ const centerTimeline = {
     group: 'view',
 };
 
+const zoomIn = {
+    name: 'Zoom In',
+    key: 'zoom-in-timeline',
+    description: "Zoom in by 5 minutes",
+    cssClass: 'icon-plus labeled',
+    invoke: (objectPath, viewProvider) => {
+        viewProvider.getViewContext().zoomIn();
+    },
+    group: 'view',
+};
+
+const zoomOut = {
+    name: 'Zoom Out',
+    key: 'zoom-out-timeline',
+    description: "Zoom in by 5 minutes",
+    cssClass: 'icon-minus labeled',
+    invoke: (objectPath, viewProvider) => {
+        viewProvider.getViewContext().zoomOut();
+    },
+    group: 'view',
+};
+
 const viewActions = [
-    centerTimeline
+    centerTimeline,
+    zoomIn,
+    zoomOut
 ];
 
 viewActions.forEach(action => {
