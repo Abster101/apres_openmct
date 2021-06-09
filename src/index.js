@@ -138,6 +138,7 @@ function installDefaultPlugins() {
         ['table', 'telemetry.plot.overlay', 'telemetry.plot.stacked'],
         {indicator: true}
     ));
+    openmct.install(openmct.plugins.Timeline());
 }
 
 document.addEventListener('DOMContentLoaded', initializeApp);

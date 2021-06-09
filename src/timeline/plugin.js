@@ -6,7 +6,7 @@ export default function () {
         openmct.types.addType(
             'apres.timeline.type',
             {
-                name: 'Timeline',
+                name: 'Apres Timeline',
                 cssClass: 'icon-timeline',
                 creatable: true,
                 initialize: function (domainObject) {
