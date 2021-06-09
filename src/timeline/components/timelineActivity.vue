@@ -104,6 +104,8 @@ export default {
             this.end = this.start + this.width;
 
             this.clientX = event.clientX;
+
+            this.persistMove(); //needed to update inspector in realtime
         },
         endMove() {
             document.removeEventListener('mousemove', this.move);
