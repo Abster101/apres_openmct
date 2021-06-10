@@ -4,7 +4,21 @@
         class="w-10"
     >
         <!-- 30px div to match timeline-axis -->
-        <div style="min-height: 30px;"></div>
+        <div
+            class="flex align-self-center"
+            style="min-height: 30px;"
+        >
+            <button 
+                class="c-icon-button c-icon-button--major icon-plus"
+                title="zoom in"
+                @click="zoomIn"
+            ></button>
+            <button 
+                class="c-icon-button c-icon-button--major icon-minus"
+                title="zoom out"
+                @click="zoomOut"
+            ></button>
+        </div>
         <!-- timeline legend labels -->
         <div>
             <timeline-legend-label
@@ -56,8 +70,6 @@ import Moment from 'moment';
 
 const PIXEL_MULTIPLIER = 0.05;
 const TIMELINE_PADDING = 1000 * 60 * 15; //  mins of padding for timeline center action
-const TIME_ZOOM_FACTOR = 1000 * 60 * 5;
-const TIME_FORMAT = 'YYYY-MM-DD HH:mm:ss:SSS';
 
 export default {
     inject: ['openmct', 'objectPath'],
@@ -202,14 +214,16 @@ export default {
             this.openmct.time.bounds({start, end});
         },
         zoomIn() {
-            const start = this.bounds.start + TIME_ZOOM_FACTOR;
-            const end = this.bounds.end - TIME_ZOOM_FACTOR;
+            const zoomFactor = 0.1 * (this.bounds.end - this.bounds.start)
+            const start = this.bounds.start + zoomFactor;
+            const end = this.bounds.end - zoomFactor;
 
             this.openmct.time.bounds({start, end});
         },
         zoomOut() {
-            const start = this.bounds.start - TIME_ZOOM_FACTOR;
-            const end = this.bounds.end + TIME_ZOOM_FACTOR;
+            const zoomFactor = 0.1 * (this.bounds.end - this.bounds.start)
+            const start = this.bounds.start - zoomFactor;
+            const end = this.bounds.end + zoomFactor;
 
             this.openmct.time.bounds({start, end});
         }

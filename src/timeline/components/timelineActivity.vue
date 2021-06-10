@@ -46,7 +46,9 @@ export default {
             return {
                 'top': `${this.index * (ACTIVITY_HEIGHT + 4)}px`,
                 'left': `${this.leftPosition}px`,
-                'backgroundColor': this.domainObject.configuration.colorHex,
+                'backgroundColor': this.getStyle('backgroundColor'),
+                'border': this.getStyle('border'),
+                'color': this.getStyle('color'),
                 'width': `${this.width}px`,
                 'max-height': `${ACTIVITY_HEIGHT}px`,
                 'min-height': `${ACTIVITY_HEIGHT}px`,
@@ -125,7 +127,14 @@ export default {
             };
 
             this.removeSelectable = this.openmct.selection.selectable(this.$el, context);
-        }
+        },
+        getStyle(property) {
+            const objectStyles = this.domainObject.configuration.objectStyles || {};
+            const staticStyle = objectStyles.staticStyle || {};
+            const styles = staticStyle.style || {};
+
+            return styles[property];
+        } 
     },
     mounted() {
         let boundingClientRect = this.$el.getBoundingClientRect();

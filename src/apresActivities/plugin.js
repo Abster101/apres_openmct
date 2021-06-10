@@ -24,7 +24,16 @@ export default function (activityTypes) {
                                     unit: 'seconds'
                                 }
                             },
-                            duration: 3600
+                            duration: 3600,
+                            objectStyles: {
+                                staticStyle: {
+                                    style: {
+                                        backgroundColor: modelObject.colorHex,
+                                        border: `1px solid ${modelObject.colorHex}`,
+                                        color: '#aaaaaa'
+                                    }
+                                }
+                            }
                         }
 
                         domainObject.configuration = configuration;
