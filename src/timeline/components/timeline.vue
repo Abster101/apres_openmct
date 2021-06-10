@@ -1,7 +1,7 @@
 <template>
 <div class="flex flex-row w-full">
     <div
-        class="w-10"
+        class="w-10-10"
     >
         <!-- 30px div to match timeline-axis -->
         <div
@@ -33,7 +33,7 @@
     </div>
     <div
         ref="timeline-container"
-        class="w-90"
+        class="w-9-10"
         :style="style"
     >
         <timeline-axis 

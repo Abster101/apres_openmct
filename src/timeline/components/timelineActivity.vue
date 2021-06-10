@@ -5,7 +5,14 @@
         class="timeline-activity"
         @mousedown="onMouseDown"
     >
+        <div  
+            class="w-10"
+        ></div>
         <span class="align-self-center">{{domainObject.name}}</span>
+        <div
+            class="w-10 cursor-ew-resize"
+            @mousedown.stop="onMouseDownResize"
+        ></div>
     </li>
 </template>
 <script>
@@ -59,7 +66,7 @@ export default {
             return Math.floor((this.start - this.startBounds) / this.pixelMultiplier);
         },
         width() {
-            return Math.floor(this.domainObject.configuration.duration / this.pixelMultiplier);
+            return Math.floor(this.duration / this.pixelMultiplier);
         }
     },
     data() {
@@ -75,6 +82,40 @@ export default {
     methods: {
         isElementSelected() {
             return !!this.$el.attributes.getNamedItem('s-selected');
+        },
+        onMouseDownResize() {
+            if (!this.isEditing || !this.isElementSelected()) {
+                return;
+            }
+
+            event.preventDefault();
+            document.addEventListener('mousemove', this.continueResize);
+            document.addEventListener('mouseup', this.endResize);
+
+            this.clientX = event.clientX;
+        },
+        continueResize() {
+            let delta = (event.clientX - this.clientX) * this.pixelMultiplier;
+            
+            this.setDuration(delta);
+
+            this.clientX = event.clientX;
+
+            this.persistResize(); //needed to update inspector in realtime
+        },
+        endResize() {
+            document.removeEventListener('mousemove', this.continueResize);
+            document.removeEventListener('mouseup', this.endResize);
+
+            this.duration = Math.floor(this.duration);
+
+            this.persistResize();
+        },
+        setDuration(delta) {
+            this.duration = this.duration + delta;
+        },
+        persistResize() {
+            this.openmct.objects.mutate(this.domainObject, 'configuration.duration', this.duration);
         },
         onMouseDown(event) {
             if (!this.isEditing || !this.isElementSelected()) {
