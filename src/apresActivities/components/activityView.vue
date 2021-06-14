@@ -12,6 +12,9 @@
             </li>
         </ol>
     </div>
+    <div class="flex justify-content-center h-40 w-full mt-10 js-style-receiver">
+        {{domainObject.name}}
+    </div>
   </div>
 </template>
 

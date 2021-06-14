@@ -5,7 +5,14 @@
         class="timeline-activity"
         @mousedown="onMouseDown"
     >
-        {{ domainObject.name }}
+        <div  
+            class="w-10"
+        ></div>
+        <span class="align-self-center">{{domainObject.name}}</span>
+        <div
+            class="w-10 cursor-ew-resize"
+            @mousedown.stop="onMouseDownResize"
+        ></div>
     </li>
 </template>
 <script>
@@ -43,11 +50,12 @@ export default {
     },
     computed: {
         activityStyle() {
-
             return {
                 'top': `${this.index * (ACTIVITY_HEIGHT + 4)}px`,
                 'left': `${this.leftPosition}px`,
-                'backgroundColor': this.domainObject.configuration.colorHex,
+                'backgroundColor': this.getStyle('backgroundColor'),
+                'border': this.getStyle('border'),
+                'color': this.getStyle('color'),
                 'width': `${this.width}px`,
                 'max-height': `${ACTIVITY_HEIGHT}px`,
                 'min-height': `${ACTIVITY_HEIGHT}px`,
@@ -58,13 +66,14 @@ export default {
             return Math.floor((this.start - this.startBounds) / this.pixelMultiplier);
         },
         width() {
-            return Math.floor(this.domainObject.configuration.duration / this.pixelMultiplier);
+            return Math.floor(this.duration / this.pixelMultiplier);
         }
     },
     data() {
         let configuration = this.domainObject.configuration;
 
         return {
+            duration: configuration.duration,
             start: configuration.startTime,
             end: configuration.startTime + configuration.duration,
             activityHeight: 0
@@ -73,6 +82,40 @@ export default {
     methods: {
         isElementSelected() {
             return !!this.$el.attributes.getNamedItem('s-selected');
+        },
+        onMouseDownResize() {
+            if (!this.isEditing || !this.isElementSelected()) {
+                return;
+            }
+
+            event.preventDefault();
+            document.addEventListener('mousemove', this.continueResize);
+            document.addEventListener('mouseup', this.endResize);
+
+            this.clientX = event.clientX;
+        },
+        continueResize() {
+            let delta = (event.clientX - this.clientX) * this.pixelMultiplier;
+            
+            this.setDuration(delta);
+
+            this.clientX = event.clientX;
+
+            this.persistResize(); //needed to update inspector in realtime
+        },
+        endResize() {
+            document.removeEventListener('mousemove', this.continueResize);
+            document.removeEventListener('mouseup', this.endResize);
+
+            this.duration = Math.floor(this.duration);
+
+            this.persistResize();
+        },
+        setDuration(delta) {
+            this.duration = this.duration + delta;
+        },
+        persistResize() {
+            this.openmct.objects.mutate(this.domainObject, 'configuration.duration', this.duration);
         },
         onMouseDown(event) {
             if (!this.isEditing || !this.isElementSelected()) {
@@ -84,13 +127,28 @@ export default {
 
             this.clientX = event.clientX;
         },
+        setStart(delta) {
+            let start = this.start + delta;
+            let end = start + this.duration
+
+            if (start <= this.startBounds) {
+                this.start = this.startBounds;
+            } else if (end >= this.endBounds) {
+                this.start = this.endBounds - this.duration;
+            } else {
+                this.start = start;
+            }
+        },
         move(event) {
             let delta = (event.clientX - this.clientX) * this.pixelMultiplier;
 
-            this.start += delta;
+            this.setStart(delta);
+
             this.end = this.start + this.width;
 
             this.clientX = event.clientX;
+
+            this.persistMove(); //needed to update inspector in realtime
         },
         endMove() {
             document.removeEventListener('mousemove', this.move);
@@ -110,7 +168,14 @@ export default {
             };
 
             this.removeSelectable = this.openmct.selection.selectable(this.$el, context);
-        }
+        },
+        getStyle(property) {
+            const objectStyles = this.domainObject.configuration.objectStyles || {};
+            const staticStyle = objectStyles.staticStyle || {};
+            const styles = staticStyle.style || {};
+
+            return styles[property];
+        } 
     },
     mounted() {
         let boundingClientRect = this.$el.getBoundingClientRect();

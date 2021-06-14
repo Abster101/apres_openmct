@@ -1,46 +1,76 @@
 <template>
-  <div
-    ref="timeline-container"
-    :style="style">
-    <timeline-axis 
-        :bounds="bounds"
-        :time-system="timeSystem"
-        :content-height="100"
-        :rendering-engine="'svg'"
-    />
-    <ul style="min-width: 100%; min-height: 100%; position: relative;">
-        <timeline-activity
-            v-for="(activityDomainObject, index) in inBoundsActivities"
-            :key="activityDomainObject.identifier.key"
-            :domainObject="activityDomainObject"
-            :index="index"
-            :isEditing="isEditing"
-            :startBounds="bounds.start"
-            :endBounds="bounds.end"
-            :pixelMultiplier="pixelMultiplier"
+<div class="flex flex-row w-full">
+    <div
+        class="w-10-10"
+    >
+        <!-- 30px div to match timeline-axis -->
+        <div
+            class="flex align-self-center"
+            style="min-height: 30px;"
+        >
+            <button
+                class="c-icon-button c-icon-button--major icon-plus"
+                title="zoom in"
+                @click="zoomIn"
+            ></button>
+            <button
+                class="c-icon-button c-icon-button--major icon-minus"
+                title="zoom out"
+                @click="zoomOut"
+            ></button>
+        </div>
+        <!-- timeline legend labels -->
+        <div>
+            <timeline-legend-label
+                v-for="(legend, index) in legends"
+                :key="'timeline-legend-label' + index"
+                :num-activities="timelineLegends[legend].length"
+                :title="legend"
+            >
+                {{legend}}
+            </timeline-legend-label>
+        </div>
+    </div>
+    <div
+        ref="timeline-container"
+        class="w-9-10"
+        :style="style"
+    >
+        <timeline-axis
+            :bounds="bounds"
+            :time-system="timeSystem"
+            :content-height="100"
+            :rendering-engine="'svg'"
         />
-        
-        <Error 
-            v-for="(error, index) in errors"
-            :key="index"
-            :startTime="error.startTime"
-            :startBounds="bounds.start"
-            :endBounds="bounds.end"
-            :pixelMultiplier="pixelMultiplier"
-        />
-    </ul>
-  </div>
+        <div
+            style="min-width: 100%; min-height: 100%;"
+        >
+            <timeline-legend
+                v-for="(legend, index) in legends"
+                :key="'timeline-legend-' + index"
+                :title="legend"
+                :activities="timelineLegends[legend]"
+                :index="index"
+                :isEditing="isEditing"
+                :startBounds="bounds.start"
+                :endBounds="bounds.end"
+                :pixelMultiplier="pixelMultiplier"
+            />
+        </div>
+    </div>
+</div>
 </template>
 
 <script>
-import TimelineActivity from './timelineActivity.vue';
+console.log("hey there")
+import TimelineLegend from './timelineLegend.vue';
+import TimelineLegendLabel from './timelineLegendLabel.vue';
 import TimelineAxis from './timeSystemAxis.vue';
 import Error from './error.vue';
 import Moment from 'moment';
 
 const PIXEL_MULTIPLIER = 0.05;
 const TIMELINE_PADDING = 1000 * 60 * 15; //  mins of padding for timeline center action
-const TIME_FORMAT = 'YYYY-MM-DD HH:mm:ss:SSS';
 
 export default {
     inject: ['openmct', 'objectPath'],
@@ -53,7 +83,8 @@ export default {
         }
     },
     components: {
-        TimelineActivity,
+        TimelineLegend,
+        TimelineLegendLabel,
         TimelineAxis,
         Error
     },
@@ -73,14 +104,17 @@ export default {
         },
         style() {
             return {
-                'min-width': '100%',
                 'overflow': 'hidden'
             }
+        },
+        legends() {
+            return Object.keys(this.timelineLegends);
         }
     },
     data() {
         return {
             activities: [],
+            timelineLegends: {},
             chronicles: [],
             bounds: {},
             timeSystem: {},
@@ -92,9 +126,17 @@ export default {
         addActivity(activityDomainObject) {
             this.activities.push(activityDomainObject);
 
-            if (this.activities.length === 2) {
-                // this.addError(activityDomainObject);
+            const activityTimelineLegend = activityDomainObject.configuration.timelineLegend;
+
+            if (this.timelineLegends[activityTimelineLegend]) {
+                this.timelineLegends[activityTimelineLegend].push(activityDomainObject);
+            } else {
+                this.$set(this.timelineLegends, activityTimelineLegend, [activityDomainObject]);
             }
+
+            // if (this.activities.length === 2) {
+            //     this.addError(activityDomainObject);
+            // }
         },
         addError(activityDomainObject) {
             this.errors.push({
@@ -115,7 +157,7 @@ export default {
             if (tick) {
                 return;
             }
-            
+
             this.bounds = timeBounds;
 
             this.initializePixelMultiplier();
@@ -131,7 +173,9 @@ export default {
         getViewContext() {
             return {
                 type: 'timeline-component',
-                centerTimeline: this.centerTimeline
+                centerTimeline: this.centerTimeline,
+                zoomIn: this.zoomIn,
+                zoomOut: this.zoomOut
             }
         },
         getTimelineCenterBounds() {
@@ -153,7 +197,7 @@ export default {
                     if (startTime < start) {
                         start = startTime;
                     }
-                    
+
                     if (endTime > end) {
                         end = endTime;
                     }
@@ -167,7 +211,21 @@ export default {
         },
         centerTimeline() {
             const [start, end] = this.getTimelineCenterBounds();
-            
+
+            this.openmct.time.bounds({start, end});
+        },
+        zoomIn() {
+            const zoomFactor = 0.1 * (this.bounds.end - this.bounds.start)
+            const start = this.bounds.start + zoomFactor;
+            const end = this.bounds.end - zoomFactor;
+
+            this.openmct.time.bounds({start, end});
+        },
+        zoomOut() {
+            const zoomFactor = 0.1 * (this.bounds.end - this.bounds.start)
+            const start = this.bounds.start - zoomFactor;
+            const end = this.bounds.end + zoomFactor;
+
             this.openmct.time.bounds({start, end});
         }
     },
