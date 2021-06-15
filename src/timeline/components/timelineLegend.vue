@@ -9,6 +9,7 @@
         :startBounds="startBounds"
         :endBounds="endBounds"
         :pixelMultiplier="pixelMultiplier"
+        :formatter="formatter"
     />
 </ul>
 </template>
@@ -48,6 +49,9 @@ export default {
         },
         pixelMultiplier: {
             type: Number
+        },
+        formatter: {
+            type: Object
         }
     },
     computed: {
@@ -79,7 +83,7 @@ export default {
         inBoundsActivities() {
             return this.activities.filter(activity => {
                 return (
-                    activity.configuration.startTime <= this.endBounds
+                    this.formatter.parse(activity.configuration.startTime) <= this.endBounds
                 );
             })
         }

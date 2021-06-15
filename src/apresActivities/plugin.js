@@ -41,8 +41,8 @@ export default function (activityTypes) {
                     form: [
                         {
                             name: "Start Time",
-                            control: "numberfield",
-                            cssClass: "l-input-sm l-numeric",
+                            control: "textfield",
+                            cssClass: "l-input-sm",
                             key: "startTime",
                             required: true,
                             property: [
