@@ -39,7 +39,7 @@
         <timeline-axis
             :bounds="bounds"
             :time-system="timeSystem"
-            :content-height="100"
+            :content-height="50"
             :rendering-engine="'svg'"
         />
         <div
@@ -55,6 +55,7 @@
                 :startBounds="bounds.start"
                 :endBounds="bounds.end"
                 :pixelMultiplier="pixelMultiplier"
+                :formatter="timeFormatter"
             />
         </div>
     </div>
@@ -89,13 +90,6 @@ export default {
         Error
     },
     computed: {
-        inBoundsActivities() {
-            return this.activities.filter(activity => {
-                return (
-                    activity.configuration.startTime <= this.bounds.end
-                );
-            })
-        },
         inBoundErrors() {
             return this.errors.filter(error => {
                 return (error.startTime <= this.bounds.end &&
@@ -112,6 +106,9 @@ export default {
         }
     },
     data() {
+        let timeSystem = this.openmct.time.timeSystem();
+        let timeFormatter = this.getFormatter(timeSystem.timeFormat);
+
         return {
             activities: [],
             timelineLegends: {},
@@ -119,7 +116,9 @@ export default {
             bounds: {},
             timeSystem: {},
             pixelMultiplier: PIXEL_MULTIPLIER,
-            errors: []
+            errors: [],
+            timeSystem,
+            timeFormatter
         }
     },
     methods: {
@@ -178,6 +177,11 @@ export default {
                 zoomOut: this.zoomOut
             }
         },
+        getFormatter(key) {
+            return this.openmct.telemetry.getValueFormatter({
+                format: key
+            }).formatter;
+        },
         getTimelineCenterBounds() {
             if (!this.activities.length) {
                 return;
@@ -187,7 +191,7 @@ export default {
             let end = 0;
 
             this.activities.forEach((activity, index) => {
-                const startTime = activity.configuration.startTime;
+                const startTime = this.timeFormatter.parse(activity.configuration.startTime);
                 const endTime = startTime + activity.configuration.duration;
 
                 if (index === 0) {

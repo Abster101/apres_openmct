@@ -5,14 +5,7 @@
         class="timeline-activity"
         @mousedown="onMouseDown"
     >
-        <div  
-            class="w-10"
-        ></div>
-        <span class="align-self-center">{{domainObject.name}}</span>
-        <div
-            class="w-10 cursor-ew-resize"
-            @mousedown.stop="onMouseDownResize"
-        ></div>
+        <span class="w-full text-align-center align-self-center">{{domainObject.name}}</span>
     </li>
 </template>
 <script>
@@ -46,6 +39,9 @@ export default {
         },
         pixelMultiplier: {
             type: Number
+        },
+        formatter: {
+            type: Object
         }
     },
     computed: {
@@ -63,10 +59,15 @@ export default {
             };
         },
         leftPosition() {
-            return Math.floor((this.start - this.startBounds) / this.pixelMultiplier);
+            const start = this.formatter.parse(this.configuration.startTime);
+
+            return Math.floor((start - this.startBounds) / this.pixelMultiplier);
         },
         width() {
-            return Math.floor(this.duration / this.pixelMultiplier);
+            return Math.floor(this.configuration.duration / this.pixelMultiplier);
+        },
+        configuration() {
+            return this.domainObject.configuration;
         }
     },
     data() {
@@ -74,17 +75,14 @@ export default {
 
         return {
             duration: configuration.duration,
-            start: configuration.startTime,
+            start: this.formatter.parse(configuration.startTime),
             end: configuration.startTime + configuration.duration,
             activityHeight: 0
         }
     },
     methods: {
-        isElementSelected() {
-            return !!this.$el.attributes.getNamedItem('s-selected');
-        },
         onMouseDownResize() {
-            if (!this.isEditing || !this.isElementSelected()) {
+            if (!this.isEditing) {
                 return;
             }
 
@@ -118,7 +116,7 @@ export default {
             this.openmct.objects.mutate(this.domainObject, 'configuration.duration', this.duration);
         },
         onMouseDown(event) {
-            if (!this.isEditing || !this.isElementSelected()) {
+            if (!this.isEditing) {
                 return;
             }
             event.preventDefault();
@@ -160,7 +158,7 @@ export default {
             this.persistMove();
         },
         persistMove() {
-            this.openmct.objects.mutate(this.domainObject, 'configuration.startTime', this.start);
+            this.openmct.objects.mutate(this.domainObject, 'configuration.startTime', this.formatter.format(this.start));
         },
         initializeSelectable() {
             let context = {
