@@ -1,6 +1,7 @@
 import openmct from 'openmct';
 import apresTimeline from './timeline/plugin'
 import apresActivities from './apresActivities/plugin';
+import apresDataset from './apresDataset/plugin';
 import { activityTypes } from '../config/action_types';
 
 function initializeApp() {
@@ -8,6 +9,7 @@ function initializeApp() {
 
     openmct.install(apresActivities(activityTypes));
     openmct.install(apresTimeline());
+    openmct.install(apresDataset());
     openmct.start();
 }
 
