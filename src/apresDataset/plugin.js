@@ -1,13 +1,13 @@
-import ApresDatasetCompositionProvider from './apresDatasetCompositionProvider';
+import { DatasetCompositionProvider } from './compositionProviders';
 import ApresObjectProvider from './ApresObjectProvider';
-import Dataset from './Dataset';
+import DatasetCache from './DatasetCache';
 
 export default function () {
     return function plugin (openmct) {
-        const dataset = new Dataset(openmct);
+        const datasetCache = new DatasetCache(openmct);
 
-        const typeKey = 'apres.dataset.type';
-        const typeDef = {
+        const datasetTypeKey = 'apres.dataset.type';
+        const datasetTypeDefinition = {
             name: 'Apres Dataset',
             description: 'Configure apres actions and state chronicles.',
             creatable: true,
@@ -32,10 +32,18 @@ export default function () {
                     cssClass: 'l-input-lg'
                 }
             ]
+        };
+        const activitySourceTypeKey = 'apres.action.source';
+        const activitySourceType = {
+            name: 'Activities',
+            cssClass: 'icon-folder'
         }
 
-        openmct.types.addType(typeKey, typeDef);
-        openmct.composition.addProvider(new ApresDatasetCompositionProvider(dataset));
-        openmct.objects.addProvider('apres', new ApresObjectProvider(dataset));
+        openmct.types.addType(datasetTypeKey, datasetTypeDefinition);
+        openmct.types.addType(activitySourceTypeKey, activitySourceType);
+
+        openmct.composition.addProvider(new DatasetCompositionProvider(datasetCache));
+
+        openmct.objects.addProvider('apres', new ApresObjectProvider(datasetCache));
     }
 }

@@ -1,7 +1,16 @@
 export default class Dataset {
-    constructor(openmct) {
+    constructor(parentIndentifier, openmct) {
         this._openmct = openmct;
-        this.actionTypes = {};
-        this.stateChronicleTypes = {};
+        this.parentIndentifier = parentIndentifier;
+        this.actionTypes;
+        this.stateChronicleTypes;
+    }
+
+    getActionTypes() {
+        if (this.actionTypes) {
+            return this.actionTypes;
+        } else {
+            
+        }
     }
 }
