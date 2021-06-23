@@ -30,7 +30,8 @@ export default function ActivityInspectorViewProvider(openmct) {
                         },
                         data() {
                             return {
-                                domainObject: selection[0][0].context.item
+                                domainObject: selection[0][0].context.item,
+                                parentDomainObject: selection[0][1].context.item
                             }
                         },
                         provide: {
@@ -38,7 +39,8 @@ export default function ActivityInspectorViewProvider(openmct) {
                         },
                         template: `
                             <activity-inspector
-                                :domainObject="domainObject"  
+                                :domainObject="domainObject"
+                                :parentDomainObject="parentDomainObject"
                             />
                         `
                     });
