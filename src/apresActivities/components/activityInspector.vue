@@ -53,23 +53,35 @@ export default {
             default: () => {
                 return {};
             }
+        },
+        parentDomainObject: {
+            type: Object,
+            required: true,
+            default: () => {
+                return {};
+            }
         }
     },
     computed: {
         startTime() {
-            return this.domainObject.configuration.startTime;
+            return this.configuration.startTime;
         },
         duration() {
-            return this.domainObject.configuration.duration / 1000;
+            return this.configuration.duration / 1000;
+        },
+        configuration() {
+            return this.parentDomainObject.configuration.activities[this.keystring];
         }
     },
     data() {
         let timeSystem = this.openmct.time.timeSystem();
         let formatter = this.getFormatter(timeSystem.timeFormat);
+        let keystring = this.openmct.objects.makeKeyString(this.domainObject.identifier);
 
         return {
             isEditing: this.openmct.editor.isEditing(),
             error: undefined,
+            keystring,
             timeSystem,
             formatter
         }
@@ -92,7 +104,7 @@ export default {
             }
         },
         persistStartTime(value) {
-            this.openmct.objects.mutate(this.domainObject, 'configuration.startTime', value);
+            this.openmct.objects.mutate(this.parentDomainObject, `configuration.activities[${this.keystring}].startTime`, value);
         }
     }
 }
