@@ -50,6 +50,7 @@
                 :key="'timeline-legend-' + index"
                 :title="legend"
                 :activities="timelineLegends[legend]"
+                :parentDomainObject="domainObject"
                 :index="index"
                 :isEditing="isEditing"
                 :startBounds="bounds.start"
@@ -122,7 +123,15 @@ export default {
         }
     },
     methods: {
+        addActivityToConfiguration(activityDomainObject) {
+            let keystring = this.openmct.objects.makeKeyString(activityDomainObject.identifier);
+            
+            if (!this.domainObject.configuration.activities[keystring]) {
+                this.openmct.objects.mutate(this.domainObject, `configuration.activities[${keystring}]`, activityDomainObject.configuration);
+            }
+        },
         addActivity(activityDomainObject) {
+            this.addActivityToConfiguration(activityDomainObject);
             this.activities.push(activityDomainObject);
 
             const activityTimelineLegend = activityDomainObject.configuration.timelineLegend;
@@ -133,9 +142,9 @@ export default {
                 this.$set(this.timelineLegends, activityTimelineLegend, [activityDomainObject]);
             }
 
-            // if (this.activities.length === 2) {
-            //     this.addError(activityDomainObject);
-            // }
+            if (this.activities.length === 2) {
+                this.addError(activityDomainObject);
+            }
         },
         addError(activityDomainObject) {
             this.errors.push({
@@ -191,8 +200,10 @@ export default {
             let end = 0;
 
             this.activities.forEach((activity, index) => {
-                const startTime = this.timeFormatter.parse(activity.configuration.startTime);
-                const endTime = startTime + activity.configuration.duration;
+                const keystring = this.openmct.objects.makeKeyString(activity.identifier);
+                const configuration = this.domainObject.configuration.activities[keystring]
+                const startTime = this.timeFormatter.parse(configuration.startTime);
+                const endTime = startTime + configuration.duration;
 
                 if (index === 0) {
                     start = startTime;

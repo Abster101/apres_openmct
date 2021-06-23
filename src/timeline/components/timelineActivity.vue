@@ -25,6 +25,15 @@ export default {
                 }
             }
         },
+        parentDomainObject: {
+            type: Object,
+            required: true,
+            default() {
+                return  {
+                    configuration: {}
+                }
+            }
+        },
         index: {
             type: Number
         },
@@ -67,13 +76,15 @@ export default {
             return Math.floor(this.configuration.duration / this.pixelMultiplier);
         },
         configuration() {
-            return this.domainObject.configuration;
-        }
+            return this.parentDomainObject.configuration.activities[this.keystring];
+        },
     },
     data() {
-        let configuration = this.domainObject.configuration;
+        let keystring = this.openmct.objects.makeKeyString(this.domainObject.identifier);
+        let configuration = this.parentDomainObject.configuration.activities[keystring];
 
         return {
+            keystring,
             duration: configuration.duration,
             start: this.formatter.parse(configuration.startTime),
             end: configuration.startTime + configuration.duration,
@@ -113,7 +124,7 @@ export default {
             this.duration = this.duration + delta;
         },
         persistResize() {
-            this.openmct.objects.mutate(this.domainObject, 'configuration.duration', this.duration);
+            this.openmct.objects.mutate(this.parentDomainObject, `configuration.activities[${this.keystring}].duration`, this.duration);
         },
         onMouseDown(event) {
             if (!this.isEditing) {
@@ -158,7 +169,7 @@ export default {
             this.persistMove();
         },
         persistMove() {
-            this.openmct.objects.mutate(this.domainObject, 'configuration.startTime', this.formatter.format(this.start));
+            this.openmct.objects.mutate(this.parentDomainObject, `configuration.activities[${this.keystring}].startTime`, this.formatter.format(this.start));
         },
         initializeSelectable() {
             let context = {

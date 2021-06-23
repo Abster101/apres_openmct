@@ -4,6 +4,7 @@
         v-for="(activityDomainObject, index) in inBoundsActivities"
         :key="activityDomainObject.identifier.key"
         :domainObject="activityDomainObject"
+        :parentDomainObject="parentDomainObject"
         :index="index"
         :isEditing="isEditing"
         :startBounds="startBounds"
@@ -30,6 +31,13 @@ export default {
             required: true,
             default() {
                 return [];
+            }
+        },
+        parentDomainObject: {
+            type: Object,
+            required: true,
+            default() {
+                return {}
             }
         },
         title: {
