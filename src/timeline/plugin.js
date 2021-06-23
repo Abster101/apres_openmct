@@ -11,6 +11,9 @@ export default function () {
                 creatable: true,
                 initialize: function (domainObject) {
                     domainObject.composition = [];
+                    domainObject.configuration = {
+                        activities: {}
+                    };
                 }
             }
         );

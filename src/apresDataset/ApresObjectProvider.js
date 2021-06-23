@@ -25,14 +25,14 @@ export default class ApresObjectProvider {
         const composition = [];
 
         activityTypes.modelConfig.forEach(action => {
-            composition.push(`apres:actions.type.${action.actProcType}.${identifier.key}`);
+            composition.push(`apres:actionsType::${action.actProcType}::${identifier.key}`);
         });
 
         return composition;
     }
 
     getAction(identifier) {
-        const keyArray = identifier.key.split('.');
+        const keyArray = identifier.key.split('::');
 
         if (keyArray[1] === 'source') {
             return Promise.resolve({
@@ -46,9 +46,9 @@ export default class ApresObjectProvider {
                 composition: this.getActionTypesComposition(identifier)
             });
         } else {
-            const proctype = keyArray[2];
+            const proctype = keyArray[1];
             const modelObject = this.actionDefinitions[proctype];
-            const location = `${identifier.namespace}:${keyArray.slice(3).join('.')}`;
+            const location = `${identifier.namespace}:${keyArray.slice(2).join('::')}`;
 
             return Promise.resolve({
                 identifier,
@@ -62,12 +62,12 @@ export default class ApresObjectProvider {
                     startTime: 0,
                     parameters: {
                         drillDur: {
-                            duration: 3600,
+                            duration: 360000,
                             type: "integer",
                             unit: 'seconds'
                         }
                     },
-                    duration: 3600,
+                    duration: 360000,
                     objectStyles: {
                         staticStyle: {
                             style: {
@@ -82,9 +82,9 @@ export default class ApresObjectProvider {
         }
     }
     get(identifier) {
-        const keyArray = identifier.key.split('.');
+        const keyArray = identifier.key.split('::');
 
-        if (keyArray[0] === 'actions') {
+        if (keyArray[0] === 'actions' || keyArray[0] === 'actionsType') {
             return this.getAction(identifier);
         } else if (keyArray[0] === 'stateChronicles') {
             return this.getStateChronicle(identifier);
