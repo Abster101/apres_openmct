@@ -69,6 +69,7 @@ import TimelineLegendLabel from './timelineLegendLabel.vue';
 import TimelineAxis from './timeSystemAxis.vue';
 import Error from './error.vue';
 import Moment from 'moment';
+import lodash from 'lodash';
 
 const PIXEL_MULTIPLIER = 0.05;
 const TIMELINE_PADDING = 1000 * 60 * 15; //  mins of padding for timeline center action
@@ -126,7 +127,14 @@ export default {
             let keystring = this.openmct.objects.makeKeyString(activityDomainObject.identifier);
             
             if (!this.domainObject.configuration.activities[keystring]) {
-                this.openmct.objects.mutate(this.domainObject, `configuration.activities[${keystring}]`, activityDomainObject.configuration);
+                const configuration = lodash.cloneDeep(activityDomainObject.configuration);
+                const startTime = this.timeFormatter.parse(this.domainObject.configuration.startTime);
+
+                if (startTime) {
+                    configuration.startTime = startTime;
+                }
+
+                this.openmct.objects.mutate(this.domainObject, `configuration.activities[${keystring}]`, configuration);
             }
         },
         addActivity(activityDomainObject) {
@@ -180,7 +188,7 @@ export default {
         getViewContext() {
             return {
                 type: 'timeline-component',
-                centerTimeline: this.centerTimeline,
+                centerTimeline: this.setTimeBoundsFromConfiguration,
                 zoomIn: this.zoomIn,
                 zoomOut: this.zoomOut
             }
@@ -241,6 +249,18 @@ export default {
             const end = this.bounds.end + zoomFactor;
 
             this.openmct.time.bounds({start, end});
+        },
+        setTimeBoundsFromConfiguration() {
+            const configuration = this.domainObject.configuration;
+
+            if (configuration.startTime && configuration.endTime) {
+                this.openmct.time.bounds({
+                    start: this.timeFormatter.parse(configuration.startTime),
+                    end: this.timeFormatter.parse(configuration.endTime)
+                });
+            } else {
+                this.centerTimeline();
+            }
         }
     },
     mounted() {
