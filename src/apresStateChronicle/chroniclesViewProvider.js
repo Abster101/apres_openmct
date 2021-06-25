@@ -1,27 +1,32 @@
+//import chroniclesView from "./components/chroniclesView";
+//import state_types from "../../config/state_types";
 import Vue from 'vue';
+
 export default class chroniclesViewProvider{
-    constructor() {
+        constructor() {
         this.name = 'chronicle';
         this.key = 'apres.chronicle.view';
         this.priority = 1;
     }
 
-    canView(domainObject) {
+    canView (domainObject) {
         return domainObject.type === 'apres.chronicle.type';
     }
 
-    canEdit(domainObject) {
+    canEdit (domainObject) {
         return domainObject.type === 'apres.chronicle.type';
     }
 
-    view(domainObject, objectPath, isEditing) {
+    view (domainObject, objectPath, isEditing) {
         let component;
 
         return {
             show: (element) => {
                 component = new Vue({
                     el: element,
-                    data() {
+                    components: {
+
+                    },data () {
                         return {
                             isEditing: isEditing
                         }

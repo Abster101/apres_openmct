@@ -1,5 +1,4 @@
 import chroniclesViewProvider from "./chroniclesViewProvider";
-
 export default function (activityTypes) {
     return function install (openmct) {
         let models = activityTypes.stateChronicleConfig;
