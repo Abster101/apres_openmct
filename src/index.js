@@ -4,10 +4,16 @@ import apresActivities from './apresActivities/plugin';
 import apresDataset from './apresDataset/plugin';
 import apresStateChronicle from './apresStateChronicle/plugin';
 import { activityTypes } from '../config/action_types';
+<<<<<<< HEAD
+=======
+import {state_types} from "../config/state_types";
+import apresLogin from './apresLogin/plugin';
+>>>>>>> 267327c534f02a19378004f48af6ced1c021fd60
 
 function initializeApp() {
     installDefaultPlugins();
 
+    openmct.install(apresLogin());
     openmct.install(apresActivities(activityTypes));
     openmct.install(apresStateChronicle(activityTypes));
     openmct.install(apresTimeline());
