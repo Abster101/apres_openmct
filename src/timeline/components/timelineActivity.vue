@@ -92,40 +92,6 @@ export default {
         }
     },
     methods: {
-        onMouseDownResize() {
-            if (!this.isEditing) {
-                return;
-            }
-
-            event.preventDefault();
-            document.addEventListener('mousemove', this.continueResize);
-            document.addEventListener('mouseup', this.endResize);
-
-            this.clientX = event.clientX;
-        },
-        continueResize() {
-            let delta = (event.clientX - this.clientX) * this.pixelMultiplier;
-            
-            this.setDuration(delta);
-
-            this.clientX = event.clientX;
-
-            this.persistResize(); //needed to update inspector in realtime
-        },
-        endResize() {
-            document.removeEventListener('mousemove', this.continueResize);
-            document.removeEventListener('mouseup', this.endResize);
-
-            this.duration = Math.floor(this.duration);
-
-            this.persistResize();
-        },
-        setDuration(delta) {
-            this.duration = this.duration + delta;
-        },
-        persistResize() {
-            this.openmct.objects.mutate(this.parentDomainObject, `configuration.activities[${this.keystring}].duration`, this.duration);
-        },
         onMouseDown(event) {
             if (!this.isEditing) {
                 return;
