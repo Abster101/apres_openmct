@@ -8,12 +8,12 @@
             class="flex align-self-center"
             style="min-height: 30px;"
         >
-            <button 
+            <button
                 class="c-icon-button c-icon-button--major icon-plus"
                 title="zoom in"
                 @click="zoomIn"
             ></button>
-            <button 
+            <button
                 class="c-icon-button c-icon-button--major icon-minus"
                 title="zoom out"
                 @click="zoomOut"
@@ -36,13 +36,13 @@
         class="w-9-10"
         :style="style"
     >
-        <timeline-axis 
+        <timeline-axis
             :bounds="bounds"
             :time-system="timeSystem"
             :content-height="50"
             :rendering-engine="'svg'"
         />
-        <div 
+        <div
             style="min-width: 100%; min-height: 100%;"
         >
             <timeline-legend
@@ -64,6 +64,7 @@
 </template>
 
 <script>
+console.log("hey there")
 import TimelineLegend from './timelineLegend.vue';
 import TimelineLegendLabel from './timelineLegendLabel.vue';
 import TimelineAxis from './timeSystemAxis.vue';
@@ -172,7 +173,7 @@ export default {
             if (tick) {
                 return;
             }
-            
+
             this.bounds = timeBounds;
 
             this.initializePixelMultiplier();
@@ -219,7 +220,7 @@ export default {
                     if (startTime < start) {
                         start = startTime;
                     }
-                    
+
                     if (endTime > end) {
                         end = endTime;
                     }
