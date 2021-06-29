@@ -39,7 +39,7 @@
         <timeline-axis
             :bounds="bounds"
             :time-system="timeSystem"
-            :content-height="100"
+            :content-height="50"
             :rendering-engine="'svg'"
         />
         <div
@@ -50,11 +50,13 @@
                 :key="'timeline-legend-' + index"
                 :title="legend"
                 :activities="timelineLegends[legend]"
+                :parentDomainObject="domainObject"
                 :index="index"
                 :isEditing="isEditing"
                 :startBounds="bounds.start"
                 :endBounds="bounds.end"
                 :pixelMultiplier="pixelMultiplier"
+                :formatter="timeFormatter"
             />
         </div>
     </div>
@@ -68,6 +70,7 @@ import TimelineLegendLabel from './timelineLegendLabel.vue';
 import TimelineAxis from './timeSystemAxis.vue';
 import Error from './error.vue';
 import Moment from 'moment';
+import lodash from 'lodash';
 
 const PIXEL_MULTIPLIER = 0.05;
 const TIMELINE_PADDING = 1000 * 60 * 15; //  mins of padding for timeline center action
@@ -89,13 +92,6 @@ export default {
         Error
     },
     computed: {
-        inBoundsActivities() {
-            return this.activities.filter(activity => {
-                return (
-                    activity.configuration.startTime <= this.bounds.end
-                );
-            })
-        },
         inBoundErrors() {
             return this.errors.filter(error => {
                 return (error.startTime <= this.bounds.end &&
@@ -112,6 +108,9 @@ export default {
         }
     },
     data() {
+        let timeSystem = this.openmct.time.timeSystem();
+        let timeFormatter = this.getFormatter(timeSystem.timeFormat);
+
         return {
             activities: [],
             timelineLegends: {},
@@ -119,11 +118,28 @@ export default {
             bounds: {},
             timeSystem: {},
             pixelMultiplier: PIXEL_MULTIPLIER,
-            errors: []
+            errors: [],
+            timeSystem,
+            timeFormatter
         }
     },
     methods: {
+        addActivityToConfiguration(activityDomainObject) {
+            let keystring = this.openmct.objects.makeKeyString(activityDomainObject.identifier);
+            
+            if (!this.domainObject.configuration.activities[keystring]) {
+                const configuration = lodash.cloneDeep(activityDomainObject.configuration);
+                const startTime = this.timeFormatter.parse(this.domainObject.configuration.startTime);
+
+                if (startTime) {
+                    configuration.startTime = startTime;
+                }
+
+                this.openmct.objects.mutate(this.domainObject, `configuration.activities[${keystring}]`, configuration);
+            }
+        },
         addActivity(activityDomainObject) {
+            this.addActivityToConfiguration(activityDomainObject);
             this.activities.push(activityDomainObject);
 
             const activityTimelineLegend = activityDomainObject.configuration.timelineLegend;
@@ -134,9 +150,9 @@ export default {
                 this.$set(this.timelineLegends, activityTimelineLegend, [activityDomainObject]);
             }
 
-            // if (this.activities.length === 2) {
-            //     this.addError(activityDomainObject);
-            // }
+            if (this.activities.length === 2) {
+                this.addError(activityDomainObject);
+            }
         },
         addError(activityDomainObject) {
             this.errors.push({
@@ -173,10 +189,15 @@ export default {
         getViewContext() {
             return {
                 type: 'timeline-component',
-                centerTimeline: this.centerTimeline,
+                centerTimeline: this.setTimeBoundsFromConfiguration,
                 zoomIn: this.zoomIn,
                 zoomOut: this.zoomOut
             }
+        },
+        getFormatter(key) {
+            return this.openmct.telemetry.getValueFormatter({
+                format: key
+            }).formatter;
         },
         getTimelineCenterBounds() {
             if (!this.activities.length) {
@@ -187,8 +208,10 @@ export default {
             let end = 0;
 
             this.activities.forEach((activity, index) => {
-                const startTime = activity.configuration.startTime;
-                const endTime = startTime + activity.configuration.duration;
+                const keystring = this.openmct.objects.makeKeyString(activity.identifier);
+                const configuration = this.domainObject.configuration.activities[keystring]
+                const startTime = this.timeFormatter.parse(configuration.startTime);
+                const endTime = startTime + configuration.duration;
 
                 if (index === 0) {
                     start = startTime;
@@ -227,6 +250,18 @@ export default {
             const end = this.bounds.end + zoomFactor;
 
             this.openmct.time.bounds({start, end});
+        },
+        setTimeBoundsFromConfiguration() {
+            const configuration = this.domainObject.configuration;
+
+            if (configuration.startTime && configuration.endTime) {
+                this.openmct.time.bounds({
+                    start: this.timeFormatter.parse(configuration.startTime),
+                    end: this.timeFormatter.parse(configuration.endTime)
+                });
+            } else {
+                this.centerTimeline();
+            }
         }
     },
     mounted() {

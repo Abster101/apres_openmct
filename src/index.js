@@ -1,9 +1,9 @@
 import openmct from 'openmct';
 import apresTimeline from './timeline/plugin'
 import apresActivities from './apresActivities/plugin';
+import apresDataset from './apresDataset/plugin';
 import apresStateChronicle from './apresStateChronicle/plugin';
 import { activityTypes } from '../config/action_types';
-import {state_types} from "../config/state_types";
 
 function initializeApp() {
     installDefaultPlugins();
@@ -11,6 +11,7 @@ function initializeApp() {
     openmct.install(apresActivities(activityTypes));
     openmct.install(apresStateChronicle(activityTypes));
     openmct.install(apresTimeline());
+    openmct.install(apresDataset());
     openmct.start();
 }
 

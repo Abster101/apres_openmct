@@ -13,7 +13,34 @@ export default function () {
                 creatable: true,
                 initialize: function (domainObject) {
                     domainObject.composition = [];
-                }
+                    domainObject.configuration = {
+                        activities: {}
+                    };
+                },
+                form: [
+                    {
+                        name: "Start Time",
+                        control: "textfield",
+                        cssClass: "l-input-sm",
+                        key: "startTime",
+                        required: true,
+                        property: [
+                            "configuration",
+                            "startTime"
+                        ]
+                    },
+                    {
+                        name: "EndTime",
+                        control: "textfield",
+                        cssClass: "l-input-sm l-numeric",
+                        key: "endTime",
+                        required: true,
+                        property: [
+                            "configuration",
+                            "endTime"
+                        ]
+                    }
+                ]
             }
         );
 

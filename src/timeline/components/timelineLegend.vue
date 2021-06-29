@@ -4,11 +4,13 @@
         v-for="(activityDomainObject, index) in inBoundsActivities"
         :key="activityDomainObject.identifier.key"
         :domainObject="activityDomainObject"
+        :parentDomainObject="parentDomainObject"
         :index="index"
         :isEditing="isEditing"
         :startBounds="startBounds"
         :endBounds="endBounds"
         :pixelMultiplier="pixelMultiplier"
+        :formatter="formatter"
     />
 </ul>
 </template>
@@ -31,6 +33,13 @@ export default {
                 return [];
             }
         },
+        parentDomainObject: {
+            type: Object,
+            required: true,
+            default() {
+                return {}
+            }
+        },
         title: {
             type: String
         },
@@ -48,6 +57,9 @@ export default {
         },
         pixelMultiplier: {
             type: Number
+        },
+        formatter: {
+            type: Object
         }
     },
     computed: {
@@ -79,7 +91,7 @@ export default {
         inBoundsActivities() {
             return this.activities.filter(activity => {
                 return (
-                    activity.configuration.startTime <= this.endBounds
+                    this.formatter.parse(activity.configuration.startTime) <= this.endBounds
                 );
             })
         }

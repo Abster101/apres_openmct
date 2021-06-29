@@ -5,14 +5,7 @@
         class="timeline-activity"
         @mousedown="onMouseDown"
     >
-        <div  
-            class="w-10"
-        ></div>
-        <span class="align-self-center">{{domainObject.name}}</span>
-        <div
-            class="w-10 cursor-ew-resize"
-            @mousedown.stop="onMouseDownResize"
-        ></div>
+        <span class="w-full text-align-center align-self-center">{{domainObject.name}}</span>
     </li>
 </template>
 <script>
@@ -24,6 +17,15 @@ export default {
     inject: ['openmct'],
     props: {
         domainObject: {
+            type: Object,
+            required: true,
+            default() {
+                return  {
+                    configuration: {}
+                }
+            }
+        },
+        parentDomainObject: {
             type: Object,
             required: true,
             default() {
@@ -46,6 +48,9 @@ export default {
         },
         pixelMultiplier: {
             type: Number
+        },
+        formatter: {
+            type: Object
         }
     },
     computed: {
@@ -63,62 +68,32 @@ export default {
             };
         },
         leftPosition() {
-            return Math.floor((this.start - this.startBounds) / this.pixelMultiplier);
+            const start = this.formatter.parse(this.configuration.startTime);
+
+            return Math.floor((start - this.startBounds) / this.pixelMultiplier);
         },
         width() {
-            return Math.floor(this.duration / this.pixelMultiplier);
-        }
+            return Math.floor(this.configuration.duration / this.pixelMultiplier);
+        },
+        configuration() {
+            return this.parentDomainObject.configuration.activities[this.keystring];
+        },
     },
     data() {
-        let configuration = this.domainObject.configuration;
+        let keystring = this.openmct.objects.makeKeyString(this.domainObject.identifier);
+        let configuration = this.parentDomainObject.configuration.activities[keystring];
 
         return {
+            keystring,
             duration: configuration.duration,
-            start: configuration.startTime,
+            start: this.formatter.parse(configuration.startTime),
             end: configuration.startTime + configuration.duration,
             activityHeight: 0
         }
     },
     methods: {
-        isElementSelected() {
-            return !!this.$el.attributes.getNamedItem('s-selected');
-        },
-        onMouseDownResize() {
-            if (!this.isEditing || !this.isElementSelected()) {
-                return;
-            }
-
-            event.preventDefault();
-            document.addEventListener('mousemove', this.continueResize);
-            document.addEventListener('mouseup', this.endResize);
-
-            this.clientX = event.clientX;
-        },
-        continueResize() {
-            let delta = (event.clientX - this.clientX) * this.pixelMultiplier;
-            
-            this.setDuration(delta);
-
-            this.clientX = event.clientX;
-
-            this.persistResize(); //needed to update inspector in realtime
-        },
-        endResize() {
-            document.removeEventListener('mousemove', this.continueResize);
-            document.removeEventListener('mouseup', this.endResize);
-
-            this.duration = Math.floor(this.duration);
-
-            this.persistResize();
-        },
-        setDuration(delta) {
-            this.duration = this.duration + delta;
-        },
-        persistResize() {
-            this.openmct.objects.mutate(this.domainObject, 'configuration.duration', this.duration);
-        },
         onMouseDown(event) {
-            if (!this.isEditing || !this.isElementSelected()) {
+            if (!this.isEditing) {
                 return;
             }
             event.preventDefault();
@@ -160,7 +135,7 @@ export default {
             this.persistMove();
         },
         persistMove() {
-            this.openmct.objects.mutate(this.domainObject, 'configuration.startTime', this.start);
+            this.openmct.objects.mutate(this.parentDomainObject, `configuration.activities[${this.keystring}].startTime`, this.formatter.format(this.start));
         },
         initializeSelectable() {
             let context = {
