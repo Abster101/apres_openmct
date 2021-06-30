@@ -50,7 +50,7 @@
                 :key="'timeline-legend-' + index"
                 :title="legend"
                 :activities="timelineLegends[legend]"
-                :parentDomainObject="domainObject"
+                :parentDomainObject="liveDomainObject"
                 :index="index"
                 :isEditing="isEditing"
                 :startBounds="bounds.start"
@@ -105,6 +105,9 @@ export default {
         },
         legends() {
             return Object.keys(this.timelineLegends);
+        },
+        liveDomainObject() {
+            return this.domainObject;
         }
     },
     data() {

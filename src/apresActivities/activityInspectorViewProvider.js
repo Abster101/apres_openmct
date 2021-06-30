@@ -9,7 +9,7 @@ export default function ActivityInspectorViewProvider(openmct) {
             if (selection.length === 0 || selection[0].length === 0) {
                 return false;
             }
-
+            console.log(selection);
             let parent = selection[0].length > 1 && selection[0][1].context.item;
             let object = selection[0][0].context.item;
 
