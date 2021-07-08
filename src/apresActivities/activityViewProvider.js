@@ -10,7 +10,7 @@ export default class ActivityViewProvider {
     }
 
     canView(domainObject) {
-        return domainObject.type.includes('apres.activity');
+        return domainObject.type === 'apres.action';
     }
 
     view(domainObject, objectPath, isEditing) {

@@ -82,9 +82,15 @@ export default {
     data() {
         let keystring = this.openmct.objects.makeKeyString(this.domainObject.identifier);
         let configuration = this.parentDomainObject.configuration.activities[keystring];
+        let defaultStyle = {
+            backgroundColor: this.domainObject.configuration.colorHex,
+            border: this.domainObject.configuration.colorHex,
+            color: 'gray'
+        }
 
         return {
             keystring,
+            defaultStyle,
             duration: configuration.duration,
             start: this.formatter.parse(configuration.startTime),
             end: configuration.startTime + configuration.duration,
@@ -152,7 +158,8 @@ export default {
             this.removeSelectable = this.openmct.selection.selectable(this.$el, context);
         },
         getStyle(property) {
-            const objectStyles = this.parentDomainObject.configuration.objectStyles[this.keystring];
+            const configuration = this.parentDomainObject.configuration;
+            const objectStyles = configuration.objectStyles && configuration.objectStyles[this.keystring];
 
             if (objectStyles) {
                 const staticStyle = objectStyles.staticStyle || {};
@@ -161,13 +168,7 @@ export default {
                 return styles[property];
             }
 
-            const defaultStyle = {
-                backgroundColor: this.domainObject.configuration.colorHex,
-                border: this.domainObject.configuration.colorHex,
-                color: 'gray'
-            }
-
-            return defaultStyle[property];
+            return this.defaultStyle[property];
         } 
     },
     mounted() {
