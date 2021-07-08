@@ -1,3 +1,5 @@
+import Vue from 'vue';
+import StartScreen from './startScreen/startScreen.vue';
 import openmct from 'openmct';
 import apresTimeline from './timeline/plugin'
 import apresActivities from './apresActivities/plugin';
@@ -6,13 +8,23 @@ import apresStateChronicle from './apresStateChronicle/plugin';
 import { activityTypes } from '../config/action_types';
 
 function initializeApp() {
-    installDefaultPlugins();
+    const element = document.querySelector('#app');
 
-    openmct.install(apresActivities(activityTypes));
-    openmct.install(apresStateChronicle(activityTypes));
-    openmct.install(apresTimeline());
-    openmct.install(apresDataset());
-    openmct.start();
+    const appComponent = new Vue({
+        el: element,
+        components: {
+            StartScreen
+        },
+        template: '<StartScreen />'
+    });
+
+    // installDefaultPlugins();
+
+    // openmct.install(apresActivities(activityTypes));
+    // openmct.install(apresStateChronicle(activityTypes));
+    // openmct.install(apresTimeline());
+    // openmct.install(apresDataset());
+    // openmct.start();
 }
 
 function installDefaultPlugins() {

@@ -64,7 +64,6 @@
 </template>
 
 <script>
-console.log("hey there")
 import TimelineLegend from './timelineLegend.vue';
 import TimelineLegendLabel from './timelineLegendLabel.vue';
 import TimelineAxis from './timeSystemAxis.vue';
