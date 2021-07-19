@@ -8,7 +8,12 @@ export default class ApresObjectProvider {
         this.getActionTypesComposition = this.getActionTypesComposition.bind(this);
         this.getAction = this.getAction.bind(this);
 
+        this.getStateChronicleDefinitions = this.getStateChronicleDefinitions.bind(this);
+        this.getStateChronicleComposition = this.getStateChronicleComposition.bind(this);
+        this.getStateChronicle = this.getStateChronicle.bind(this);
+
         this.actionDefinitions = this.getActionDefinitions();
+        this.stateChronicleDefinitions = this.getStateChronicleDefinitions();
     }
 
     getActionDefinitions() {
@@ -21,6 +26,15 @@ export default class ApresObjectProvider {
         return definitions;
     }
 
+    getStateChronicleDefinitions(){
+        const definitions = {};
+
+        activityTypes.stateChronicleConfig.forEach(action => {
+            definitions[action.stateColors.stateVal] = action;
+        });
+
+        return definitions;
+    }
     getActionTypesComposition(identifier) {
         const composition = [];
 
@@ -30,7 +44,15 @@ export default class ApresObjectProvider {
 
         return composition;
     }
+    getStateChronicleComposition(identifier) {
+        const composition = [];
 
+        activityTypes.stateChronicleConfig.forEach(action => {
+            composition.push(`apres:actionsType::${action.stateColors.stateVal}::${identifier.key}`);
+        });
+
+        return composition;
+    }
     getAction(identifier) {
         const keyArray = identifier.key.split('::');
 
@@ -74,6 +96,56 @@ export default class ApresObjectProvider {
                                 backgroundColor: modelObject.colorHex,
                                 border: `1px solid ${modelObject.colorHex}`,
                                 color: '#aaaaaa'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    }
+    getStateChronicle(){
+        const keyArray = identifier.key.split('::');
+        console.log(keyArray);
+        if (keyArray[1] === 'source') {
+            return Promise.resolve({
+                identifier,
+                name: 'StateChron',
+                type: 'apres.stateChronicles.source',
+                location: keyArray[2],
+                configuration: {
+                    actionTypes: this.stateChronicleDefinitions
+                },
+                composition: this.getStateChronicleComposition(identifier)
+            });
+        } else {
+            const prototype = keyArray[1];
+            const modelObject = this.stateChronicleDefinitions[prototype];
+            const location = `${identifier.namespace}:${keyArray.slice(2).join('::')}`;
+
+            return Promise.resolve({
+                identifier,
+                name: prototype,
+                cssClass: 'icon-activity',
+                type: `apres.stateChronicle.${prototype}`,
+                location: location,
+                configuration: {
+                    colorHex: modelObject.colorHex,
+                    timelineLegend: modelObject.timelineLegend,
+                    startTime: 0,
+                    parameters: {
+                        drillDur: {
+                            duration: 360000,
+                            type: "integer",
+                            unit: 'seconds'
+                        }
+                    },
+                    duration: 360000,
+                    objectStyles: {
+                        staticStyle: {
+                            style: {
+                                backgroundColor: modelObject.colorHex,
+                                border: `1px solid ${modelObject.colorHex}`,
+                                color: '#762020'
                             }
                         }
                     }
