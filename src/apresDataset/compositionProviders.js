@@ -15,7 +15,7 @@ export class DatasetCompositionProvider {
             composition.push(`apres:actions::source::${domainObject.identifier.key}`);
         }
 
-        if (domainObject.stateChroniclesURL) {
+        if (domainObject.stateChroniclesUrl) {
             composition.push(`apres:stateChronicles::source::${domainObject.identifier.key}`);
         }
 

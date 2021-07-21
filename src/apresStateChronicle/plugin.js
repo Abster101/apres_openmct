@@ -10,7 +10,6 @@ export default function (activityTypes) {
                 let typeDef = {
                     name: modelObject.varName,
                     cssClass: 'icon-plot-overlay',
-                    creatable: true,
                     initialize: function (domainObject) {
                         domainObject.configuration = {
                             timelineLegend: modelObject.varName,
@@ -34,10 +33,12 @@ export default function (activityTypes) {
                         };
                     },
                 };
-                let activityKey = `apres.activity.${typeDef.name}`;
+                let activityKey = `apres.stateChronicle.${typeDef.name}`;
 
                 openmct.types.addType(activityKey, typeDef);
             });
+
+
         }
 
         openmct.objectViews.addProvider(new chroniclesViewProvider(openmct));
