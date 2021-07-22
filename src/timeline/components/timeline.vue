@@ -126,12 +126,18 @@ export default {
         }
     },
     methods: {
-        addActivityToConfiguration(activityDomainObject) {
+        addActivityToConfiguration(activityDomainObject, fromFile) {
             let keystring = this.openmct.objects.makeKeyString(activityDomainObject.identifier);
             
             if (!this.domainObject.configuration.activities[keystring]) {
                 const configuration = lodash.cloneDeep(activityDomainObject.configuration);
-                const startTime = this.timeFormatter.parse(this.domainObject.configuration.startTime);
+                let startTime;
+
+                if (fromFile) {
+                    startTime = this.timeFormatter.parse(activityDomainObject.configuration.startTime);
+                } else {
+                    startTime = this.timeFormatter.parse(this.domainObject.configuration.startTime);
+                }
 
                 if (startTime) {
                     configuration.startTime = startTime;
@@ -151,10 +157,9 @@ export default {
             } else {
                 this.$set(this.timelineLegends, activityTimelineLegend, [activityDomainObject]);
             }
-
-            if (this.activities.length === 2) {
-                this.addError(activityDomainObject);
-            }
+            // if (this.activities.length === 2) {
+            //     this.addError(activityDomainObject);
+            // }
         },
         addError(activityDomainObject) {
             this.errors.push({
@@ -193,7 +198,8 @@ export default {
                 type: 'timeline-component',
                 centerTimeline: this.setTimeBoundsFromConfiguration,
                 zoomIn: this.zoomIn,
-                zoomOut: this.zoomOut
+                zoomOut: this.zoomOut,
+                importTimeline: this.importTimeline
             }
         },
         getFormatter(key) {
@@ -253,9 +259,7 @@ export default {
 
             this.openmct.time.bounds({start, end});
         },
-        setTimeBoundsFromConfiguration() {
-            const configuration = this.domainObject.configuration;
-
+        setTimeBoundsFromConfiguration(configuration = this.domainObject.configuration) {
             if (configuration.startTime && configuration.endTime) {
                 this.openmct.time.bounds({
                     start: this.timeFormatter.parse(configuration.startTime),
@@ -264,6 +268,97 @@ export default {
             } else {
                 this.centerTimeline();
             }
+        },
+        getFormModel() {
+            return {
+                name: "Import Timeline",
+                sections: [
+                    {
+                        name: "Import A JSON File",
+                        rows: [
+                            {
+                                name: 'Select File',
+                                key: 'selectFile',
+                                control: 'file-input',
+                                required: true,
+                                text: 'Select File...'
+                            }
+                        ]
+                    }
+                ]
+            };
+        },
+        getTimelineObject(jsonString) {
+            let timelineObject;
+
+            try {
+                timelineObject = JSON.parse(jsonString);
+            } catch (e) {
+                return null;
+            }
+
+            if (!timelineObject.activityPlan) {
+                return null;
+            }
+
+            return timelineObject;
+        },
+        addActionFromFile(action) {
+            const colorHex = '#4f6ffe';
+            const timelineLegend = 'Drill';
+            const startTime = this.timeFormatter.parse(action.actionStart);
+            const endTime = this.timeFormatter.parse(action.actionEnd)
+
+            const configuration = {
+                colorHex: colorHex,
+                timelineLegend: timelineLegend,
+                startTime: action.actionStart,
+                parameters: action.parameters,
+                duration: endTime - startTime,
+                objectStyles: {
+                    staticStyle: {
+                        style: {
+                            backgroundColor: colorHex,
+                            border: `1px solid ${colorHex}`,
+                            color: '#aaaaaa'
+                        }
+                    }
+                }
+            };
+            const domainObject = {
+                name: action.actionName,
+                identifier: {
+                    namespace: '',
+                    key: action.uuid
+                },
+                configuration
+            }
+
+            this.addActivityToConfiguration(domainObject, true);
+            this.addActivity(domainObject);
+        },
+        storeTimelineTime({startTime, endTime}) {
+            this.openmct.objects.mutate(this.domainObject, `configuration.startTime`, startTime);
+            this.openmct.objects.mutate(this.domainObject, `configuration.endTime`, endTime);
+
+            this.setTimeBoundsFromConfiguration({startTime, endTime});
+        },
+        processJsonTimeline(form) {
+            const timelineJSON = form.selectFile.body;
+            const timelineObject = this.getTimelineObject(timelineJSON);
+            const timeConfiguration = {
+                startTime: timelineObject.activityPlan.planStart,
+                endTime: timelineObject.activityPlan.planEnd
+            };
+            this.storeTimelineTime(timeConfiguration);
+
+            timelineObject.activityPlan.actions.forEach(action => {
+                this.addActionFromFile(action);
+            });
+        },
+        importTimeline() {
+            this.openmct.$injector.get('dialogService')
+                .getUserInput(this.getFormModel(), {}).then(this.processJsonTimeline);
         }
     },
     mounted() {
