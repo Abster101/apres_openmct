@@ -148,6 +148,7 @@ export default {
         },
         addActivity(activityDomainObject) {
             this.addActivityToConfiguration(activityDomainObject);
+
             this.activities.push(activityDomainObject);
 
             const activityTimelineLegend = activityDomainObject.configuration.timelineLegend;
@@ -160,6 +161,20 @@ export default {
             // if (this.activities.length === 2) {
             //     this.addError(activityDomainObject);
             // }
+        },
+        addActivitiesFromConfiguration() {
+            Object.entries(this.domainObject.configuration.activities).forEach(([key, configuration]) => {
+                let activityDomainObject = {
+                    name: configuration.name,
+                    identifier: {
+                        namespace: '',
+                        key: key
+                    },
+                    configuration
+                };
+
+                this.addActivity(activityDomainObject);
+            });
         },
         addError(activityDomainObject) {
             this.errors.push({
@@ -310,6 +325,7 @@ export default {
             const endTime = this.timeFormatter.parse(action.actionEnd)
 
             const configuration = {
+                name: action.actionName,
                 colorHex: colorHex,
                 timelineLegend: timelineLegend,
                 startTime: action.actionStart,
@@ -334,7 +350,6 @@ export default {
                 configuration
             }
 
-            this.addActivityToConfiguration(domainObject, true);
             this.addActivity(domainObject);
         },
         storeTimelineTime({startTime, endTime}) {
@@ -377,6 +392,8 @@ export default {
             composition.off('add', this.addActivity);
             composition.off('remove', this.removeActivity);
         }
+        
+        this.addActivitiesFromConfiguration();
     },
     beforeDestroy() {
         this.unsubscribeFromComposition();
