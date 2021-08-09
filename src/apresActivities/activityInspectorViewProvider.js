@@ -15,7 +15,7 @@ export default function ActivityInspectorViewProvider(openmct) {
             return parent
                 && parent.type === 'apres.timeline.type'
                 && object
-                && object.id.includes('apres:actionsType');
+                && object.type === 'apres.activity.type'
         },
         view: function (selection) {
             let component;

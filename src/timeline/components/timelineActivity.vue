@@ -151,7 +151,8 @@ export default {
                 layoutItem: {
                     fill: backgroundColor,
                     stroke: backgroundColor,
-                    id: this.keystring
+                    id: this.keystring,
+                    type: 'apres.activity.type'
                 }
             };
 

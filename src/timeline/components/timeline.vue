@@ -133,21 +133,15 @@ export default {
                 const configuration = lodash.cloneDeep(activityDomainObject.configuration);
                 let startTime;
 
-                if (fromFile) {
-                    startTime = this.timeFormatter.parse(activityDomainObject.configuration.startTime);
-                } else {
-                    startTime = this.timeFormatter.parse(this.domainObject.configuration.startTime);
-                }
-
-                if (startTime) {
-                    configuration.startTime = startTime;
+                if (!fromFile) {
+                    configuration.startTime = this.timeFormatter.parse(this.domainObject.configuration.startTime);
                 }
 
                 this.openmct.objects.mutate(this.domainObject, `configuration.activities[${keystring}]`, configuration);
             }
         },
-        addActivity(activityDomainObject) {
-            this.addActivityToConfiguration(activityDomainObject);
+        addActivity(activityDomainObject, fromFile) {
+            this.addActivityToConfiguration(activityDomainObject, fromFile);
 
             this.activities.push(activityDomainObject);
 
@@ -303,7 +297,7 @@ export default {
                 ]
             };
         },
-        getTimelineObject(jsonString) {
+        parseProjectJSON(jsonString) {
             let timelineObject;
 
             try {
@@ -312,15 +306,15 @@ export default {
                 return null;
             }
 
-            if (!timelineObject.activityPlan) {
+            if (!timelineObject.planningProject) {
                 return null;
             }
 
             return timelineObject;
         },
-        addActionFromFile(action) {
-            const colorHex = '#4f6ffe';
-            const timelineLegend = 'Drill';
+        addActionFromFile(action, config = {}) {
+            let colorHex = config.colorHex || '#4f6ffe';
+            let timelineLegend = config.timelineLegend || 'Default';
             const startTime = this.timeFormatter.parse(action.actionStart);
             const endTime = this.timeFormatter.parse(action.actionEnd)
 
@@ -343,33 +337,45 @@ export default {
             };
             const domainObject = {
                 name: action.actionName,
+                type: 'apres.action.type',
                 identifier: {
                     namespace: '',
                     key: action.uuid
                 },
                 configuration
-            }
+            };
 
-            this.addActivity(domainObject);
+            this.addActivity(domainObject, true);
         },
-        storeTimelineTime({startTime, endTime}) {
+        storeTimelineBounds({startTime, endTime}) {
             this.openmct.objects.mutate(this.domainObject, `configuration.startTime`, startTime);
             this.openmct.objects.mutate(this.domainObject, `configuration.endTime`, endTime);
 
             this.setTimeBoundsFromConfiguration({startTime, endTime});
         },
+        processConfiguration(configuration) {
+            const configObject = {};
+
+            configuration.modelConfig.forEach((model) => {
+                configObject[model.actProcType] = model;
+            });
+
+            return configObject;
+        },
         processJsonTimeline(form) {
             const timelineJSON = form.selectFile.body;
-            const timelineObject = this.getTimelineObject(timelineJSON);
+            const projectBundle = this.parseProjectJSON(timelineJSON);
             const timeConfiguration = {
-                startTime: timelineObject.activityPlan.planStart,
-                endTime: timelineObject.activityPlan.planEnd
+                startTime: projectBundle.planningProject.activityPlan.planStart,
+                endTime: projectBundle.planningProject.activityPlan.planEnd
             };
-            this.storeTimelineTime(timeConfiguration);
+            const configuration = this.processConfiguration(projectBundle.configuration);
 
-            timelineObject.activityPlan.actions.forEach(action => {
-                this.addActionFromFile(action);
+            projectBundle.planningProject.activityPlan.actions.forEach((action) => {
+                this.addActionFromFile(action, configuration[action.actionType]);
             });
+
+            this.storeTimelineBounds(timeConfiguration);
         },
         importTimeline() {
             this.openmct.$injector.get('dialogService')
