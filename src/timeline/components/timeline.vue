@@ -1,68 +1,66 @@
 <template>
-<div class="w-full">
-	<div class="flex flex-row w-full">
-		<div
-			class="w-10-10"
-		>
-			<!-- 30px div to match timeline-axis -->
-			<div
-				class="flex align-self-center"
-				style="min-height: 30px;"
-			>
-				<button
-					class="c-icon-button c-icon-button--major icon-plus"
-					title="zoom in"
-					@click="zoomIn"
-				></button>
-				<button
-					class="c-icon-button c-icon-button--major icon-minus"
-					title="zoom out"
-					@click="zoomOut"
-				></button>
-			</div>
-			<!-- timeline legend labels -->
-			<div>
-				<timeline-legend-label
-					v-for="(legend, index) in legends"
-					:key="'timeline-legend-label' + index"
-					:num-activities="timelineLegends[legend].length"
-					:title="legend"
-				>
-					{{legend}}
-				</timeline-legend-label>
-			</div>
-		</div>
-		<div
-			ref="timeline-container"
-			class="w-9-10"
-			:style="style"
-		>
-			<timeline-axis
-				:bounds="bounds"
-				:time-system="timeSystem"
-				:content-height="50"
-				:rendering-engine="'svg'"
-			/>
-			<div
-				style="min-width: 100%; min-height: 100%;"
-			>
-				<timeline-legend
-					v-for="(legend, index) in legends"
-					:key="'timeline-legend-' + index"
-					:title="legend"
-					:activities="timelineLegends[legend]"
-					:parentDomainObject="domainObject"
-					:index="index"
-					:isEditing="isEditing"
-					:startBounds="bounds.start"
-					:endBounds="bounds.end"
-					:pixelMultiplier="pixelMultiplier"
-					:formatter="timeFormatter"
-				/>
-			</div>
-		</div>
-	</div>
-	<violations-table />
+<div class="flex flex-row w-full">
+    <div
+        class="w-10-10"
+    >
+        <!-- 30px div to match timeline-axis -->
+        <div
+            class="flex align-self-center"
+            style="min-height: 30px;"
+        >
+            <button
+                class="c-icon-button c-icon-button--major icon-plus"
+                title="zoom in"
+                @click="zoomIn"
+            ></button>
+            <button
+                class="c-icon-button c-icon-button--major icon-minus"
+                title="zoom out"
+                @click="zoomOut"
+            ></button>
+        </div>
+        <!-- timeline legend labels -->
+        <div>
+            <timeline-legend-label
+                v-for="(legend, index) in legends"
+                :key="'timeline-legend-label' + index"
+                :num-activities="timelineLegends[legend].length"
+                :title="legend"
+                :projectEndTime= "projectEndTime"
+            >
+                {{legend}}
+            </timeline-legend-label>
+        </div>
+    </div>
+    <div
+        ref="timeline-container"
+        class="w-9-10"
+        :style="style"
+    >
+        <timeline-axis
+            :bounds="bounds"
+            :time-system="timeSystem"
+            :content-height="50"
+            :rendering-engine="'svg'"
+        />
+        <div
+            style="min-width: 100%; min-height: 100%;"
+        >
+            <timeline-legend
+                v-for="(legend, index) in legends"
+                :key="'timeline-legend-' + index"
+                :title="legend"
+                :activities="timelineLegends[legend]"
+                :parentDomainObject="domainObject"
+                :index="index"
+                :isEditing="isEditing"
+                :startBounds="bounds.start"
+                :endBounds="bounds.end"
+                :pixelMultiplier="pixelMultiplier"
+                :formatter="timeFormatter"
+            />
+        </div>
+    </div>
 </div>
 </template>
 
@@ -71,6 +69,9 @@ import TimelineLegend from './timelineLegend.vue';
 import TimelineLegendLabel from './timelineLegendLabel.vue';
 import TimelineAxis from './timeSystemAxis.vue';
 import ViolationsTable from './violations/table.vue';
+import TimelineStateChronicle from './timelineStateChronicle.vue';
+import simpleDrill from '../../../config/SimpleDrill.project.json';
+
 import Error from './error.vue';
 import Moment from 'moment';
 import lodash from 'lodash';
@@ -93,7 +94,9 @@ export default {
         TimelineLegendLabel,
         TimelineAxis,
 		Error,
-		ViolationsTable
+		ViolationsTable,
+        TimelineStateChronicle,
+        Error
     },
     computed: {
         inBoundErrors() {
@@ -120,17 +123,16 @@ export default {
             timelineLegends: {},
             chronicles: [],
             bounds: {},
-            timeSystem: {},
             pixelMultiplier: PIXEL_MULTIPLIER,
             errors: [],
             timeSystem,
-			timeFormatter,
+            timeFormatter,
+            projectEndTime: ""
         }
     },
     methods: {
         addActivityToConfiguration(activityDomainObject) {
             let keystring = this.openmct.objects.makeKeyString(activityDomainObject.identifier);
-            
             if (!this.domainObject.configuration.activities[keystring]) {
                 const configuration = lodash.cloneDeep(activityDomainObject.configuration);
                 const startTime = this.timeFormatter.parse(this.domainObject.configuration.startTime);
@@ -158,6 +160,17 @@ export default {
                 this.addError(activityDomainObject);
             }
         },
+/*      addStateChronicle(StateChronicleDomainObject) {
+        this.chronicles.push(StateChronicleDomainObject);
+        const scTimelineLegend = StateChronicleDomainObject.configuration.timelineLegend;
+
+        if (this.timelineLegends[scTimelineLegend]) {
+          this.timelineLegends[scTimelineLegend].push(StateChronicleDomainObject)
+      } else {
+        this.$set(this.timelineLegends, scTimelineLegend, [StateChronicleDomainObject]);
+        }
+      },*/
+
         addError(activityDomainObject) {
             this.errors.push({
                 startTime: activityDomainObject.configuration.startTime
@@ -279,10 +292,11 @@ export default {
         composition.on('remove', this.removeActivity);
         composition.on('reorder', this.reorderActivities);
         composition.load();
+        this.projectEndTime = simpleDrill.activityPlan.planEnd;
 
         this.unsubscribeFromComposition = () => {
             composition.off('add', this.addActivity);
-            composition.off('remove', this.removeActivity);
+          composition.off('remove', this.removeActivity);
         }
     },
     beforeDestroy() {

@@ -10,7 +10,14 @@ export default class Dataset {
         if (this.actionTypes) {
             return this.actionTypes;
         } else {
-            
+
+        }
+    }
+    stateChronicleTypes(){
+        if (this.stateChronicleTypes) {
+            return this.stateChronicleTypes;
+        } else {
+
         }
     }
 }

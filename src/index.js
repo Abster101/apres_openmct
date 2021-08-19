@@ -3,6 +3,7 @@ import apresTimeline from './timeline/plugin'
 import apresActivities from './apresActivities/plugin';
 import apresDataset from './apresDataset/plugin';
 import apresStateChronicle from './apresStateChronicle/plugin';
+import apresDataset from './apresDataset/plugin';
 import { activityTypes } from '../config/action_types';
 
 function initializeApp() {
