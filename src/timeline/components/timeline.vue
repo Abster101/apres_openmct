@@ -26,6 +26,7 @@
                 :key="'timeline-legend-label' + index"
                 :num-activities="timelineLegends[legend].length"
                 :title="legend"
+                :projectEndTime= "projectEndTime"
             >
                 {{legend}}
             </timeline-legend-label>
@@ -64,10 +65,12 @@
 </template>
 
 <script>
-console.log("hey there")
 import TimelineLegend from './timelineLegend.vue';
 import TimelineLegendLabel from './timelineLegendLabel.vue';
 import TimelineAxis from './timeSystemAxis.vue';
+import TimelineStateChronicle from './timelineStateChronicle.vue';
+import simpleDrill from '../../../config/SimpleDrill.project.json';
+
 import Error from './error.vue';
 import Moment from 'moment';
 import lodash from 'lodash';
@@ -89,6 +92,7 @@ export default {
         TimelineLegend,
         TimelineLegendLabel,
         TimelineAxis,
+        TimelineStateChronicle,
         Error
     },
     computed: {
@@ -116,17 +120,17 @@ export default {
             timelineLegends: {},
             chronicles: [],
             bounds: {},
-            timeSystem: {},
             pixelMultiplier: PIXEL_MULTIPLIER,
             errors: [],
             timeSystem,
-            timeFormatter
+            timeFormatter,
+            projectEndTime: ""
         }
     },
     methods: {
         addActivityToConfiguration(activityDomainObject) {
             let keystring = this.openmct.objects.makeKeyString(activityDomainObject.identifier);
-            
+
             if (!this.domainObject.configuration.activities[keystring]) {
                 const configuration = lodash.cloneDeep(activityDomainObject.configuration);
                 const startTime = this.timeFormatter.parse(this.domainObject.configuration.startTime);
@@ -154,6 +158,17 @@ export default {
                 this.addError(activityDomainObject);
             }
         },
+/*      addStateChronicle(StateChronicleDomainObject) {
+        this.chronicles.push(StateChronicleDomainObject);
+        const scTimelineLegend = StateChronicleDomainObject.configuration.timelineLegend;
+
+        if (this.timelineLegends[scTimelineLegend]) {
+          this.timelineLegends[scTimelineLegend].push(StateChronicleDomainObject)
+      } else {
+        this.$set(this.timelineLegends, scTimelineLegend, [StateChronicleDomainObject]);
+        }
+      },*/
+
         addError(activityDomainObject) {
             this.errors.push({
                 startTime: activityDomainObject.configuration.startTime
@@ -275,10 +290,11 @@ export default {
         composition.on('remove', this.removeActivity);
         composition.on('reorder', this.reorderActivities);
         composition.load();
+        this.projectEndTime = simpleDrill.activityPlan.planEnd;
 
         this.unsubscribeFromComposition = () => {
             composition.off('add', this.addActivity);
-            composition.off('remove', this.removeActivity);
+          composition.off('remove', this.removeActivity);
         }
     },
     beforeDestroy() {

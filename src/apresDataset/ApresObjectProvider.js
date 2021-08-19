@@ -130,26 +130,12 @@ export default class ApresObjectProvider {
                 type: `apres.stateChronicle.${varName}`,
                 location: location,
                 configuration: {
+                    stateColors: modelObject.stateColors,
+                    stateVal: "idle",
                     colorHex: modelObject.colorHex,
-                    timelineLegend: modelObject.timelineLegend,
+                    timelineLegend: modelObject.varName,
                     startTime: 0,
-                    parameters: {
-                        drillDur: {
-                            duration: 360000,
-                            type: "integer",
-                            unit: 'seconds'
-                        }
-                    },
                     duration: 360000,
-                    objectStyles: {
-                        staticStyle: {
-                            style: {
-                                backgroundColor: modelObject.colorHex,
-                                border: `1px solid ${modelObject.colorHex}`,
-                                color: '#762020'
-                            }
-                        }
-                    }
                 }
             });
         }
