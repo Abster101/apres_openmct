@@ -58,7 +58,11 @@
                 :endBounds="bounds.end"
                 :pixelMultiplier="pixelMultiplier"
                 :formatter="timeFormatter"
+                :chronicleParameters="chronicleParameters"
+                :projectEndTime="projectEndTime"
             />
+
+
         </div>
     </div>
 </div>
@@ -119,12 +123,13 @@ export default {
             activities: [],
             timelineLegends: {},
             chronicles: [],
+            chronicleParameters:[],
             bounds: {},
             pixelMultiplier: PIXEL_MULTIPLIER,
             errors: [],
             timeSystem,
             timeFormatter,
-            projectEndTime: ""
+            projectEndTime:0,
         }
     },
     methods: {
@@ -142,6 +147,20 @@ export default {
                 this.openmct.objects.mutate(this.domainObject, `configuration.activities[${keystring}]`, configuration);
             }
         },
+/*      addStateChronicleToConfiguration() {
+        let keystring = this.openmct.objects.makeKeyString(.identifier);
+
+        if (!this.domainObject.configuration.simulationInfo[keystring]) {
+          const configuration = lodash.cloneDeep(activityDomainObject.configuration);
+          const startTime = this.timeFormatter.parse(this.domainObject.configuration.startTime);
+
+          if (startTime) {
+            configuration.startTime = startTime;
+          }
+
+          this.openmct.objects.mutate(this.domainObject, `configuration.activities[${keystring}]`, configuration);
+        }
+      },*/
         addActivity(activityDomainObject) {
             this.addActivityToConfiguration(activityDomainObject);
             this.activities.push(activityDomainObject);
@@ -158,17 +177,6 @@ export default {
                 this.addError(activityDomainObject);
             }
         },
-/*      addStateChronicle(StateChronicleDomainObject) {
-        this.chronicles.push(StateChronicleDomainObject);
-        const scTimelineLegend = StateChronicleDomainObject.configuration.timelineLegend;
-
-        if (this.timelineLegends[scTimelineLegend]) {
-          this.timelineLegends[scTimelineLegend].push(StateChronicleDomainObject)
-      } else {
-        this.$set(this.timelineLegends, scTimelineLegend, [StateChronicleDomainObject]);
-        }
-      },*/
-
         addError(activityDomainObject) {
             this.errors.push({
                 startTime: activityDomainObject.configuration.startTime
@@ -277,7 +285,18 @@ export default {
             } else {
                 this.centerTimeline();
             }
-        }
+        },
+        //2. Create a function to match parameter with designated state chronicle
+        matchSC(){
+          const value1 = this.domainObject.configuration.stateColors[1].stateVal;
+          const scTimelineLegend =  this.domainObject.configuration.timelineLegend;
+
+          if(scTimelineLegend[value1] == scTimelineLegend){
+            return true
+          }
+          console.log(value1);
+          console.log(scTimelineLegend);
+          }
     },
     mounted() {
         this.openmct.time.on('bounds', this.initializeTimeBounds);
@@ -291,10 +310,11 @@ export default {
         composition.on('reorder', this.reorderActivities);
         composition.load();
         this.projectEndTime = simpleDrill.activityPlan.planEnd;
+        this.chronicleParameters = simpleDrill.activityPlan.simulationInfo.chronicles;
 
         this.unsubscribeFromComposition = () => {
             composition.off('add', this.addActivity);
-          composition.off('remove', this.removeActivity);
+            composition.off('remove', this.removeActivity);
         }
     },
     beforeDestroy() {

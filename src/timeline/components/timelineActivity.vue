@@ -1,11 +1,12 @@
 <template>
-    <li 
+    <li
         :style="activityStyle"
         :title="domainObject.name"
         class="timeline-activity"
         @mousedown="onMouseDown"
     >
         <span class="w-full text-align-center align-self-center">{{domainObject.name}}</span>
+
     </li>
 </template>
 <script>
@@ -128,7 +129,7 @@ export default {
         endMove() {
             document.removeEventListener('mousemove', this.move);
             document.removeEventListener('mouseup', this.endMove);
-            
+
             this.start = Math.floor(this.start);
             this.end = Math.floor(this.end);
 
@@ -150,11 +151,11 @@ export default {
             const styles = staticStyle.style || {};
 
             return styles[property];
-        } 
+        }
     },
     mounted() {
         let boundingClientRect = this.$el.getBoundingClientRect();
-        
+
         this.activityHeight = boundingClientRect.height;
 
         this.initializeSelectable();

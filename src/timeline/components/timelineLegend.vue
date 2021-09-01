@@ -1,6 +1,8 @@
 <template>
 <ul :style="legendStyle">
+
     <timeline-activity
+        v-if="activityType"
         v-for="(activityDomainObject, index) in inBoundsActivities"
         :key="activityDomainObject.identifier.key"
         :domainObject="activityDomainObject"
@@ -12,18 +14,35 @@
         :pixelMultiplier="pixelMultiplier"
         :formatter="formatter"
     />
+  <TimelineStateChronicle
+      v-else
+      v-for="(activityDomainObject, index) in inBoundsActivities"
+      :key="activityDomainObject.identifier.key"
+      :domainObject="activityDomainObject"
+      :parentDomainObject="parentDomainObject"
+      :index="index"
+      :isEditing="isEditing"
+      :startBounds="startBounds"
+      :endBounds="endBounds"
+      :pixelMultiplier="pixelMultiplier"
+      :formatter="formatter"
+      :chronicleParameters="chronicleParameters"
+      :projectEndTime = "projectEndTime"
+  ></TimelineStateChronicle>
 </ul>
 </template>
 
 <script>
 import TimelineActivity from './timelineActivity.vue';
+import TimelineStateChronicle from "./timelineStateChronicle.vue";
 
 const ACTIVITY_HEIGHT = 44;
 
 export default {
     inject: ['openmct'],
     components: {
-        TimelineActivity
+        TimelineActivity,
+        TimelineStateChronicle
     },
     props: {
         activities: {
@@ -60,8 +79,39 @@ export default {
         },
         formatter: {
             type: Object
-        }
+        },
+      chronicleParameters: {
+        type: Array
+      },
+      projectEndTime:{
+          type: String
+      }
     },
+    data() {
+      return {
+         activityType: false,
+      }
+    },
+    methods:{
+      getComparison:function (){
+        let type = this.activities[0].type;
+        let type_array = type.split(".");
+        if (type_array[1] == "activity")
+        {
+          this.activityType = true;
+        }else{
+          this.activityType = false;
+        }
+        },
+      getStateChronicle:function (){
+      //  let value1 = this.domainObject.configuration.stateColors[1].stateVal;
+      }
+    },
+    mounted() {
+      //console.log(this.activities[0].type);
+      this.getComparison();
+      this.getStateChronicle();
+      },
     computed: {
         legendStyle() {
             return {

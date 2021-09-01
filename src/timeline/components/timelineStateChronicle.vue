@@ -1,14 +1,14 @@
 <template>
   <li
-      :style="activityStyle"
-      :title="domainObject.composition[0].key"
+      :title="domainObject.configuration.stateColors"
       class="timeline-activity"
-      @mousedown="onMouseDown"
   >
     <span class="w-full text-align-center align-self-center">{{domainObject.name}}</span>
+
   </li>
 </template>
 <script>
+import TimelineActivity from './timelineActivity.vue';
 
 const ACTIVITY_HEIGHT = 40;
 
@@ -18,9 +18,8 @@ export default {
     domainObject: {
       type: Object,
       required: true,
-      default() {
-
-        return  {
+      default () {
+        return {
           configuration: {}
         }
       }
@@ -28,8 +27,8 @@ export default {
     parentDomainObject: {
       type: Object,
       required: true,
-      default() {
-        return  {
+      default () {
+        return {
           configuration: {}
         }
       }
@@ -52,120 +51,59 @@ export default {
     formatter: {
       type: Object
     },
+    chronicleParameters:{
+      type: Array
+    },
     projectEndTime:{
-      type:String
+      type: String
     }
   },
-  computed: {
-    activityStyle() {
-      return {
-        'top': `${this.index * (ACTIVITY_HEIGHT + 4)}px`,
-        'left': `${this.leftPosition}px`,
-        'backgroundColor': this.getStyle('backgroundColor'),
-        'border': this.getStyle('border'),
-        'color': this.getStyle('color'),
-        'width': `${this.width}px`,
-        'max-height': `${ACTIVITY_HEIGHT}px`,
-        'min-height': `${ACTIVITY_HEIGHT}px`,
-        'cursor': this.isEditing ? 'grab' : 'auto'
-      };
+  data(){
+    return {
+      eposide: []
+    }
+  },
+  methods:{
+    getStateChronicle:function () {
+      let promise = new Promise((resolve, reject) => {
+        const arrayofSC = this.chronicleParameters;
+        for (let i in arrayofSC) {
+          if (arrayofSC[i].variable === this.domainObject.name) {
+            this.eposide = arrayofSC[i].episodes;
+            resolve(arrayofSC[i].episodes);
+          }
+        }
+      })
+       promise.then((results) => {
+          this.getTimeSC(results)
+        });
+
+    },
+    getTimeSC:function(results){
+      console.log(this.configuration);
+
+      const start = this.formatter.parse(this.configuration.startTime);
+
+      if (this.startBounds > start){
+        console.log(this.configuration);
+      }
+      if (this. endBounds > start){
+        console.log("second value")
+      }
     },
     leftPosition() {
       const start = this.formatter.parse(this.configuration.startTime);
+
       return Math.floor((start - this.startBounds) / this.pixelMultiplier);
-    },
-    width() {
-      return Math.floor(this.configuration.duration / this.pixelMultiplier);
-    },
-    configuration() {
-      return this.parentDomainObject.configuration.activities[this.keystring];
-    },
-    calculateVar(){
-       return this.end - this.projectEndTime;
-    },
-  },
-  data() {
-    let keystring = this.openmct.objects.makeKeyString(this.domainObject.identifier);
-    let configuration = this.parentDomainObject.configuration.activities[keystring];
-
-    return {
-      keystring,
-      duration: configuration.duration,
-      start: this.formatter.parse(configuration.startTime),
-      end: configuration.startTime + configuration.duration,
-      activityHeight: 0
     }
   },
-  methods: {
-    onMouseDown(event) {
-      if (!this.isEditing) {
-        return;
-      }
-      event.preventDefault();
-      document.addEventListener('mousemove', this.move);
-      document.addEventListener('mouseup', this.endMove);
-
-      this.clientX = event.clientX;
-    },
-    setStart(delta) {
-      let start = this.start + delta;
-      let end = start + this.duration;
-
-      if (start <= this.startBounds) {
-        this.start = this.startBounds;
-      } else if (end >= this.endBounds) {
-        this.start = this.endBounds - this.duration;
-      } else {
-        this.start = start;
-      }
-    },
-    move(event) {
-      let delta = (event.clientX - this.clientX) * this.pixelMultiplier;
-
-      this.setStart(delta);
-
-      this.end = this.start + this.width;
-
-      this.clientX = event.clientX;
-
-      this.persistMove(); //needed to update inspector in realtime
-    },
-    endMove() {
-      document.removeEventListener('mousemove', this.move);
-      document.removeEventListener('mouseup', this.endMove);
-
-      this.start = Math.floor(this.start);
-      this.end = Math.floor(this.end);
-
-      this.persistMove();
-    },
-    persistMove() {
-      this.openmct.objects.mutate(this.parentDomainObject, `configuration.activities[${this.keystring}].startTime`, this.formatter.format(this.start));
-    },
-    initializeSelectable() {
-      let context = {
-        item: this.domainObject
-      };
-
-      this.removeSelectable = this.openmct.selection.selectable(this.$el, context);
-    },
-    getStyle(property) {
-      const objectStyles = this.domainObject.configuration.objectStyles || {};
-      const staticStyle = objectStyles.staticStyle || {};
-      const styles = staticStyle.style || {};
-
-      return styles[property];
-    }
+  mounted () {
+    this.getStateChronicle();
+    //console.log(this.domainObject.configuration.startTime); //the current start time, but we want the current time, we don't have a way to simulate that yet
+    //console.log(this.domainObject.configuration.stateColors[1].stateVal);  //the value at time- Auger
   },
-  mounted() {
-    let boundingClientRect = this.$el.getBoundingClientRect();
+  load(){
 
-    this.activityHeight = boundingClientRect.height;
-
-    this.initializeSelectable();
-  },
-  beforeDestroy() {
-    this.removeSelectable();
   }
 }
 </script>

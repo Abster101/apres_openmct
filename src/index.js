@@ -4,7 +4,7 @@ import apresActivities from './apresActivities/plugin';
 import apresStateChronicle from './apresStateChronicle/plugin';
 import apresDataset from './apresDataset/plugin';
 import { activityTypes } from '../config/action_types';
-import {state_types} from "../config/state_types";
+import {projectJson} from "../config/SimpleDrill.project.json";
 
 function initializeApp() {
     installDefaultPlugins();
