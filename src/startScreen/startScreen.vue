@@ -37,6 +37,7 @@ import apresTimeline from '../timeline/plugin'
 import apresActivities from '../apresActivities/plugin';
 import apresDataset from '../apresDataset/plugin';
 import apresStateChronicle from '../apresStateChronicle/plugin';
+import apresSessionIndicator from '../apresSessionIndicator/plugin';
 
 export default {
     computed: {
@@ -64,9 +65,11 @@ export default {
             // openmct.install(apresStateChronicle());
             openmct.install(apresTimeline());
             openmct.install(apresDataset());
+            openmct.install(apresSessionIndicator())
 
             this.openmctStarted = true;
-
+            
+            localStorage.setItem('apres_session', true);
             openmct.start(this.$refs.openmct);
         },
         installDefaultPlugins() {
@@ -201,6 +204,13 @@ export default {
     },
     onDestroy() {
         openmct.onDestroy();
+    },
+    mounted() {
+        const session = localStorage.getItem('apres_session');
+
+        if (session === true) {
+            this.initializeApp();
+        }
     }
 }
 </script>
