@@ -32,6 +32,7 @@
 
 <script>
 import openmct from 'openmct';
+import axios from 'axios';
 import apresTimeline from '../timeline/plugin'
 import apresActivities from '../apresActivities/plugin';
 import apresDataset from '../apresDataset/plugin';
