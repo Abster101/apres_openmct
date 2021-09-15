@@ -1,6 +1,6 @@
 const centerTimeline = {
     name: 'Center Timeline',
-    key: 'center-timeline',
+    key: 'apres:center-timeline',
     description: "Set time bounds to center timeline",
     cssClass: 'icon-timeline labeled',
     invoke: (objectPath, viewProvider) => {
@@ -11,7 +11,7 @@ const centerTimeline = {
 
 const zoomIn = {
     name: 'Zoom In',
-    key: 'zoom-in-timeline',
+    key: 'apres:zoom-in-timeline',
     description: "Zoom in by 5 minutes",
     cssClass: 'icon-plus labeled',
     invoke: (objectPath, viewProvider) => {
@@ -22,7 +22,7 @@ const zoomIn = {
 
 const zoomOut = {
     name: 'Zoom Out',
-    key: 'zoom-out-timeline',
+    key: 'apres:zoom-out-timeline',
     description: "Zoom in by 5 minutes",
     cssClass: 'icon-minus labeled',
     invoke: (objectPath, viewProvider) => {
@@ -31,10 +31,22 @@ const zoomOut = {
     group: 'view',
 };
 
+const importTimeline = {
+    name: 'Import Timeline',
+    key: 'apres:import-timeline',
+    description: 'Import timeline from JSON file',
+    cssClass: 'icon-import',
+    invoke: (objectPath, viewProvider) => {
+        viewProvider.getViewContext().importTimeline();
+    },
+    group: 'view'
+}
+
 const viewActions = [
+    importTimeline,
     centerTimeline,
     zoomIn,
-    zoomOut
+    zoomOut,
 ];
 
 viewActions.forEach(action => {

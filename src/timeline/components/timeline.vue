@@ -27,7 +27,6 @@
 					:key="'timeline-legend-label' + index"
 					:num-activities="timelineLegends[legend].length"
 					:title="legend"
-					:projectEndTime= "projectEndTime"
 				>
 					{{legend}}
 				</timeline-legend-label>
@@ -45,18 +44,27 @@
 				:rendering-engine="'svg'"
 			/>
 			<div
-				style="min-width: 100%; min-height: 100%;"
+				style="min-width: 100%; min-height: 100%; position: relative"
 			>
 				<timeline-legend
 					v-for="(legend, index) in legends"
 					:key="'timeline-legend-' + index"
 					:title="legend"
 					:activities="timelineLegends[legend]"
-					:parentDomainObject="domainObject"
+					:parentDomainObject="liveDomainObject"
 					:index="index"
 					:isEditing="isEditing"
 					:startBounds="bounds.start"
 					:endBounds="bounds.end"
+					:pixelMultiplier="pixelMultiplier"
+					:formatter="timeFormatter"
+				/>
+
+				<Error 
+					v-for="(error, index) in errors"
+					:key="`error-${index}`"
+					:startTime="error.startTime"
+					:startBounds="bounds.start"
 					:pixelMultiplier="pixelMultiplier"
 					:formatter="timeFormatter"
 				/>
@@ -123,6 +131,9 @@ export default {
 		},
         legends() {
             return Object.keys(this.timelineLegends);
+        },
+        liveDomainObject() {
+            return this.domainObject;
         }
     },
     data() {
@@ -142,21 +153,24 @@ export default {
         }
     },
     methods: {
-        addActivityToConfiguration(activityDomainObject) {
+        addActivityToConfiguration(activityDomainObject, fromFile) {
             let keystring = this.openmct.objects.makeKeyString(activityDomainObject.identifier);
             if (!this.domainObject.configuration.activities[keystring]) {
                 const configuration = lodash.cloneDeep(activityDomainObject.configuration);
-                const startTime = this.timeFormatter.parse(this.domainObject.configuration.startTime);
+                let startTime;
 
-                if (startTime) {
-                    configuration.startTime = startTime;
+                if (!fromFile) {
+                    configuration.startTime = this.timeFormatter.parse(this.domainObject.configuration.startTime);
                 }
 
                 this.openmct.objects.mutate(this.domainObject, `configuration.activities[${keystring}]`, configuration);
             }
         },
-        addActivity(activityDomainObject) {
-            this.addActivityToConfiguration(activityDomainObject);
+        addActivity(activityDomainObject, fromFile) {
+            this.addActivityToConfiguration(activityDomainObject, fromFile);
+
+            this.addError({startTime: activityDomainObject.configuration.startTime});
+
             this.activities.push(activityDomainObject);
 
             const activityTimelineLegend = activityDomainObject.configuration.timelineLegend;
@@ -166,26 +180,23 @@ export default {
             } else {
                 this.$set(this.timelineLegends, activityTimelineLegend, [activityDomainObject]);
             }
-
-            if (this.activities.length === 2) {
-                this.addError(activityDomainObject);
-            }
         },
-/*      addStateChronicle(StateChronicleDomainObject) {
-        this.chronicles.push(StateChronicleDomainObject);
-        const scTimelineLegend = StateChronicleDomainObject.configuration.timelineLegend;
+        addActivitiesFromConfiguration() {
+            Object.entries(this.domainObject.configuration.activities).forEach(([key, configuration]) => {
+                let activityDomainObject = {
+                    name: configuration.name,
+                    identifier: {
+                        namespace: '',
+                        key: key
+                    },
+                    configuration
+                };
 
-        if (this.timelineLegends[scTimelineLegend]) {
-          this.timelineLegends[scTimelineLegend].push(StateChronicleDomainObject)
-      } else {
-        this.$set(this.timelineLegends, scTimelineLegend, [StateChronicleDomainObject]);
-        }
-      },*/
-
-        addError(activityDomainObject) {
-            this.errors.push({
-                startTime: activityDomainObject.configuration.startTime
+                this.addActivity(activityDomainObject);
             });
+        },
+        addError(errorObject) {
+            this.errors.push(errorObject);
         },
         removeActivity(activityIdentifier) {
             console.log(activityIdentifier);
@@ -219,7 +230,8 @@ export default {
                 type: 'timeline-component',
                 centerTimeline: this.setTimeBoundsFromConfiguration,
                 zoomIn: this.zoomIn,
-                zoomOut: this.zoomOut
+                zoomOut: this.zoomOut,
+                importTimeline: this.importTimeline
             }
         },
         getFormatter(key) {
@@ -279,9 +291,7 @@ export default {
 
             this.openmct.time.bounds({start, end});
         },
-        setTimeBoundsFromConfiguration() {
-            const configuration = this.domainObject.configuration;
-
+        setTimeBoundsFromConfiguration(configuration = this.domainObject.configuration) {
             if (configuration.startTime && configuration.endTime) {
                 this.openmct.time.bounds({
                     start: this.timeFormatter.parse(configuration.startTime),
@@ -294,6 +304,109 @@ export default {
 		onViolationClicked(value) {
 			console.log("IN TIMELINE COMPONENT: " + value);
 		},
+        getFormModel() {
+            return {
+                name: "Import Timeline",
+                sections: [
+                    {
+                        name: "Import A JSON File",
+                        rows: [
+                            {
+                                name: 'Select File',
+                                key: 'selectFile',
+                                control: 'file-input',
+                                required: true,
+                                text: 'Select File...'
+                            }
+                        ]
+                    }
+                ]
+            };
+        },
+        parseProjectJSON(jsonString) {
+            let timelineObject;
+
+            try {
+                timelineObject = JSON.parse(jsonString);
+            } catch (e) {
+                return null;
+            }
+
+            if (!timelineObject.planningProject) {
+                return null;
+            }
+
+            return timelineObject;
+        },
+        addActionFromFile(action, config = {}) {
+            let colorHex = config.colorHex || '#4f6ffe';
+            let timelineLegend = config.timelineLegend || 'Default';
+            const startTime = this.timeFormatter.parse(action.actionStart);
+            const endTime = this.timeFormatter.parse(action.actionEnd)
+
+            const configuration = {
+                name: action.actionName,
+                colorHex: colorHex,
+                timelineLegend: timelineLegend,
+                startTime: action.actionStart,
+                parameters: action.parameters,
+                duration: endTime - startTime,
+                objectStyles: {
+                    staticStyle: {
+                        style: {
+                            backgroundColor: colorHex,
+                            border: `1px solid ${colorHex}`,
+                            color: '#aaaaaa'
+                        }
+                    }
+                }
+            };
+            const domainObject = {
+                name: action.actionName,
+                type: 'apres.action.type',
+                identifier: {
+                    namespace: '',
+                    key: action.uuid
+                },
+                configuration
+            };
+
+            this.addActivity(domainObject, true);
+        },
+        storeTimelineBounds({startTime, endTime}) {
+            this.openmct.objects.mutate(this.domainObject, `configuration.startTime`, startTime);
+            this.openmct.objects.mutate(this.domainObject, `configuration.endTime`, endTime);
+
+            this.setTimeBoundsFromConfiguration({startTime, endTime});
+        },
+        processConfiguration(configuration) {
+            const configObject = {};
+
+            configuration.modelConfig.forEach((model) => {
+                configObject[model.actProcType] = model;
+            });
+
+            return configObject;
+        },
+        processJsonTimeline(form) {
+            const timelineJSON = form.selectFile.body;
+            const projectBundle = this.parseProjectJSON(timelineJSON);
+            const timeConfiguration = {
+                startTime: projectBundle.planningProject.activityPlan.planStart,
+                endTime: projectBundle.planningProject.activityPlan.planEnd
+            };
+            const configuration = this.processConfiguration(projectBundle.configuration);
+
+            projectBundle.planningProject.activityPlan.actions.forEach((action) => {
+                this.addActionFromFile(action, configuration[action.actionType]);
+            });
+
+            this.storeTimelineBounds(timeConfiguration);
+        },
+        importTimeline() {
+            this.openmct.$injector.get('dialogService')
+                .getUserInput(this.getFormModel(), {}).then(this.processJsonTimeline);
+        }
     },
     mounted() {
         this.openmct.time.on('bounds', this.initializeTimeBounds);
@@ -312,6 +425,8 @@ export default {
             composition.off('add', this.addActivity);
           composition.off('remove', this.removeActivity);
         }
+        
+        this.addActivitiesFromConfiguration();
     },
     beforeDestroy() {
         this.unsubscribeFromComposition();

@@ -47,7 +47,7 @@
 export default {
     inject: ['openmct'],
     props: {
-        domainObject: {
+        actionObject: {
             type: Object,
             required: true,
             default: () => {
@@ -70,18 +70,18 @@ export default {
             return this.configuration.duration / 1000;
         },
         configuration() {
-            return this.parentDomainObject.configuration.activities[this.keystring];
+            return this.parentDomainObject.configuration.activities[this.id];
         }
     },
     data() {
         let timeSystem = this.openmct.time.timeSystem();
         let formatter = this.getFormatter(timeSystem.timeFormat);
-        let keystring = this.openmct.objects.makeKeyString(this.domainObject.identifier);
+        let id = this.actionObject.id;
 
         return {
             isEditing: this.openmct.editor.isEditing(),
             error: undefined,
-            keystring,
+            id,
             timeSystem,
             formatter
         }
@@ -104,7 +104,7 @@ export default {
             }
         },
         persistStartTime(value) {
-            this.openmct.objects.mutate(this.parentDomainObject, `configuration.activities[${this.keystring}].startTime`, value);
+            this.openmct.objects.mutate(this.parentDomainObject, `configuration.activities[${this.id}].startTime`, value);
         }
     }
 }
