@@ -1,6 +1,6 @@
 <template>
 <div :style="testingStyle">
-    <h3 class="testing-violations" v-on:click="onViolationChange()">VIOLATIONS {{violationChange}}</h3>
+    <h3 v-on:click="onViolationChange()">VIOLATIONS {{violationChange}}</h3>
 	<table>
         <thead>
           	<tr>
