@@ -9,14 +9,13 @@ export default function ActivityInspectorViewProvider(openmct) {
             if (selection.length === 0 || selection[0].length === 0) {
                 return false;
             }
-
             let parent = selection[0].length > 1 && selection[0][1].context.item;
-            let object = selection[0][0].context.item;
+            let object = selection[0][0].context.layoutItem;
 
             return parent
                 && parent.type === 'apres.timeline.type'
                 && object
-                && object.type.includes('apres.activity');
+                && object.type === 'apres.activity.type'
         },
         view: function (selection) {
             let component;
@@ -30,7 +29,7 @@ export default function ActivityInspectorViewProvider(openmct) {
                         },
                         data() {
                             return {
-                                domainObject: selection[0][0].context.item,
+                                actionObject: selection[0][0].context.layoutItem,
                                 parentDomainObject: selection[0][1].context.item
                             }
                         },
@@ -39,7 +38,7 @@ export default function ActivityInspectorViewProvider(openmct) {
                         },
                         template: `
                             <activity-inspector
-                                :domainObject="domainObject"
+                                :actionObject="actionObject"
                                 :parentDomainObject="parentDomainObject"
                             />
                         `

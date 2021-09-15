@@ -54,7 +54,7 @@ export default class ApresObjectProvider {
                 identifier,
                 name: proctype,
                 cssClass: 'icon-activity',
-                type: `apres.activity.${proctype}`,
+                type: 'apres.action.type',
                 location: location,
                 configuration: {
                     colorHex: modelObject.colorHex,

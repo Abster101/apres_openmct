@@ -77,14 +77,20 @@ export default {
         },
         configuration() {
             return this.parentDomainObject.configuration.activities[this.keystring];
-        },
+        }
     },
     data() {
         let keystring = this.openmct.objects.makeKeyString(this.domainObject.identifier);
         let configuration = this.parentDomainObject.configuration.activities[keystring];
+        let defaultStyle = {
+            backgroundColor: this.domainObject.configuration.colorHex,
+            border: this.domainObject.configuration.colorHex,
+            color: 'gray'
+        }
 
         return {
             keystring,
+            defaultStyle,
             duration: configuration.duration,
             start: this.formatter.parse(configuration.startTime),
             end: configuration.startTime + configuration.duration,
@@ -138,18 +144,32 @@ export default {
             this.openmct.objects.mutate(this.parentDomainObject, `configuration.activities[${this.keystring}].startTime`, this.formatter.format(this.start));
         },
         initializeSelectable() {
+            const configuration = this.parentDomainObject.configuration.activities[this.keystring]
+            const backgroundColor = configuration.colorHex;
+
             let context = {
-                item: this.domainObject
+                layoutItem: {
+                    fill: backgroundColor,
+                    stroke: backgroundColor,
+                    id: this.keystring,
+                    type: 'apres.activity.type'
+                }
             };
 
             this.removeSelectable = this.openmct.selection.selectable(this.$el, context);
         },
         getStyle(property) {
-            const objectStyles = this.domainObject.configuration.objectStyles || {};
-            const staticStyle = objectStyles.staticStyle || {};
-            const styles = staticStyle.style || {};
+            const configuration = this.parentDomainObject.configuration;
+            const objectStyles = configuration.objectStyles && configuration.objectStyles[this.keystring];
 
-            return styles[property];
+            if (objectStyles) {
+                const staticStyle = objectStyles.staticStyle || {};
+                const styles = staticStyle.style || {};
+
+                return styles[property];
+            }
+
+            return this.defaultStyle[property];
         } 
     },
     mounted() {
