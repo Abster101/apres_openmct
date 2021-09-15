@@ -10,9 +10,10 @@
 
                 <select name="projects" id="projects">
                     <option value="new">New</option>
-                    <option value="project-1">Project 1</option>
-                    <option value="project-2">Project 2</option>
-                    <option value="project-3">Project 3</option>
+                    <option
+                        v-for="(project, index) in projects"
+                        :key="index"
+                        :value="project">{{ project }}</option>
                 </select>
             </div>
             <button 
@@ -54,7 +55,8 @@ export default {
     },
     data() {
         return {
-            openmctStarted: false
+            openmctStarted: false,
+            projects: []
         }
     },
     methods: {
@@ -207,7 +209,14 @@ export default {
     },
     mounted() {
         const session = localStorage.getItem('apres_session');
-
+        
+        axios.get('http://localhost:8080/listprojects').then((resp) => {
+            if (resp && resp.data) {
+                resp.data.forEach((project) => {
+                    this.projects.push(project);
+                });
+            }
+        })
         if (session === true) {
             this.initializeApp();
         }
