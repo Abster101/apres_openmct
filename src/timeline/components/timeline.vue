@@ -43,7 +43,7 @@
             :rendering-engine="'svg'"
         />
         <div
-            style="min-width: 100%; min-height: 100%;"
+            style="min-width: 100%; min-height: 100%; position: relative"
         >
             <timeline-legend
                 v-for="(legend, index) in legends"
@@ -55,6 +55,15 @@
                 :isEditing="isEditing"
                 :startBounds="bounds.start"
                 :endBounds="bounds.end"
+                :pixelMultiplier="pixelMultiplier"
+                :formatter="timeFormatter"
+            />
+
+             <Error 
+                v-for="(error, index) in errors"
+                :key="`error-${index}`"
+                :startTime="error.startTime"
+                :startBounds="bounds.start"
                 :pixelMultiplier="pixelMultiplier"
                 :formatter="timeFormatter"
             />
@@ -128,7 +137,7 @@ export default {
     methods: {
         addActivityToConfiguration(activityDomainObject, fromFile) {
             let keystring = this.openmct.objects.makeKeyString(activityDomainObject.identifier);
-            
+
             if (!this.domainObject.configuration.activities[keystring]) {
                 const configuration = lodash.cloneDeep(activityDomainObject.configuration);
                 let startTime;
@@ -143,6 +152,8 @@ export default {
         addActivity(activityDomainObject, fromFile) {
             this.addActivityToConfiguration(activityDomainObject, fromFile);
 
+            this.addError({startTime: activityDomainObject.configuration.startTime});
+
             this.activities.push(activityDomainObject);
 
             const activityTimelineLegend = activityDomainObject.configuration.timelineLegend;
@@ -152,9 +163,6 @@ export default {
             } else {
                 this.$set(this.timelineLegends, activityTimelineLegend, [activityDomainObject]);
             }
-            // if (this.activities.length === 2) {
-            //     this.addError(activityDomainObject);
-            // }
         },
         addActivitiesFromConfiguration() {
             Object.entries(this.domainObject.configuration.activities).forEach(([key, configuration]) => {
@@ -170,10 +178,8 @@ export default {
                 this.addActivity(activityDomainObject);
             });
         },
-        addError(activityDomainObject) {
-            this.errors.push({
-                startTime: activityDomainObject.configuration.startTime
-            });
+        addError(errorObject) {
+            this.errors.push(errorObject);
         },
         removeActivity(activityIdentifier) {
             console.log(activityIdentifier);

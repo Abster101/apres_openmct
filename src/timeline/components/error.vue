@@ -8,20 +8,21 @@
 export default {
     props: {
         startTime: {
-            type: Number
+            type: String
         },
         startBounds: {
             type: Number
         },
-        endBounds: {
-            type: Number
-        },
         pixelMultiplier: {
             type: Number
+        },
+        formatter: {
+            type: Object
         }
     },
     computed: {
         style() {
+            console.log(this.startTime)
             return {
                 'position': 'absolute',
                 'left': `${this.leftPosition}px`,
@@ -31,7 +32,9 @@ export default {
             }
         },
         leftPosition() {
-            return (this.startTime - this.startBounds) * this.pixelMultiplier;
+            const start = this.formatter.parse(this.startTime);
+
+            return Math.floor((start - this.startBounds) / this.pixelMultiplier);
         }
     }
 }
