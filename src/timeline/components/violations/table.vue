@@ -1,6 +1,6 @@
 <template>
-<div>
-    <h3>VIOLATIONS</h3>
+<div :style="testingStyle">
+    <h3 class="testing-violations" v-on:click="onViolationChange()">VIOLATIONS {{violationChange}}</h3>
 	<table>
         <thead>
           	<tr>
@@ -12,86 +12,95 @@
           	</tr>
         </thead>
         <tbody>
-          	<tr>
-           		<td>2022-08-14T13:00:00Z</td>
-				<td>unsatisfied-condition</td>
+			<tr  v-for="(violation, index) in violations" v-on:click="onRowClick(violation, index)" :style="tableRow">
 				<td>
-					<tr>
-						<th>actProcName</th>
-						<th>condStart</th>
-						<th>condExpr</th>
-					</tr>
-					<tr>
-						<td>auger1</td>
-						<td>2022-08-14T13:00:00Z</td>
-						<td>DrillArm_sys == unstowed</td>
+					<span :style="redDot" v-if="index === clickedViolationIndex"></span> 
+					{{violation.violationTime}}
+				</td>
+				<td>{{violation.violationType}}</td>
+				<td>{{violation.violatedObj.tableText}}</td>
+				<td>{{violation.violatedObjValue}}</td>
+				<td>
+					<tr v-for="(violator, index) in violation.violators">
+						<td>{{violator.tableText}}</td>
 					</tr>
 				</td>
-				<td>Violated Object Value</td>
-				<td>
-					<tr>
-						<th>Violator Name</th>
-						<th>Action or Procedure Violator</th>
-					</tr>
-					<tr>
-						<td>initial conditions</td>
-						<td>text</td>
-					</tr>
-					<tr>
-						<td>initial conditions</td>
-						<td>text</td>
-					</tr>
-				</td>
-          	</tr>
-			<tr>
-           		<td>2022-08-14T13:00:00Z</td>
-				<td>unsatisfied-condition</td>
-				<td>
-					<tr>
-						<th>actProcName</th>
-						<th>condStart</th>
-						<th>condExpr</th>
-					</tr>
-					<tr>
-						<td>auger1</td>
-						<td>2022-08-14T13:00:00Z</td>
-						<td>DrillArm_sys == unstowed</td>
-					</tr>
-				</td>
-				<td>Violated Object Value</td>
-				<td>
-					<tr>
-						<th>Violator Name</th>
-						<th>Action or Procedure Violator</th>
-					</tr>
-					<tr>
-						<td>initial conditions</td>
-						<td>text</td>
-					</tr>
-					<tr>
-						<td>initial conditions</td>
-						<td>text</td>
-					</tr>
-					<tr>
-						<td>initial conditions</td>
-						<td>text</td>
-					</tr>
-				</td>
-          	</tr>
+			</tr>
          </tbody>
     </table>
 </div>
 </template>
 
 <script>
+import simpleDrill from '../../../../config/SimpleDrillViolated_EpSim_Output.json';
+import simpleDrill2 from '../../../../config/SimpleDrillViolated2_EpSim_Output.json';
+import simpleDrill3 from '../../../../config/SimpleDrillViolated3_EpSim_Output.json';
+import simpleDrill4 from '../../../../config/SimpleDrillViolated4_EpSim_Output.json';
 
 export default {
     inject: ['openmct'],
     components: {
     },
     props: {
-    },
+	},
+	data() {
+        return {
+			violations: [],
+			clickedViolationIndex: null,
+			violationChange: 1,
+        }
+	},
     computed: {
-    }
+		testingStyle() {
+            return {
+                'margin-top': 'auto',
+            };
+		},
+		tableRow() {
+            return {
+                'height': '40px',
+            };
+		},
+		redDot() {
+            return {
+                'height': '5px',
+				'width': '5px',
+				'background-color': '#DD1C1A',
+				'border-radius': '50%',
+				'display': 'inline-block',
+				'margin-right': '2px'
+            };
+        },
+	},
+	methods:{
+		onRowClick: function(violation, index){
+			console.log(violation.violatedObj.objID);
+			this.clickedViolationIndex = index;
+		},
+		onViolationChange: function(){
+			if(this.violationChange === 1){
+				this.violationChange = this.violationChange + 1;
+				this.violations = simpleDrill2.simulationInfo.violations
+			}else if(this.violationChange === 2){
+				this.violationChange = this.violationChange + 1;
+				this.violations = simpleDrill3.simulationInfo.violations
+			}else if(this.violationChange === 3){
+				this.violationChange = this.violationChange + 1;
+				this.violations = simpleDrill4.simulationInfo.violations
+			}else{
+				this.violationChange = 1;
+				this.violations = simpleDrill.simulationInfo.violations
+			}
+		},
+	},
+	mounted(){
+		this.violations = simpleDrill.simulationInfo.violations;
+	},
 }
 </script>
+
+<style lang='scss' scoped>
+	.testing-violations {
+		font-size: 1000px;
+	}
+</style>

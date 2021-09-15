@@ -1,66 +1,69 @@
 <template>
-<div class="flex flex-row w-full">
-    <div
-        class="w-10-10"
-    >
-        <!-- 30px div to match timeline-axis -->
-        <div
-            class="flex align-self-center"
-            style="min-height: 30px;"
-        >
-            <button
-                class="c-icon-button c-icon-button--major icon-plus"
-                title="zoom in"
-                @click="zoomIn"
-            ></button>
-            <button
-                class="c-icon-button c-icon-button--major icon-minus"
-                title="zoom out"
-                @click="zoomOut"
-            ></button>
-        </div>
-        <!-- timeline legend labels -->
-        <div>
-            <timeline-legend-label
-                v-for="(legend, index) in legends"
-                :key="'timeline-legend-label' + index"
-                :num-activities="timelineLegends[legend].length"
-                :title="legend"
-                :projectEndTime= "projectEndTime"
-            >
-                {{legend}}
-            </timeline-legend-label>
-        </div>
-    </div>
-    <div
-        ref="timeline-container"
-        class="w-9-10"
-        :style="style"
-    >
-        <timeline-axis
-            :bounds="bounds"
-            :time-system="timeSystem"
-            :content-height="50"
-            :rendering-engine="'svg'"
-        />
-        <div
-            style="min-width: 100%; min-height: 100%;"
-        >
-            <timeline-legend
-                v-for="(legend, index) in legends"
-                :key="'timeline-legend-' + index"
-                :title="legend"
-                :activities="timelineLegends[legend]"
-                :parentDomainObject="domainObject"
-                :index="index"
-                :isEditing="isEditing"
-                :startBounds="bounds.start"
-                :endBounds="bounds.end"
-                :pixelMultiplier="pixelMultiplier"
-                :formatter="timeFormatter"
-            />
-        </div>
-    </div>
+<div :style="containerStyle">
+	<div class="flex flex-row w-full">
+		<div
+			class="w-10-10"
+		>
+			<!-- 30px div to match timeline-axis -->
+			<div
+				class="flex align-self-center"
+				style="min-height: 30px;"
+			>
+				<button
+					class="c-icon-button c-icon-button--major icon-plus"
+					title="zoom in"
+					@click="zoomIn"
+				></button>
+				<button
+					class="c-icon-button c-icon-button--major icon-minus"
+					title="zoom out"
+					@click="zoomOut"
+				></button>
+			</div>
+			<!-- timeline legend labels -->
+			<div>
+				<timeline-legend-label
+					v-for="(legend, index) in legends"
+					:key="'timeline-legend-label' + index"
+					:num-activities="timelineLegends[legend].length"
+					:title="legend"
+					:projectEndTime= "projectEndTime"
+				>
+					{{legend}}
+				</timeline-legend-label>
+			</div>
+		</div>
+		<div
+			ref="timeline-container"
+			class="w-9-10"
+			:style="style"
+		>
+			<timeline-axis
+				:bounds="bounds"
+				:time-system="timeSystem"
+				:content-height="50"
+				:rendering-engine="'svg'"
+			/>
+			<div
+				style="min-width: 100%; min-height: 100%;"
+			>
+				<timeline-legend
+					v-for="(legend, index) in legends"
+					:key="'timeline-legend-' + index"
+					:title="legend"
+					:activities="timelineLegends[legend]"
+					:parentDomainObject="domainObject"
+					:index="index"
+					:isEditing="isEditing"
+					:startBounds="bounds.start"
+					:endBounds="bounds.end"
+					:pixelMultiplier="pixelMultiplier"
+					:formatter="timeFormatter"
+				/>
+			</div>
+		</div>
+	</div>
+	<violations-table @clicked="onViolationClicked"/>
 </div>
 </template>
 
@@ -70,6 +73,7 @@ import TimelineLegendLabel from './timelineLegendLabel.vue';
 import TimelineAxis from './timeSystemAxis.vue';
 import ViolationsTable from './violations/table.vue';
 import TimelineStateChronicle from './timelineStateChronicle.vue';
+
 import simpleDrill from '../../../config/SimpleDrill.project.json';
 
 import Error from './error.vue';
@@ -96,7 +100,7 @@ export default {
 		Error,
 		ViolationsTable,
         TimelineStateChronicle,
-        Error
+		Error,
     },
     computed: {
         inBoundErrors() {
@@ -109,7 +113,14 @@ export default {
             return {
                 'overflow': 'hidden'
             }
-        },
+		},
+		containerStyle(){
+			return {
+				'width': '100%',
+                'display': 'flex',
+    			'flex-direction': 'column',
+            }
+		},
         legends() {
             return Object.keys(this.timelineLegends);
         }
@@ -279,7 +290,10 @@ export default {
             } else {
                 this.centerTimeline();
             }
-        }
+		},
+		onViolationClicked(value) {
+			console.log("IN TIMELINE COMPONENT: " + value);
+		},
     },
     mounted() {
         this.openmct.time.on('bounds', this.initializeTimeBounds);
