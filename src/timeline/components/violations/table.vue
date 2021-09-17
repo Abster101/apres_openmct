@@ -14,7 +14,7 @@
         <tbody>
 			<tr  v-for="(violation, index) in violations" v-on:click="onRowClick(violation, index)" :style="tableRow">
 				<td>
-					<span :style="redDot" v-if="index === clickedViolationIndex"></span> 
+					<span :style="redDot" v-if="clickedViolationId === violation.violatedObj.objID & toggleClickedViolation"></span> 
 					{{violation.violationTime}}
 				</td>
 				<td>{{violation.violationType}}</td>
@@ -46,7 +46,9 @@ export default {
 	data() {
         return {
 			violations: [],
+			toggleClickedViolation: false,
 			clickedViolationIndex: null,
+			clickedViolationId: null,
 			violationChange: 1,
         }
 	},
@@ -74,8 +76,19 @@ export default {
 	},
 	methods:{
 		onRowClick: function(violation, index){
-			console.log(violation.violatedObj.objID);
+			this.$emit('clicked', violation)
+
+			if(this.clickedViolationId === violation.violatedObj.objID){
+				this.toggleClickedViolation = !this.toggleClickedViolation;
+				if(this.toggleClickedViolation === false){
+					this.$emit("violationClear");
+				}
+			} else {
+				this.toggleClickedViolation = true;
+			}
+
 			this.clickedViolationIndex = index;
+			this.clickedViolationId = violation.violatedObj.objID;
 		},
 		onViolationChange: function(){
 			if(this.violationChange === 1){
@@ -91,6 +104,19 @@ export default {
 				this.violationChange = 1;
 				this.violations = simpleDrill.simulationInfo.violations
 			}
+
+			const match = this.violations.filter(violation => {
+				return violation.violatedObj.objID === this.clickedViolationId
+			})
+
+			if (match.length === 0) {
+				this.$emit('violationClear');
+				this.clickedViolationIndex = null;
+				this.clickedViolationId = null;
+			}
+		},
+		resetViolationRedLine: function(){
+
 		},
 	},
 	mounted(){

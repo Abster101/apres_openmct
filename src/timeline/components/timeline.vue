@@ -46,6 +46,14 @@
 			<div
 				style="min-width: 100%; min-height: 100%; position: relative"
 			>
+				<Error 
+					v-for="(error, index) in errors"
+					:key="`error-${index}`"
+					:startTime="error.startTime"
+					:startBounds="bounds.start"
+					:pixelMultiplier="pixelMultiplier"
+					:formatter="timeFormatter"
+				/>
 				<timeline-legend
 					v-for="(legend, index) in legends"
 					:key="'timeline-legend-' + index"
@@ -59,19 +67,13 @@
 					:pixelMultiplier="pixelMultiplier"
 					:formatter="timeFormatter"
 				/>
-
-				<Error 
-					v-for="(error, index) in errors"
-					:key="`error-${index}`"
-					:startTime="error.startTime"
-					:startBounds="bounds.start"
-					:pixelMultiplier="pixelMultiplier"
-					:formatter="timeFormatter"
-				/>
 			</div>
 		</div>
 	</div>
-	<violations-table @clicked="onViolationClicked"/>
+	<violations-table 
+		@clicked="onViolationClicked"
+		@violationClear="clearErrorsWithUpdates"
+	/>
 </div>
 </template>
 
@@ -167,9 +169,11 @@ export default {
             }
         },
         addActivity(activityDomainObject, fromFile) {
-            this.addActivityToConfiguration(activityDomainObject, fromFile);
+			this.addActivityToConfiguration(activityDomainObject, fromFile);
 
-            this.addError({startTime: activityDomainObject.configuration.startTime});
+            // this.addError({
+			// 	startTime: activityDomainObject.configuration.startTime
+			// });
 
             this.activities.push(activityDomainObject);
 
@@ -197,6 +201,9 @@ export default {
         },
         addError(errorObject) {
             this.errors.push(errorObject);
+		},
+		resetErrors() {
+			this.errors = [];
         },
         removeActivity(activityIdentifier) {
             console.log(activityIdentifier);
@@ -302,7 +309,13 @@ export default {
             }
 		},
 		onViolationClicked(value) {
-			console.log("IN TIMELINE COMPONENT: " + value);
+			this.resetErrors();
+			this.addError({
+				startTime: value.violationTime
+			});
+		},
+		clearErrorsWithUpdates(value){
+			this.resetErrors();
 		},
         getFormModel() {
             return {

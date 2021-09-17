@@ -71,7 +71,7 @@ export default {
                 'border-top': '2px solid #6c6c6c',
                 'border-bottom': '2px solid #6c6c6c',
                 'margin-top': '10px',
-                'margin-bottom': '10px'
+				'margin-bottom': '10px',
             }
         },
         titleStyle() {
