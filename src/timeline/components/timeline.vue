@@ -70,7 +70,8 @@
 			</div>
 		</div>
 	</div>
-	<violations-table 
+	<violations-table
+		@loadViolations="addErrorsOnLoad" 
 		@clicked="onViolationClicked"
 		@violationClear="clearErrorsWithUpdates"
 	/>
@@ -172,7 +173,8 @@ export default {
 			this.addActivityToConfiguration(activityDomainObject, fromFile);
 
             // this.addError({
-			// 	startTime: activityDomainObject.configuration.startTime
+			// 	startTime: activityDomainObject.configuration.startTime,
+			// 	actionID: activityDomainObject.identifier.key
 			// });
 
             this.activities.push(activityDomainObject);
@@ -307,6 +309,9 @@ export default {
             } else {
                 this.centerTimeline();
             }
+		},
+		addErrorsOnLoad(value) {
+			this.addError(value);
 		},
 		onViolationClicked(value) {
 			this.resetErrors();

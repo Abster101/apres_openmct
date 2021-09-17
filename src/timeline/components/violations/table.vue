@@ -81,7 +81,7 @@ export default {
 			if(this.clickedViolationId === violation.violatedObj.objID){
 				this.toggleClickedViolation = !this.toggleClickedViolation;
 				if(this.toggleClickedViolation === false){
-					this.$emit("violationClear");
+					this.resetViolationRedLine();
 				}
 			} else {
 				this.toggleClickedViolation = true;
@@ -91,6 +91,8 @@ export default {
 			this.clickedViolationId = violation.violatedObj.objID;
 		},
 		onViolationChange: function(){
+			this.$emit("violationClear");
+
 			if(this.violationChange === 1){
 				this.violationChange = this.violationChange + 1;
 				this.violations = simpleDrill2.simulationInfo.violations
@@ -105,22 +107,32 @@ export default {
 				this.violations = simpleDrill.simulationInfo.violations
 			}
 
+			this.resetViolationRedLine();
+
 			const match = this.violations.filter(violation => {
 				return violation.violatedObj.objID === this.clickedViolationId
 			})
 
 			if (match.length === 0) {
-				this.$emit('violationClear');
 				this.clickedViolationIndex = null;
 				this.clickedViolationId = null;
 			}
 		},
 		resetViolationRedLine: function(){
-
+			for(let i in this.violations) {
+				const violationObj = {
+					startTime: this.violations[i].violationTime,
+					actionID: this.violations[i].violatedObj.objID,
+				}
+				this.$emit('loadViolations', violationObj)
+			}
 		},
 	},
 	mounted(){
 		this.violations = simpleDrill.simulationInfo.violations;
+		this.resetViolationRedLine();
+
+		console.log(this.violations);
 	},
 }
 </script>
