@@ -72,11 +72,14 @@ export default {
 
             if (selectedProject && selectedProject !== 'new') {
                 this.getProjectDocs(selectedProject).then((projectJSON) => {
-
+                    const timelineBounds = {
+                        start: Date.parse(projectJSON.planningProject.activityPlan.planStart),
+                        end: Date.parse(projectJSON.planningProject.activityPlan.planEnd)
+                    }
                     const mctObject = domainObjectUtil.getMctLocalStorageObject(projectJSON);
                     localStorage.setItem('mct', JSON.stringify(mctObject));
 
-                    this.installDefaultPlugins();
+                    this.installDefaultPlugins(timelineBounds);
 
                     openmct.install(apresActivities());
                     // openmct.install(apresStateChronicle());
@@ -91,7 +94,7 @@ export default {
                 })
             }
         },
-        installDefaultPlugins() {
+        installDefaultPlugins(bounds) {
             const THIRTY_SECONDS = 30 * 1000;
             const ONE_MINUTE = THIRTY_SECONDS * 2;
             const FIVE_MINUTES = ONE_MINUTE * 5;
@@ -124,10 +127,7 @@ export default {
                     {
                         name: "Fixed",
                         timeSystem: 'utc',
-                        bounds: {
-                            start: Date.now() - THIRTY_MINUTES,
-                            end: Date.now()
-                        },
+                        bounds,
                         // commonly used bounds can be stored in history
                         // bounds (start and end) can accept either a milliseconds number
                         // or a callback function returning a milliseconds number
