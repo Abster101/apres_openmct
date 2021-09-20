@@ -152,7 +152,7 @@ export default {
         addActivity(activityDomainObject, fromFile) {
             this.addActivityToConfiguration(activityDomainObject, fromFile);
 
-            this.addError({startTime: activityDomainObject.configuration.startTime});
+            // this.addError({startTime: this.timeFormatter.parse(activityDomainObject.configuration.startTime)});
 
             this.activities.push(activityDomainObject);
 
