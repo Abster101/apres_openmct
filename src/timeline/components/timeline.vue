@@ -79,6 +79,7 @@ import TimelineAxis from './timeSystemAxis.vue';
 import Error from './error.vue';
 import Moment from 'moment';
 import lodash from 'lodash';
+import uuid from 'uuid'
 
 const PIXEL_MULTIPLIER = 0.05;
 const TIMELINE_PADDING = 1000 * 60 * 15; //  mins of padding for timeline center action
@@ -150,18 +151,28 @@ export default {
             }
         },
         addActivity(activityDomainObject, fromFile) {
-            this.addActivityToConfiguration(activityDomainObject, fromFile);
+             let activityDomainObjectCopy = lodash.cloneDeep(activityDomainObject);
 
-            // this.addError({startTime: this.timeFormatter.parse(activityDomainObject.configuration.startTime)});
+            // If its a dataset action, replace the key with a new uuid to allow multiple in one timeline.
+            if (activityDomainObjectCopy.identifier.key.includes('actionsType')) {
+                activityDomainObjectCopy.identifier = {
+                    key: uuid(),
+                    namespace: ''
+                }
+            }
 
-            this.activities.push(activityDomainObject);
+            this.addActivityToConfiguration(activityDomainObjectCopy, fromFile);
 
-            const activityTimelineLegend = activityDomainObject.configuration.timelineLegend;
+            // this.addError({startTime: this.timeFormatter.parse(activityDomainObjectCopy.configuration.startTime)});
+
+            this.activities.push(activityDomainObjectCopy);
+
+            const activityTimelineLegend = activityDomainObjectCopy.configuration.timelineLegend;
 
             if (this.timelineLegends[activityTimelineLegend]) {
-                this.timelineLegends[activityTimelineLegend].push(activityDomainObject);
+                this.timelineLegends[activityTimelineLegend].push(activityDomainObjectCopy);
             } else {
-                this.$set(this.timelineLegends, activityTimelineLegend, [activityDomainObject]);
+                this.$set(this.timelineLegends, activityTimelineLegend, [activityDomainObjectCopy]);
             }
         },
         addActivitiesFromConfiguration() {

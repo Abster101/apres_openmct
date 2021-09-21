@@ -61,12 +61,12 @@ export default class ApresObjectProvider {
                     startTime: 0,
                     parameters: {
                         drillDur: {
-                            duration: 360000,
+                            duration: 3600000,
                             type: "integer",
                             unit: 'seconds'
                         }
                     },
-                    duration: 360000,
+                    duration: 3600000,
                     objectStyles: {
                         staticStyle: {
                             style: {
