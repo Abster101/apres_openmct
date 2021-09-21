@@ -78,13 +78,13 @@ export default {
                     }
                     const mctObject = domainObjectUtil.getMctLocalStorageObject(projectJSON);
                     localStorage.setItem('mct', JSON.stringify(mctObject));
-
+                    console.log(projectJSON);
                     this.installDefaultPlugins(timelineBounds);
 
                     openmct.install(apresActivities());
                     // openmct.install(apresStateChronicle());
                     openmct.install(apresTimeline());
-                    openmct.install(apresDataset());
+                    openmct.install(apresDataset(projectJSON.configuration));
                     openmct.install(apresSessionIndicator())
 
                     this.openmctStarted = true;
