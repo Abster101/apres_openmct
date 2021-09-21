@@ -77,14 +77,18 @@ export default {
                         end: Date.parse(projectJSON.planningProject.activityPlan.planEnd)
                     }
                     const mctObject = domainObjectUtil.getMctLocalStorageObject(projectJSON);
-                    localStorage.setItem('mct', JSON.stringify(mctObject));
+
+                    // Only write mct object if one does not exist. On refresh, this will not be overwritten.
+                    if (!localStorage.getItem('mct')) {
+                        localStorage.setItem('mct', JSON.stringify(mctObject));
+                    }
 
                     this.installDefaultPlugins(timelineBounds);
 
                     openmct.install(apresActivities());
                     // openmct.install(apresStateChronicle());
                     openmct.install(apresTimeline());
-                    openmct.install(apresDataset());
+                    openmct.install(apresDataset(projectJSON.configuration));
                     openmct.install(apresSessionIndicator())
 
                     this.openmctStarted = true;

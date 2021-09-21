@@ -37,19 +37,18 @@ const timelineUtil = {
     },
     getTimelineDomainObject(projectJSON) {
         const timelineName = projectJSON.interfaceModel.description;
-        const timeConfiguration = {
+        const domainObjectConfiguration = {
             startTime: projectJSON.planningProject.activityPlan.planStart,
-            endTime: projectJSON.planningProject.activityPlan.planEnd
+            endTime: projectJSON.planningProject.activityPlan.planEnd,
+            activities: {}
         };
         const configuration = timelineUtil.processConfiguration(projectJSON.configuration);
         const domainObject = {
+            configuration: domainObjectConfiguration,
             identifier: {
                 key: 'test'
             },
             composition: [],
-            configuration: {
-                activities: {}
-            },
             location: 'mine',
             modified: Date.now(),
             created: Date.now(),
