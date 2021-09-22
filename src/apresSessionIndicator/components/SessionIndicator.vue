@@ -11,7 +11,7 @@ export default {
     inject: ['openmct'],
     methods: {
         destroyOpenmct() {
-            localStorage.setItem('apres_session', undefined);
+            localStorage.clear();
             this.openmct.destroy();
             window.location.reload();
         }

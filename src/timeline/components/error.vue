@@ -22,7 +22,6 @@ export default {
     },
     computed: {
         style() {
-            // console.log(this.startTime)
             return {
                 'position': 'absolute',
                 'left': `${this.leftPosition}px`,

@@ -4,11 +4,15 @@
             v-if="!openmctStarted"
             style="display: flex; flex-direction: column; justify-content: center;"
         >
-            <h1>Welcome to Apres</h1>
+            <h1>Welcome to APRES</h1>
             <div>
                 <label for="projects">Choose a project:</label>
 
-                <select name="projects" id="projects">
+                <select 
+                    name="projects"
+                    id="projects"
+                    @change="setSelectedProject"
+                >
                     <option value="new">New</option>
                     <option
                         v-for="(project, index) in projects"
@@ -39,6 +43,8 @@ import apresActivities from '../apresActivities/plugin';
 import apresDataset from '../apresDataset/plugin';
 import apresStateChronicle from '../apresStateChronicle/plugin';
 import apresSessionIndicator from '../apresSessionIndicator/plugin';
+import config from '../../apresConfig.js';
+import domainObjectUtil from '../lib/domainObjectUtil';
 
 export default {
     computed: {
@@ -56,25 +62,43 @@ export default {
     data() {
         return {
             openmctStarted: false,
-            projects: []
+            projects: [],
+            globalAttributes: undefined
         }
     },
     methods: {
         initializeApp() {
-            this.installDefaultPlugins();
+            const selectedProject = localStorage.getItem('apres_selected_project');
 
-            openmct.install(apresActivities());
-            // openmct.install(apresStateChronicle());
-            openmct.install(apresTimeline());
-            openmct.install(apresDataset());
-            openmct.install(apresSessionIndicator())
+            if (selectedProject && selectedProject !== 'new') {
+                this.getProjectDocs(selectedProject).then((projectJSON) => {
+                    const timelineBounds = {
+                        start: Date.parse(projectJSON.planningProject.activityPlan.planStart),
+                        end: Date.parse(projectJSON.planningProject.activityPlan.planEnd)
+                    }
+                    const mctObject = domainObjectUtil.getMctLocalStorageObject(projectJSON);
 
-            this.openmctStarted = true;
-            
-            localStorage.setItem('apres_session', true);
-            openmct.start(this.$refs.openmct);
+                    // Only write mct object if one does not exist. On refresh, this will not be overwritten.
+                    if (!localStorage.getItem('mct')) {
+                        localStorage.setItem('mct', JSON.stringify(mctObject));
+                    }
+
+                    this.installDefaultPlugins(timelineBounds);
+
+                    openmct.install(apresActivities());
+                    // openmct.install(apresStateChronicle());
+                    openmct.install(apresTimeline());
+                    openmct.install(apresDataset(projectJSON.configuration));
+                    openmct.install(apresSessionIndicator())
+
+                    this.openmctStarted = true;
+
+                    localStorage.setItem('apres_session', true);
+                    openmct.start(this.$refs.openmct);
+                })
+            }
         },
-        installDefaultPlugins() {
+        installDefaultPlugins(bounds) {
             const THIRTY_SECONDS = 30 * 1000;
             const ONE_MINUTE = THIRTY_SECONDS * 2;
             const FIVE_MINUTES = ONE_MINUTE * 5;
@@ -107,10 +131,7 @@ export default {
                     {
                         name: "Fixed",
                         timeSystem: 'utc',
-                        bounds: {
-                            start: Date.now() - THIRTY_MINUTES,
-                            end: Date.now()
-                        },
+                        bounds,
                         // commonly used bounds can be stored in history
                         // bounds (start and end) can accept either a milliseconds number
                         // or a callback function returning a milliseconds number
@@ -192,31 +213,50 @@ export default {
                     }
                 ]
             }));
-            openmct.install(openmct.plugins.SummaryWidget());
-            openmct.install(openmct.plugins.Notebook());
-            openmct.install(openmct.plugins.LADTable());
-            openmct.install(openmct.plugins.Filters(['table', 'telemetry.plot.overlay']));
             openmct.install(openmct.plugins.ObjectMigration());
-            openmct.install(openmct.plugins.ClearData(
-                ['table', 'telemetry.plot.overlay', 'telemetry.plot.stacked'],
-                {indicator: true}
-            ));
             openmct.install(openmct.plugins.Timeline());
+        },
+        getProjectsList() {
+            const listProjectsUrl = `${config['apres_service_root_url']}/listprojects`;
+
+            return axios.get(listProjectsUrl).then((resp) => {
+                if (resp && resp.data) {
+                    resp.data.forEach((project) => {
+                        this.projects.push(project);
+                    });
+                }
+            })
+        },
+        getGlobalAttributes() {
+            const globalAttributesUrl = `${config['apres_service_root_url']}/getglobalinfo`;
+
+            return axios.get(globalAttributesUrl).then((resp) => {
+                if (resp && resp.data) {
+                    this.globalAttributes = resp.data;
+                }
+            })
+        },
+        setSelectedProject(event) {
+            localStorage.setItem('apres_selected_project', event.target.value);
+        },
+        getProjectDocs(projectName) {
+            const projectUrl = `${config['apres_service_root_url']}/loadproject?projectname=${projectName}`
+
+            return axios.get(projectUrl).then((resp) => {
+                if (resp && resp.data) {
+                    return resp.data;
+                }
+            })
         }
     },
     onDestroy() {
         openmct.onDestroy();
     },
     mounted() {
-        const session = localStorage.getItem('apres_session');
+        const session = Boolean(localStorage.getItem('apres_session'));
         
-        axios.get('http://localhost:8080/listprojects').then((resp) => {
-            if (resp && resp.data) {
-                resp.data.forEach((project) => {
-                    this.projects.push(project);
-                });
-            }
-        })
+        this.getGlobalAttributes().then(this.getProjectsList);
+
         if (session === true) {
             this.initializeApp();
         }

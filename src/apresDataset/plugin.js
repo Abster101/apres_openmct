@@ -2,7 +2,7 @@ import { DatasetCompositionProvider } from './compositionProviders';
 import ApresObjectProvider from './ApresObjectProvider';
 import DatasetCache from './DatasetCache';
 
-export default function () {
+export default function (actionTypes) {
     return function plugin (openmct) {
         const datasetCache = new DatasetCache(openmct);
 
@@ -51,6 +51,6 @@ export default function () {
 
         openmct.composition.addProvider(new DatasetCompositionProvider(datasetCache));
 
-        openmct.objects.addProvider('apres', new ApresObjectProvider(datasetCache));
+        openmct.objects.addProvider('apres', new ApresObjectProvider(actionTypes));
     }
 }

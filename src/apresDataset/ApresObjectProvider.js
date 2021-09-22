@@ -1,8 +1,7 @@
-import { activityTypes } from '../../config/action_types';
 
 export default class ApresObjectProvider {
-    constructor(datasetCache) {
-        this.datasetCache = datasetCache;
+    constructor(actionTypes) {
+        this.actionTypes = actionTypes;
 
         this.getActionDefinitions = this.getActionDefinitions.bind(this);
         this.getActionTypesComposition = this.getActionTypesComposition.bind(this);
@@ -19,7 +18,7 @@ export default class ApresObjectProvider {
     getActionDefinitions() {
         const definitions = {};
 
-        activityTypes.modelConfig.forEach(action => {
+        this.actionTypes.modelConfig.forEach(action => {
             definitions[action.actProcType] = action;
         });
 
@@ -39,7 +38,7 @@ export default class ApresObjectProvider {
     getActionTypesComposition(identifier) {
         const composition = [];
 
-        activityTypes.modelConfig.forEach(action => {
+        this.actionTypes.modelConfig.forEach(action => {
             composition.push(`apres:actionsType::${action.actProcType}::${identifier.key}`);
         });
 
@@ -85,12 +84,12 @@ export default class ApresObjectProvider {
                     startTime: 0,
                     parameters: {
                         drillDur: {
-                            duration: 360000,
+                            duration: 3600000,
                             type: "integer",
                             unit: 'seconds'
                         }
                     },
-                    duration: 360000,
+                    duration: 3600000,
                     objectStyles: {
                         staticStyle: {
                             style: {

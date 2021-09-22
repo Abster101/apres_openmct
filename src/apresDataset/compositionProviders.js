@@ -11,11 +11,11 @@ export class DatasetCompositionProvider {
     load(domainObject) {
         const composition = [];
 
-        if (domainObject.actionTypesURL) {
+        if (domainObject.actionTypes) {
             composition.push(`apres:actions::source::${domainObject.identifier.key}`);
         }
 
-        if (domainObject.stateChroniclesUrl) {
+        if (domainObject.stateChronicles) {
             composition.push(`apres:stateChronicles::source::${domainObject.identifier.key}`);
         }
 
