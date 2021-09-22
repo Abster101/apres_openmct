@@ -28,7 +28,7 @@ export default class ApresObjectProvider {
     getStateChronicleDefinitions(){
         const definitions = {};
 
-        activityTypes.stateChronicleConfig.forEach(stateChronicle => {
+        this.activityTypes.stateChronicleConfig.forEach(stateChronicle => {
             definitions[stateChronicle.varName] = stateChronicle;
         });
 
@@ -47,7 +47,7 @@ export default class ApresObjectProvider {
     getStateChronicleTypesComposition(identifier) {
         const composition = [];
 
-        activityTypes.stateChronicleConfig.forEach(stateChronicle => {
+        this.activityTypes.stateChronicleConfig.forEach(stateChronicle => {
             composition.push(`apres:stateChroniclesType::${stateChronicle.varName}::${identifier.key}`);
         });
 
