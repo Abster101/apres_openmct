@@ -76,8 +76,6 @@ export default {
 	},
 	methods:{
 		onRowClick: function(violation, index){
-			this.$emit('clicked', violation)
-
 			if(this.clickedViolationId === violation.violatedObj.objID){
 				this.toggleClickedViolation = !this.toggleClickedViolation;
 				if(this.toggleClickedViolation === false){
@@ -86,6 +84,13 @@ export default {
 			} else {
 				this.toggleClickedViolation = true;
 			}
+
+			const violationObj = {
+				violation: violation,
+				violationClicked: this.toggleClickedViolation,
+			}
+
+			this.$emit('clicked', violationObj)
 
 			this.clickedViolationIndex = index;
 			this.clickedViolationId = violation.violatedObj.objID;
@@ -107,22 +112,27 @@ export default {
 				this.violations = simpleDrill.simulationInfo.violations
 			}
 
-			this.resetViolationRedLine();
-
 			const match = this.violations.filter(violation => {
 				return violation.violatedObj.objID === this.clickedViolationId
 			})
 
 			if (match.length === 0) {
+				this.toggleClickedViolation = false;
 				this.clickedViolationIndex = null;
 				this.clickedViolationId = null;
 			}
+
+			this.resetViolationRedLine();
 		},
 		resetViolationRedLine: function(){
 			for(let i in this.violations) {
 				const violationObj = {
-					startTime: this.violations[i].violationTime,
-					actionID: this.violations[i].violatedObj.objID,
+					violation: {
+						startTime: this.violations[i].violationTime,
+						actionID: this.violations[i].violatedObj.objID,
+						violators: this.violations[i].violators,
+					},
+					violationClicked: this.toggleClickedViolation,
 				}
 				this.$emit('loadViolations', violationObj)
 			}
@@ -131,8 +141,6 @@ export default {
 	mounted(){
 		this.violations = simpleDrill.simulationInfo.violations;
 		this.resetViolationRedLine();
-
-		console.log(this.violations);
 	},
 }
 </script>

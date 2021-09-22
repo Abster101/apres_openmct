@@ -11,6 +11,8 @@
         :endBounds="endBounds"
         :pixelMultiplier="pixelMultiplier"
         :formatter="formatter"
+        :errors="errors"
+        :violationClicked="violationClicked"
     />
 </ul>
 </template>
@@ -60,7 +62,13 @@ export default {
         },
         formatter: {
             type: Object
-        }
+        },
+        errors: {
+            type: Array
+        },
+        violationClicked: {
+            type: Boolean
+        },
     },
     computed: {
         legendStyle() {

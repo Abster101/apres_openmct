@@ -66,6 +66,8 @@
 					:endBounds="bounds.end"
 					:pixelMultiplier="pixelMultiplier"
 					:formatter="timeFormatter"
+                    :errors="errors"
+                    :violationClicked="violationClicked"
 				/>
 			</div>
 		</div>
@@ -151,6 +153,7 @@ export default {
             bounds: {},
             pixelMultiplier: PIXEL_MULTIPLIER,
             errors: [],
+            violationClicked: false,
             timeSystem,
             timeFormatter,
             projectEndTime: ""
@@ -205,7 +208,7 @@ export default {
         addError(errorObject) {
             this.errors.push(errorObject);
 		},
-		resetErrors() {
+		clearErrors() {
 			this.errors = [];
         },
         removeActivity(activityIdentifier) {
@@ -312,16 +315,20 @@ export default {
             }
 		},
 		addErrorsOnLoad(value) {
-			this.addError(value);
+			this.addError(value.violation);
+            this.violationClicked = value.violationClicked;
 		},
 		onViolationClicked(value) {
-			this.resetErrors();
+			this.clearErrors();
+            this.violationClicked = value.violationClicked;
 			this.addError({
-				startTime: value.violationTime
+				startTime: value.violation.violationTime,
+                actionID: value.violation.violatedObj.objID,
+				violators: value.violation.violators,
 			});
 		},
 		clearErrorsWithUpdates(value){
-			this.resetErrors();
+			this.clearErrors();
 		},
         getFormModel() {
             return {
