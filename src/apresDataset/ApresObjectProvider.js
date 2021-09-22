@@ -28,7 +28,7 @@ export default class ApresObjectProvider {
     getStateChronicleDefinitions(){
         const definitions = {};
 
-        this.activityTypes.stateChronicleConfig.forEach(stateChronicle => {
+        this.actionTypes.stateChronicleConfig.forEach(stateChronicle => {
             definitions[stateChronicle.varName] = stateChronicle;
         });
 
