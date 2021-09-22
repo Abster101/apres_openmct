@@ -51,7 +51,13 @@ export default {
         },
         formatter: {
             type: Object
-        }
+        },
+        errors: {
+            type: Array
+        },
+        violationClicked: {
+            type: Boolean
+        },
     },
     computed: {
         activityStyle() {
@@ -59,13 +65,31 @@ export default {
                 'top': `${this.index * (ACTIVITY_HEIGHT + 4)}px`,
                 'left': `${this.leftPosition}px`,
                 'backgroundColor': this.getStyle('backgroundColor'),
-                'border': this.getStyle('border'),
+                'border': this.border,
                 'color': this.getStyle('color'),
                 'width': `${this.width}px`,
                 'max-height': `${ACTIVITY_HEIGHT}px`,
                 'min-height': `${ACTIVITY_HEIGHT}px`,
                 'cursor': this.isEditing ? 'grab' : 'auto'
             };
+        },
+        border(){
+            let borderStyle = this.getStyle('border');
+            const errorsViolatedObjFiltered = this.errors?.filter(error => {
+                return error.actionID === this.domainObject.identifier.key;
+            })
+
+            const errorsViolatorsObjFiltered = this.errors?.filter(error => {
+                return error.violators.objID === this.domainObject.identifier.key;
+            })
+
+            if(errorsViolatedObjFiltered.length >= 1 && this.violationClicked){
+                borderStyle = '3px solid red';
+            }else if(errorsViolatorsObjFiltered.length >= 1 && this.violationClicked){
+                borderStyle = '4px dotted blue';
+            }
+
+            return borderStyle;
         },
         leftPosition() {
             const start = this.formatter.parse(this.configuration.startTime);

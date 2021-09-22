@@ -1,74 +1,82 @@
 <template>
-<div class="flex flex-row w-full">
-    <div
-        class="w-10-10"
-    >
-        <!-- 30px div to match timeline-axis -->
-        <div
-            class="flex align-self-center"
-            style="min-height: 30px;"
-        >
-            <button
-                class="c-icon-button c-icon-button--major icon-plus"
-                title="zoom in"
-                @click="zoomIn"
-            ></button>
-            <button
-                class="c-icon-button c-icon-button--major icon-minus"
-                title="zoom out"
-                @click="zoomOut"
-            ></button>
-        </div>
-        <!-- timeline legend labels -->
-        <div>
-            <timeline-legend-label
-                v-for="(legend, index) in legends"
-                :key="'timeline-legend-label' + index"
-                :num-activities="timelineLegends[legend].length"
-                :title="legend"
-            >
-                {{legend}}
-            </timeline-legend-label>
-        </div>
-    </div>
-    <div
-        ref="timeline-container"
-        class="w-9-10"
-        :style="style"
-    >
-        <timeline-axis
-            :bounds="bounds"
-            :time-system="timeSystem"
-            :content-height="50"
-            :rendering-engine="'svg'"
-        />
-        <div
-            style="min-width: 100%; min-height: 100%; position: relative"
-        >
-            <timeline-legend
-                v-for="(legend, index) in legends"
-                :key="'timeline-legend-' + index"
-                :title="legend"
-                :activities="timelineLegends[legend]"
-                :parentDomainObject="liveDomainObject"
-                :index="index"
-                :isEditing="isEditing"
-                :startBounds="bounds.start"
-                :endBounds="bounds.end"
-                :pixelMultiplier="pixelMultiplier"
-                :formatter="timeFormatter"
-            />
-
-             <Error 
-                v-for="(error, index) in errors"
-                :key="`error-${index}`"
-                :startTime="error.startTime"
-                :startBounds="bounds.start"
-                :pixelMultiplier="pixelMultiplier"
-                :formatter="timeFormatter"
-            />
-        </div>
-    </div>
+<div :style="containerStyle">
+	<div class="flex flex-row w-full">
+		<div
+			class="w-10-10"
+		>
+			<!-- 30px div to match timeline-axis -->
+			<div
+				class="flex align-self-center"
+				style="min-height: 30px;"
+			>
+				<button
+					class="c-icon-button c-icon-button--major icon-plus"
+					title="zoom in"
+					@click="zoomIn"
+				></button>
+				<button
+					class="c-icon-button c-icon-button--major icon-minus"
+					title="zoom out"
+					@click="zoomOut"
+				></button>
+			</div>
+			<!-- timeline legend labels -->
+			<div>
+				<timeline-legend-label
+					v-for="(legend, index) in legends"
+					:key="'timeline-legend-label' + index"
+					:num-activities="timelineLegends[legend].length"
+					:title="legend"
+				>
+					{{legend}}
+				</timeline-legend-label>
+			</div>
+		</div>
+		<div
+			ref="timeline-container"
+			class="w-9-10"
+			:style="style"
+		>
+			<timeline-axis
+				:bounds="bounds"
+				:time-system="timeSystem"
+				:content-height="50"
+				:rendering-engine="'svg'"
+			/>
+			<div
+				style="min-width: 100%; min-height: 100%; position: relative"
+			>
+				<Error 
+					v-for="(error, index) in errors"
+					:key="`error-${index}`"
+					:startTime="error.startTime"
+					:startBounds="bounds.start"
+					:pixelMultiplier="pixelMultiplier"
+					:formatter="timeFormatter"
+				/>
+				<timeline-legend
+					v-for="(legend, index) in legends"
+					:key="'timeline-legend-' + index"
+					:title="legend"
+					:activities="timelineLegends[legend]"
+					:parentDomainObject="liveDomainObject"
+					:index="index"
+					:isEditing="isEditing"
+					:startBounds="bounds.start"
+					:endBounds="bounds.end"
+					:pixelMultiplier="pixelMultiplier"
+					:formatter="timeFormatter"
+                    :errors="errors"
+                    :violationClicked="violationClicked"
+				/>
+			</div>
+		</div>
+	</div>
+	<violations-table
+		@loadViolations="addErrorsOnLoad" 
+		@clicked="onViolationClicked"
+		@violationClear="clearErrorsWithUpdates"
+	/>
 </div>
 </template>
 
@@ -76,6 +84,11 @@
 import TimelineLegend from './timelineLegend.vue';
 import TimelineLegendLabel from './timelineLegendLabel.vue';
 import TimelineAxis from './timeSystemAxis.vue';
+import ViolationsTable from './violations/table.vue';
+import TimelineStateChronicle from './timelineStateChronicle.vue';
+
+import simpleDrill from '../../../config/SimpleDrill.project.json';
+
 import Error from './error.vue';
 import Moment from 'moment';
 import lodash from 'lodash';
@@ -98,7 +111,10 @@ export default {
         TimelineLegend,
         TimelineLegendLabel,
         TimelineAxis,
-        Error
+		Error,
+		ViolationsTable,
+        TimelineStateChronicle,
+		Error,
     },
     computed: {
         inBoundErrors() {
@@ -111,7 +127,15 @@ export default {
             return {
                 'overflow': 'hidden'
             }
-        },
+		},
+		containerStyle(){
+			return {
+				'width': '100%',
+                'height': '100%',
+                'display': 'flex',
+    			'flex-direction': 'column',
+            }
+		},
         legends() {
             return Object.keys(this.timelineLegends);
         },
@@ -128,17 +152,17 @@ export default {
             timelineLegends: {},
             chronicles: [],
             bounds: {},
-            timeSystem: {},
             pixelMultiplier: PIXEL_MULTIPLIER,
             errors: [],
+            violationClicked: false,
             timeSystem,
-            timeFormatter
+            timeFormatter,
+            projectEndTime: ""
         }
     },
     methods: {
         addActivityToConfiguration(activityDomainObject, fromFile) {
             let keystring = this.openmct.objects.makeKeyString(activityDomainObject.identifier);
-
             if (!this.domainObject.configuration.activities[keystring]) {
                 const configuration = lodash.cloneDeep(activityDomainObject.configuration);
                 let startTime;
@@ -191,6 +215,9 @@ export default {
         },
         addError(errorObject) {
             this.errors.push(errorObject);
+		},
+		clearErrors() {
+			this.errors = [];
         },
         removeActivity(activityIdentifier) {
             console.log(activityIdentifier);
@@ -294,7 +321,23 @@ export default {
             } else {
                 this.centerTimeline();
             }
-        },
+		},
+		addErrorsOnLoad(value) {
+			this.addError(value.violation);
+            this.violationClicked = value.violationClicked;
+		},
+		onViolationClicked(value) {
+			this.clearErrors();
+            this.violationClicked = value.violationClicked;
+			this.addError({
+				startTime: value.violation.violationTime,
+                actionID: value.violation.violatedObj.objID,
+				violators: value.violation.violators,
+			});
+		},
+		clearErrorsWithUpdates(value){
+			this.clearErrors();
+		},
         getFormModel() {
             return {
                 name: "Import Timeline",
@@ -410,10 +453,11 @@ export default {
         composition.on('remove', this.removeActivity);
         composition.on('reorder', this.reorderActivities);
         composition.load();
+        this.projectEndTime = simpleDrill.activityPlan.planEnd;
 
         this.unsubscribeFromComposition = () => {
             composition.off('add', this.addActivity);
-            composition.off('remove', this.removeActivity);
+          composition.off('remove', this.removeActivity);
         }
         
         this.addActivitiesFromConfiguration();

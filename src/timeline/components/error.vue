@@ -27,7 +27,8 @@ export default {
                 'left': `${this.leftPosition}px`,
                 'background': 'red',
                 'min-height': '100%',
-                'min-width': '2px'
+				'min-width': '2px',
+				'z-index': '1',
             }
         },
         leftPosition() {

@@ -39,8 +39,15 @@ export default function (actionTypes) {
             cssClass: 'icon-folder'
         }
 
+        const stateChronicleSourceTypeKey = 'apres.stateChronicle.source';
+        const stateChronicleSourceType = {
+            name: 'State Chronicles',
+            cssClass: 'icon-folder'
+        }
+
         openmct.types.addType(datasetTypeKey, datasetTypeDefinition);
         openmct.types.addType(activitySourceTypeKey, activitySourceType);
+        openmct.types.addType(stateChronicleSourceTypeKey, stateChronicleSourceType);
 
         openmct.composition.addProvider(new DatasetCompositionProvider(datasetCache));
 
