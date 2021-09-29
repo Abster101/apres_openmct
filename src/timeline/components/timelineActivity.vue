@@ -75,18 +75,23 @@ export default {
         },
         border(){
             let borderStyle = this.getStyle('border');
+
             const errorsViolatedObjFiltered = this.errors?.filter(error => {
                 return error.actionID === this.domainObject.identifier.key;
-            })
+            });
 
             const errorsViolatorsObjFiltered = this.errors?.filter(error => {
-                return error.violators.objID === this.domainObject.identifier.key;
-            })
+                for(const violator of error.violators){
+                    return violator.objID === this.domainObject.identifier.key;
+                }
+            });
 
-            if(errorsViolatedObjFiltered.length >= 1 && this.violationClicked){
-                borderStyle = '3px solid red';
+            if(errorsViolatedObjFiltered.length >= 1 && errorsViolatorsObjFiltered.length >= 1 && this.violationClicked){
+                borderStyle = '2px solid #ff19c2';
+            }else if(errorsViolatedObjFiltered.length >= 1 && this.violationClicked){
+                borderStyle = '2px solid red';
             }else if(errorsViolatorsObjFiltered.length >= 1 && this.violationClicked){
-                borderStyle = '4px dotted blue';
+                borderStyle = '2px solid #ecff19';
             }
 
             return borderStyle;
