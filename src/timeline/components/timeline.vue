@@ -152,6 +152,7 @@ export default {
             activities: [],
             timelineLegends: {},
             chronicles: [],
+            savedBounds: {},
             bounds: {},
             pixelMultiplier: PIXEL_MULTIPLIER,
             errors: [],
@@ -237,6 +238,7 @@ export default {
             }
 
             this.bounds = timeBounds;
+            this.savedBounds = timeBounds;
 
             this.initializePixelMultiplier();
         },
@@ -327,8 +329,19 @@ export default {
 		addErrorsOnLoad(value) {
 			this.addError(value.violation);
             this.violationClicked = value.violationClicked;
+
+            if(this.errors.length === this.violations.length){
+                this.bounds = this.savedBounds;
+            }
 		},
 		onViolationClicked(value) {
+            let violationTime = this.timeFormatter.parse(value.violation.violationTime);
+
+            this.bounds = {
+                end: this.bounds.end,
+                start: violationTime - 20000000,
+            };
+
 			this.clearErrors();
             this.violationClicked = value.violationClicked;
 			this.addError({
