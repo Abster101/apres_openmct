@@ -1,6 +1,6 @@
 <template>
 <div :style="testingStyle">
-    <h3 v-on:click="onViolationChange()">VIOLATIONS {{violationChange}}</h3>
+    <h3>VIOLATIONS</h3>
 	<table>
         <thead>
           	<tr>
@@ -42,10 +42,14 @@ export default {
     components: {
     },
     props: {
+		violations: {
+            type: Array,
+            required: true,
+        },
 	},
 	data() {
         return {
-			violations: [],
+			// violations: [],
 			toggleClickedViolation: false,
 			clickedViolationIndex: null,
 			clickedViolationId: null,
@@ -74,12 +78,20 @@ export default {
             };
         },
 	},
+	watch: { 
+      	violations: function(newVal, oldVal) {
+		  	if (newVal !== oldVal){
+				this.resetViolationRedLine();
+		  	}
+        }
+    },
 	methods:{
 		onRowClick: function(violation, index){
 			if(this.clickedViolationId === violation.violatedObj.objID){
 				this.toggleClickedViolation = !this.toggleClickedViolation;
 				if(this.toggleClickedViolation === false){
 					this.resetViolationRedLine();
+					return;
 				}
 			} else {
 				this.toggleClickedViolation = true;
@@ -95,35 +107,35 @@ export default {
 			this.clickedViolationIndex = index;
 			this.clickedViolationId = violation.violatedObj.objID;
 		},
-		onViolationChange: function(){
-			this.$emit("violationClear");
+		// onViolationChange: function(){
+		// 	this.$emit("violationClear");
 
-			if(this.violationChange === 1){
-				this.violationChange = this.violationChange + 1;
-				this.violations = simpleDrill2.simulationInfo.violations
-			}else if(this.violationChange === 2){
-				this.violationChange = this.violationChange + 1;
-				this.violations = simpleDrill3.simulationInfo.violations
-			}else if(this.violationChange === 3){
-				this.violationChange = this.violationChange + 1;
-				this.violations = simpleDrill4.simulationInfo.violations
-			}else{
-				this.violationChange = 1;
-				this.violations = simpleDrill.simulationInfo.violations
-			}
+		// 	if(this.violationChange === 1){
+		// 		this.violationChange = this.violationChange + 1;
+		// 		this.violations = simpleDrill2.simulationInfo.violations
+		// 	}else if(this.violationChange === 2){
+		// 		this.violationChange = this.violationChange + 1;
+		// 		this.violations = simpleDrill3.simulationInfo.violations
+		// 	}else if(this.violationChange === 3){
+		// 		this.violationChange = this.violationChange + 1;
+		// 		this.violations = simpleDrill4.simulationInfo.violations
+		// 	}else{
+		// 		this.violationChange = 1;
+		// 		this.violations = simpleDrill.simulationInfo.violations
+		// 	}
 
-			const match = this.violations.filter(violation => {
-				return violation.violatedObj.objID === this.clickedViolationId
-			})
+		// 	const match = this.violations.filter(violation => {
+		// 		return violation.violatedObj.objID === this.clickedViolationId
+		// 	})
 
-			if (match.length === 0) {
-				this.toggleClickedViolation = false;
-				this.clickedViolationIndex = null;
-				this.clickedViolationId = null;
-			}
+		// 	if (match.length === 0) {
+		// 		this.toggleClickedViolation = false;
+		// 		this.clickedViolationIndex = null;
+		// 		this.clickedViolationId = null;
+		// 	}
 
-			this.resetViolationRedLine();
-		},
+		// 	this.resetViolationRedLine();
+		// },
 		resetViolationRedLine: function(){
 			for(let i in this.violations) {
 				const violationObj = {
@@ -137,10 +149,6 @@ export default {
 				this.$emit('loadViolations', violationObj)
 			}
 		},
-	},
-	mounted(){
-		this.violations = simpleDrill.simulationInfo.violations;
-		this.resetViolationRedLine();
 	},
 }
 </script>

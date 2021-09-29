@@ -73,6 +73,7 @@
 		</div>
 	</div>
 	<violations-table
+        :violations="violations"
 		@loadViolations="addErrorsOnLoad" 
 		@clicked="onViolationClicked"
 		@violationClear="clearErrorsWithUpdates"
@@ -154,6 +155,7 @@ export default {
             bounds: {},
             pixelMultiplier: PIXEL_MULTIPLIER,
             errors: [],
+            violations: [],
             violationClicked: false,
             timeSystem,
             timeFormatter,
@@ -457,10 +459,16 @@ export default {
 
         this.unsubscribeFromComposition = () => {
             composition.off('add', this.addActivity);
-          composition.off('remove', this.removeActivity);
+            composition.off('remove', this.removeActivity);
         }
         
         this.addActivitiesFromConfiguration();
+
+        const selectedProject = localStorage.getItem('apres_selected_project');
+
+        if(this.domainObject.configuration.violations){
+            this.violations = this.domainObject.configuration.violations;
+        }
     },
     beforeDestroy() {
         this.unsubscribeFromComposition();
