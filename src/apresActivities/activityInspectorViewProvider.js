@@ -1,7 +1,7 @@
 import activityInspector from "./components/activityInspector.vue";
 import Vue from 'vue';
 
-export default function ActivityInspectorViewProvider(openmct) {
+export default function ActivityInspectorViewProvider(openmct, actionAttributes) {
     return {
         key: 'apres.activity.inspector',
         name: 'Activity Inspector View',
@@ -34,7 +34,8 @@ export default function ActivityInspectorViewProvider(openmct) {
                             }
                         },
                         provide: {
-                            openmct
+                            openmct,
+                            actionAttributes
                         },
                         template: `
                             <activity-inspector
