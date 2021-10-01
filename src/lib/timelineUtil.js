@@ -12,6 +12,7 @@ const timelineUtil = {
             timelineLegend: timelineLegend,
             startTime: actionJSON.actionStart,
             parameters: actionJSON.parameters,
+            endTime: actionJSON.actionEnd,
             duration: endTime - startTime,
             objectStyles: {
                 staticStyle: {
