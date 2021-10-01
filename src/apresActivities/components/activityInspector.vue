@@ -104,8 +104,18 @@ export default {
             }
         },
         persistStartTime(value) {
+            console.log('persisting');
             this.openmct.objects.mutate(this.parentDomainObject, `configuration.activities[${this.id}].startTime`, value);
+        },
+        setIsEditing(isEditing) {
+            this.isEditing = isEditing;
         }
+    },
+    mounted() {
+        this.openmct.editor.on('isEditing', this.setIsEditing);
+    },
+    destroyed() {
+        this.openmct.editor.off('isEditing', this.setIsEditing);
     }
 }
 </script>
