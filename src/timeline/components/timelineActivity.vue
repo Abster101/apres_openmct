@@ -127,6 +127,10 @@ export default {
                 return;
             }
             event.preventDefault();
+            
+            // Need to reset the start time because it may have changed from the inspector.
+            this.start = this.formatter.parse(this.configuration.startTime);
+
             document.addEventListener('mousemove', this.move);
             document.addEventListener('mouseup', this.endMove);
 

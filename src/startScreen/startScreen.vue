@@ -1,31 +1,44 @@
 <template>
-    <div style="display: flex; justify-content: center;">
+    <div 
+        style="display: flex; justify-content: center; position: relative;"
+    >
         <div 
-            v-if="!openmctStarted"
-            style="display: flex; flex-direction: column; justify-content: center;"
+            v-if="isLoading"
+            style="height: 100vh; width: 100vw; position: absolute; z-index: 10001; background: white; display: flex; justify-content: center;"
         >
-            <h1>Welcome to APRES</h1>
-            <div>
-                <label for="projects">Choose a project:</label>
-
-                <select 
-                    name="projects"
-                    id="projects"
-                    @change="setSelectedProject"
-                >
-                    <option value="new">New</option>
-                    <option
-                        v-for="(project, index) in projects"
-                        :key="index"
-                        :value="project">{{ project }}</option>
-                </select>
-            </div>
-            <button 
-                @click="initializeApp"
-                style="margin-top: 20px;"
+            <h1>Loading...</h1>
+        </div>
+        <div 
+            v-else
+        >
+            <div 
+                v-if="!openmctStarted"
+                style="display: flex; flex-direction: column; justify-content: center;"
             >
-                Start
-            </button>
+                <h1>Welcome to APRES</h1>
+                
+                <div>
+                    <label for="projects">Choose a project:</label>
+
+                    <select 
+                        name="projects"
+                        id="projects"
+                        @change="setSelectedProject"
+                    >
+                        <option value="new">New</option>
+                        <option
+                            v-for="(project, index) in projects"
+                            :key="index"
+                            :value="project">{{ project }}</option>
+                    </select>
+                </div>
+                <button 
+                    @click="initializeApp"
+                    style="margin-top: 20px;"
+                >
+                    Start
+                </button>
+            </div>
         </div>
         <div 
             ref="openmct"
@@ -63,7 +76,8 @@ export default {
         return {
             openmctStarted: false,
             projects: [],
-            globalAttributes: undefined
+            globalAttributes: undefined,
+            isLoading: true
         }
     },
     methods: {
@@ -72,6 +86,7 @@ export default {
 
             if (selectedProject && selectedProject !== 'new') {
                 this.getProjectDocs(selectedProject).then((projectJSON) => {
+                    console.log(this.globalAttributes);
                     const timelineBounds = {
                         start: Date.parse(projectJSON.planningProject.activityPlan.planStart),
                         end: Date.parse(projectJSON.planningProject.activityPlan.planEnd)
@@ -84,17 +99,23 @@ export default {
                     }
 
                     this.installDefaultPlugins(timelineBounds);
+                    
+                    const actionAttributes = this.globalAttributes.modelAttributes && this.globalAttributes.modelAttributes.actionAttributes;
 
-                    openmct.install(apresActivities());
+                    openmct.install(apresActivities(actionAttributes));
                     // openmct.install(apresStateChronicle());
                     openmct.install(apresTimeline());
                     openmct.install(apresDataset(projectJSON.configuration));
                     openmct.install(apresSessionIndicator())
 
-                    this.openmctStarted = true;
-
                     localStorage.setItem('apres_session', true);
+                    
+                    this.openmctStarted = true;
                     openmct.start(this.$refs.openmct);
+
+                    window.setTimeout(() => {
+                        this.isLoading = false;
+                    }, 2000);
                 })
             }
         },
@@ -232,6 +253,7 @@ export default {
 
             return axios.get(globalAttributesUrl).then((resp) => {
                 if (resp && resp.data) {
+                    console.log(resp.data);
                     this.globalAttributes = resp.data;
                 }
             })
@@ -257,8 +279,11 @@ export default {
         
         this.getGlobalAttributes().then(this.getProjectsList);
 
+
         if (session === true) {
             this.initializeApp();
+        } else {
+            this.isLoading = false;
         }
     }
 }
