@@ -91,6 +91,7 @@ export default {
 				this.toggleClickedViolation = !this.toggleClickedViolation;
 				if(this.toggleClickedViolation === false){
 					this.resetViolationRedLine();
+					this.$emit('resetBounds');
 					return;
 				}
 			} else {

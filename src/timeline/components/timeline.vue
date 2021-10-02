@@ -75,6 +75,7 @@
 	<violations-table
         :violations="violations"
 		@loadViolations="addErrorsOnLoad" 
+        @resetBounds="resetTimeBoundsFromViolationClick"
 		@clicked="onViolationClicked"
 		@violationClear="clearErrorsWithUpdates"
 	/>
@@ -238,7 +239,6 @@ export default {
             }
 
             this.bounds = timeBounds;
-            this.savedBounds = timeBounds;
 
             this.initializePixelMultiplier();
         },
@@ -329,18 +329,13 @@ export default {
 		addErrorsOnLoad(value) {
 			this.addError(value.violation);
             this.violationClicked = value.violationClicked;
-
-            if(this.errors.length === this.violations.length){
-                this.bounds = this.savedBounds;
-            }
 		},
 		onViolationClicked(value) {
             let violationTime = this.timeFormatter.parse(value.violation.violationTime);
+            let end = violationTime + 20000000;
+            let start = violationTime - 20000000;
 
-            this.bounds = {
-                end: this.bounds.end,
-                start: violationTime - 20000000,
-            };
+            this.openmct.time.bounds({start, end});
 
 			this.clearErrors();
             this.violationClicked = value.violationClicked;
@@ -350,6 +345,16 @@ export default {
 				violators: value.violation.violators,
 			});
 		},
+        resetTimeBoundsFromViolationClick(value) {
+            // let end = this.savedBounds.end;
+            // let start = this.savedBounds.start;
+
+            // if(end && start){
+            //     this.openmct.time.bounds({start, end});
+            // }
+
+            this.centerTimeline();
+        },
 		clearErrorsWithUpdates(value){
 			this.clearErrors();
 		},
@@ -445,6 +450,8 @@ export default {
                 endTime: projectBundle.planningProject.activityPlan.planEnd
             };
             const configuration = this.processConfiguration(projectBundle.configuration);
+
+            this.timeConfiguration = timeConfiguration;
 
             projectBundle.planningProject.activityPlan.actions.forEach((action) => {
                 this.addActionFromFile(action, configuration[action.actionType]);
