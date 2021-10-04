@@ -75,7 +75,7 @@
 	<violations-table
         :violations="violations"
 		@loadViolations="addErrorsOnLoad" 
-        @resetBounds="resetTimeBoundsFromViolationClick"
+        	@resetBounds="resetTimeBoundsFromViolationClick"
 		@clicked="onViolationClicked"
 		@violationClear="clearErrorsWithUpdates"
 	/>
