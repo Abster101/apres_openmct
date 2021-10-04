@@ -330,34 +330,26 @@ export default {
 			this.addError(value.violation);
             this.violationClicked = value.violationClicked;
 		},
-		onViolationClicked(value) {
+	onViolationClicked(value) {
             let violationTime = this.timeFormatter.parse(value.violation.violationTime);
-            let end = violationTime + 20000000;
-            let start = violationTime - 20000000;
+            let end = Math.ceil(violationTime + TIMELINE_PADDING);
+            let start = Math.floor(violationTime - TIMELINE_PADDING);
 
             this.openmct.time.bounds({start, end});
-
-			this.clearErrors();
+	    this.clearErrors();
             this.violationClicked = value.violationClicked;
-			this.addError({
-				startTime: value.violation.violationTime,
+	    this.addError({
+		startTime: value.violation.violationTime,
                 actionID: value.violation.violatedObj.objID,
-				violators: value.violation.violators,
-			});
-		},
+		violators: value.violation.violators,
+            });
+	},
         resetTimeBoundsFromViolationClick(value) {
-            // let end = this.savedBounds.end;
-            // let start = this.savedBounds.start;
-
-            // if(end && start){
-            //     this.openmct.time.bounds({start, end});
-            // }
-
             this.centerTimeline();
         },
-		clearErrorsWithUpdates(value){
-			this.clearErrors();
-		},
+	clearErrorsWithUpdates(value){
+	    this.clearErrors();
+	},
         getFormModel() {
             return {
                 name: "Import Timeline",
