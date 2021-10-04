@@ -326,10 +326,10 @@ export default {
                 this.centerTimeline();
             }
 		},
-		addErrorsOnLoad(value) {
-			this.addError(value.violation);
+	addErrorsOnLoad(value) {
+	    this.addError(value.violation);
             this.violationClicked = value.violationClicked;
-		},
+	},
 	onViolationClicked(value) {
             let violationTime = this.timeFormatter.parse(value.violation.violationTime);
             let end = Math.ceil(violationTime + TIMELINE_PADDING);
