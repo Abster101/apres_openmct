@@ -73,7 +73,9 @@
 		</div>
 	</div>
 	<violations-table
+        :violations="violations"
 		@loadViolations="addErrorsOnLoad" 
+        	@resetBounds="resetTimeBoundsFromViolationClick"
 		@clicked="onViolationClicked"
 		@violationClear="clearErrorsWithUpdates"
 	/>
@@ -151,9 +153,11 @@ export default {
             activities: [],
             timelineLegends: {},
             chronicles: [],
+            savedBounds: {},
             bounds: {},
             pixelMultiplier: PIXEL_MULTIPLIER,
             errors: [],
+            violations: [],
             violationClicked: false,
             timeSystem,
             timeFormatter,
@@ -322,22 +326,30 @@ export default {
                 this.centerTimeline();
             }
 		},
-		addErrorsOnLoad(value) {
-			this.addError(value.violation);
+	addErrorsOnLoad(value) {
+	    this.addError(value.violation);
             this.violationClicked = value.violationClicked;
-		},
-		onViolationClicked(value) {
-			this.clearErrors();
+	},
+	onViolationClicked(value) {
+            let violationTime = this.timeFormatter.parse(value.violation.violationTime);
+            let end = Math.ceil(violationTime + TIMELINE_PADDING);
+            let start = Math.floor(violationTime - TIMELINE_PADDING);
+
+            this.openmct.time.bounds({start, end});
+	    this.clearErrors();
             this.violationClicked = value.violationClicked;
-			this.addError({
-				startTime: value.violation.violationTime,
+	    this.addError({
+		startTime: value.violation.violationTime,
                 actionID: value.violation.violatedObj.objID,
-				violators: value.violation.violators,
-			});
-		},
-		clearErrorsWithUpdates(value){
-			this.clearErrors();
-		},
+		violators: value.violation.violators,
+            });
+	},
+        resetTimeBoundsFromViolationClick(value) {
+            this.centerTimeline();
+        },
+	clearErrorsWithUpdates(value){
+	    this.clearErrors();
+	},
         getFormModel() {
             return {
                 name: "Import Timeline",
@@ -431,6 +443,8 @@ export default {
             };
             const configuration = this.processConfiguration(projectBundle.configuration);
 
+            this.timeConfiguration = timeConfiguration;
+
             projectBundle.planningProject.activityPlan.actions.forEach((action) => {
                 this.addActionFromFile(action, configuration[action.actionType]);
             });
@@ -457,10 +471,16 @@ export default {
 
         this.unsubscribeFromComposition = () => {
             composition.off('add', this.addActivity);
-          composition.off('remove', this.removeActivity);
+            composition.off('remove', this.removeActivity);
         }
         
         this.addActivitiesFromConfiguration();
+
+        const selectedProject = localStorage.getItem('apres_selected_project');
+
+        if(this.domainObject.configuration.violations){
+            this.violations = this.domainObject.configuration.violations;
+        }
     },
     beforeDestroy() {
         this.unsubscribeFromComposition();

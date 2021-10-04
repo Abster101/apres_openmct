@@ -41,7 +41,8 @@ const timelineUtil = {
         const domainObjectConfiguration = {
             startTime: projectJSON.planningProject.activityPlan.planStart,
             endTime: projectJSON.planningProject.activityPlan.planEnd,
-            activities: {}
+            activities: {},
+            violations: projectJSON.planningProject.simulationInfo?.violations,
         };
         const configuration = timelineUtil.processConfiguration(projectJSON.configuration);
         const domainObject = {
