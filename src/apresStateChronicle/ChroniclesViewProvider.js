@@ -1,5 +1,5 @@
 import Vue from 'vue';
-export default class chroniclesViewProvider{
+export default class ChroniclesViewProvider{
     constructor() {
         this.name = 'chronicle';
         this.key = 'apres.chronicle.view';

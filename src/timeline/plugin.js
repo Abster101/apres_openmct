@@ -1,4 +1,4 @@
-import ChroniclesViewProvider from '../apresStateChronicle/chroniclesViewProvider';
+import ChroniclesViewProvider from '../apresStateChronicle/ChroniclesViewProvider';
 import ActivityViewProvider from "../apresActivities/activityViewProvider";
 import TimelineViewProvider from "./timelineViewProvider";
 import viewActions from "./viewActions";
