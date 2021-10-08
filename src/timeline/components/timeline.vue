@@ -89,7 +89,7 @@ import TimelineAxis from './timeSystemAxis.vue';
 import ViolationsTable from './violations/table.vue';
 import TimelineStateChronicle from './timelineStateChronicle.vue';
 
-import simpleDrill from '../../../config/SimpleDrill.project.json';
+import timelineUtil from '../../lib/timelineUtil';
 
 import Error from './error.vue';
 import Moment from 'moment';
@@ -160,8 +160,7 @@ export default {
             violations: [],
             violationClicked: false,
             timeSystem,
-            timeFormatter,
-            projectEndTime: ""
+            timeFormatter
         }
     },
     methods: {
@@ -250,13 +249,19 @@ export default {
 
             this.pixelMultiplier = boundsDiff / width;
         },
+        saveTimeline() {
+            const projectJSON = timelineUtil.getProjectJsonFromTimelineObject(this.domainObject);
+
+            console.log(projectJSON);
+        },
         getViewContext() {
             return {
                 type: 'timeline-component',
                 centerTimeline: this.setTimeBoundsFromConfiguration,
                 zoomIn: this.zoomIn,
                 zoomOut: this.zoomOut,
-                importTimeline: this.importTimeline
+                importTimeline: this.importTimeline,
+                saveTimeline: this.saveTimeline
             }
         },
         getFormatter(key) {
@@ -326,30 +331,30 @@ export default {
                 this.centerTimeline();
             }
 		},
-	addErrorsOnLoad(value) {
-	    this.addError(value.violation);
-            this.violationClicked = value.violationClicked;
-	},
-	onViolationClicked(value) {
-            let violationTime = this.timeFormatter.parse(value.violation.violationTime);
-            let end = Math.ceil(violationTime + TIMELINE_PADDING);
-            let start = Math.floor(violationTime - TIMELINE_PADDING);
-
-            this.openmct.time.bounds({start, end});
-	    this.clearErrors();
-            this.violationClicked = value.violationClicked;
-	    this.addError({
-		startTime: value.violation.violationTime,
-                actionID: value.violation.violatedObj.objID,
-		violators: value.violation.violators,
-            });
-	},
-        resetTimeBoundsFromViolationClick(value) {
-            this.centerTimeline();
+        addErrorsOnLoad(value) {
+            this.addError(value.violation);
+                this.violationClicked = value.violationClicked;
         },
-	clearErrorsWithUpdates(value){
-	    this.clearErrors();
-	},
+        onViolationClicked(value) {
+                let violationTime = this.timeFormatter.parse(value.violation.violationTime);
+                let end = Math.ceil(violationTime + TIMELINE_PADDING);
+                let start = Math.floor(violationTime - TIMELINE_PADDING);
+
+                this.openmct.time.bounds({start, end});
+            this.clearErrors();
+                this.violationClicked = value.violationClicked;
+            this.addError({
+            startTime: value.violation.violationTime,
+                    actionID: value.violation.violatedObj.objID,
+            violators: value.violation.violators,
+                });
+        },
+            resetTimeBoundsFromViolationClick(value) {
+                this.centerTimeline();
+            },
+        clearErrorsWithUpdates(value){
+            this.clearErrors();
+        },
         getFormModel() {
             return {
                 name: "Import Timeline",
@@ -467,7 +472,6 @@ export default {
         composition.on('remove', this.removeActivity);
         composition.on('reorder', this.reorderActivities);
         composition.load();
-        this.projectEndTime = simpleDrill.activityPlan.planEnd;
 
         this.unsubscribeFromComposition = () => {
             composition.off('add', this.addActivity);

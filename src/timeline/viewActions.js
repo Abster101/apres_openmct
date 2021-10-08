@@ -42,11 +42,23 @@ const importTimeline = {
     group: 'view'
 }
 
+const saveTimeline = {
+    name: 'Save',
+    key: 'apres:save-timeline',
+    description: 'Save Timeline to APRES Service',
+    cssClass: 'icon-save',
+    invoke: (objectPath, viewProvider) => {
+        viewProvider.getViewContext().saveTimeline();
+    },
+    group: 'view'
+}
+
 const viewActions = [
     importTimeline,
     centerTimeline,
     zoomIn,
-    zoomOut,
+    zoomOut,,
+    saveTimeline
 ];
 
 viewActions.forEach(action => {

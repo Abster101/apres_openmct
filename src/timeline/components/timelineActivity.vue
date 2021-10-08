@@ -174,7 +174,12 @@ export default {
             this.persistMove();
         },
         persistMove() {
-            this.openmct.objects.mutate(this.parentDomainObject, `configuration.activities[${this.keystring}].startTime`, this.formatter.format(this.start));
+            const configPath = `configuration.activities[${this.keystring}]`;
+            const startTimestamp = this.formatter.format(this.start);
+            const endTimestamp = this.formatter.format(this.start + this.duration);
+
+            this.openmct.objects.mutate(this.parentDomainObject, `${configPath}.startTime`, startTimestamp);
+            this.openmct.objects.mutate(this.parentDomainObject, `${configPath}.endTime`, endTimestamp);
         },
         initializeSelectable() {
             const configuration = this.parentDomainObject.configuration.activities[this.keystring]

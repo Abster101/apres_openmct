@@ -1,4 +1,28 @@
 const timelineUtil = {
+    getProjectJsonFromTimelineObject(timelineObject) {
+        const projectObject = {
+            projectInfo: timelineObject.configuration.projectInfo,
+            activityPlan: {
+                actions: [],
+                planStart: timelineObject.configuration.startTime,
+                planEnd: timelineObject.configuration.endTime
+            }
+        };
+
+        Object.entries(timelineObject.configuration.activities).forEach(([uuid, action]) => {
+            const actionObject = {
+                uuid,
+                actionName: action.name,
+                actionStart: action.startTime,
+                actionEnd: action.endTime,
+                actionType: action.type,
+            }
+
+            projectObject.activityPlan.actions.push(actionObject);
+        });
+
+        return projectObject;
+    },
     getActionConfig(actionJSON, config = {}) {
         let colorHex = config.colorHex || '#4f6ffe';
         let timelineLegend = config.timelineLegend || 'Default';
@@ -8,6 +32,8 @@ const timelineUtil = {
         const configuration = {
             uuid: actionJSON.uuid,
             name: actionJSON.actionName,
+            note: actionJSON.note,
+            type: actionJSON.type,
             colorHex: colorHex,
             timelineLegend: timelineLegend,
             startTime: actionJSON.actionStart,
@@ -43,6 +69,7 @@ const timelineUtil = {
             endTime: projectJSON.planningProject.activityPlan.planEnd,
             activities: {},
             violations: projectJSON.planningProject.simulationInfo?.violations,
+            projectInfo: projectJSON.planningProject.projectInfo
         };
         const configuration = timelineUtil.processConfiguration(projectJSON.configuration);
         const domainObject = {
