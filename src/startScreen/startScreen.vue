@@ -9,13 +9,14 @@
             <h1>Loading...</h1>
         </div>
         <div 
-            v-else
+            v-if="!openmctStarted && !isLoading"
         >
+            <h1>Welcome to APRES</h1>
+
             <div 
-                v-if="!openmctStarted"
+                v-if="!newProjectData"
                 style="display: flex; flex-direction: column; justify-content: center;"
             >
-                <h1>Welcome to APRES</h1>
                 
                 <div>
                     <label for="projects">Choose a project:</label>
@@ -34,6 +35,59 @@
                 </div>
                 <button 
                     @click="initializeApp"
+                    style="margin-top: 20px;"
+                >
+                    Start
+                </button>
+            </div>
+
+            <div v-else>
+                <h2>Create a New Project</h2>
+                <div style="margin-top: 20px;">
+                    <label for="configuration">Configuration:</label>
+
+                    <select 
+                        name="configuration"
+                        id="configuration"
+                        @change="setSelectedConfiguration"
+                    >
+                        <option
+                            v-for="(configuration, index) in newProjectData.configurations"
+                            :key="index"
+                            :value="configuration">{{ configuration }}</option>
+                    </select>
+                </div>
+                <div style="margin-top: 20px;">
+                    <label for="model">Model:</label>
+
+                    <select 
+                        name="model"
+                        id="model"
+                        @change="setSelectedModel"
+                    >
+                        <option
+                            v-for="(model, index) in newProjectData.models"
+                            :key="index"
+                            :value="model">{{ model }}</option>
+                    </select>
+                </div>
+                <div style="margin-top: 20px;">
+                    <label for="problem">Problem:</label>
+
+                    <select 
+                        name="problem"
+                        id="problem"
+                        @change="setSelectedProblem"
+                    >
+                        <option
+                            v-for="(problem, index) in newProjectData.problems"
+                            :key="index"
+                            :value="problem">{{ problem }}</option>
+                    </select>
+                </div>
+
+                <button 
+                    @click="initializeNewProject"
                     style="margin-top: 20px;"
                 >
                     Start
@@ -77,15 +131,18 @@ export default {
             openmctStarted: false,
             projects: [],
             globalAttributes: undefined,
-            isLoading: true
+            isLoading: true,
+            newProjectData: undefined
         }
     },
     methods: {
         initializeApp() {
             const selectedProject = localStorage.getItem('apres_selected_project');
 
+            this.isLoading = true;
+
             if (selectedProject && selectedProject !== 'new') {
-                this.getProjectDocs(selectedProject).then((projectJSON) => {
+                return this.getProjectDocs(selectedProject).then((projectJSON) => {
                     console.log(projectJSON);
                     const timelineBounds = {
                         start: Date.parse(projectJSON.planningProject.activityPlan.planStart),
@@ -117,11 +174,17 @@ export default {
                         this.isLoading = false;
                     }, 2000);
                 })
-            } else if (selectedProject && selectedProject === 'new') {
-                this.getNewProjectData().then((newProjectData) => {
-                    console.log(newProjectData);
-                })
             }
+            
+            this.getNewProjectData().then((newProjectData) => {
+                console.log(newProjectData);
+                this.isLoading = false;
+                this.newProjectData = newProjectData;
+
+                this.configuration = newProjectData.configurations[0];
+                this.model =  newProjectData.models[0];
+                this.problem = newProjectData.problems[0];
+            });
         },
         installDefaultPlugins(bounds) {
             const THIRTY_SECONDS = 30 * 1000;
