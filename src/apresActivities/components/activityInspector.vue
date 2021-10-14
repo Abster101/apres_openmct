@@ -48,7 +48,6 @@ export default {
         }
     },
     data() {
-        console.log(this.actionAttributes);
         let timeSystem = this.openmct.time.timeSystem();
         let formatter = this.getFormatter(timeSystem.timeFormat);
         let id = this.actionObject.id;

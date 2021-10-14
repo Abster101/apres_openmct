@@ -59,7 +59,9 @@ export default {
     computed: {
 		testingStyle() {
             return {
+				'max-height': '20%',
                 'margin-top': 'auto',
+				'overflow-y': 'auto',
             };
 		},
 		tableRow() {

@@ -1,6 +1,6 @@
 <template>
 <div :style="containerStyle">
-	<div class="flex flex-row w-full">
+	<div class="flex flex-row w-full" :style="timelineStyle">
 		<div
 			class="w-10-10"
 		>
@@ -30,12 +30,19 @@
 				>
 					{{legend}}
 				</timeline-legend-label>
+                <timeline-legend-label
+					v-for="(legend, index) in chronicles"
+					:key="'timeline-chronicle-egend--label ' + index"
+                    :num-activities="1"
+					:title="legend.name"
+				>
+					{{legend}}
+				</timeline-legend-label>
 			</div>
 		</div>
 		<div
 			ref="timeline-container"
 			class="w-9-10"
-			:style="style"
 		>
 			<timeline-axis
 				:bounds="bounds"
@@ -45,6 +52,7 @@
 			/>
 			<div
 				style="min-width: 100%; min-height: 100%; position: relative"
+                :style="style"
 			>
 				<Error 
 					v-for="(error, index) in errors"
@@ -59,6 +67,21 @@
 					:key="'timeline-legend-' + index"
 					:title="legend"
 					:activities="timelineLegends[legend]"
+					:parentDomainObject="liveDomainObject"
+					:index="index"
+					:isEditing="isEditing"
+					:startBounds="bounds.start"
+					:endBounds="bounds.end"
+					:pixelMultiplier="pixelMultiplier"
+					:formatter="timeFormatter"
+                    :errors="errors"
+                    :violationClicked="violationClicked"
+				/>
+                <timeline-chronicle-legend
+					v-for="(chronicle, index) in chronicles"
+					:key="'timeline-chronicle-legend-' + index"
+					:title="chronicle.name"
+					:chronicle="chronicle"
 					:parentDomainObject="liveDomainObject"
 					:index="index"
 					:isEditing="isEditing"
@@ -84,10 +107,10 @@
 
 <script>
 import TimelineLegend from './timelineLegend.vue';
+import TimelineChronicleLegend from './timelineStateChronicleLegend.vue';
 import TimelineLegendLabel from './timelineLegendLabel.vue';
 import TimelineAxis from './timeSystemAxis.vue';
 import ViolationsTable from './violations/table.vue';
-import TimelineStateChronicle from './timelineStateChronicle.vue';
 
 import simpleDrill from '../../../config/SimpleDrill.project.json';
 
@@ -115,8 +138,8 @@ export default {
         TimelineAxis,
 		Error,
 		ViolationsTable,
-        TimelineStateChronicle,
 		Error,
+        TimelineChronicleLegend,
     },
     computed: {
         inBoundErrors() {
@@ -127,7 +150,7 @@ export default {
         },
         style() {
             return {
-                'overflow': 'hidden'
+                'overflow': 'hidden',
             }
 		},
 		containerStyle(){
@@ -138,8 +161,18 @@ export default {
     			'flex-direction': 'column',
             }
 		},
+        timelineStyle(){
+            return {
+                'overflow-x': 'hidden',
+                'max-height': '80%',
+                'overflow-y': 'auto',
+            }
+        },
         legends() {
             return Object.keys(this.timelineLegends);
+        },
+        chronicleLegends() {
+            return Object.keys(this.chronicles);
         },
         liveDomainObject() {
             return this.domainObject;
@@ -334,7 +367,7 @@ export default {
             let violationTime = this.timeFormatter.parse(value.violation.violationTime);
             let end = Math.ceil(violationTime + TIMELINE_PADDING);
             let start = Math.floor(violationTime - TIMELINE_PADDING);
-
+            
             this.openmct.time.bounds({start, end});
 	        this.clearErrors();
             this.violationClicked = value.violationClicked;
@@ -345,7 +378,7 @@ export default {
             });
 	    },
         resetTimeBoundsFromViolationClick(value) {
-            this.centerTimeline();
+        	this.centerTimeline();
         },
 	    clearErrorsWithUpdates(value){
 	        this.clearErrors();
@@ -388,7 +421,7 @@ export default {
             let colorHex = config.colorHex || '#4f6ffe';
             let timelineLegend = config.timelineLegend || 'Default';
             const startTime = this.timeFormatter.parse(action.actionStart);
-            const endTime = this.timeFormatter.parse(action.actionEnd)
+            const endTime = this.timeFormatter.parse(action.actionEnd);
 
             const configuration = {
                 name: action.actionName,
@@ -478,8 +511,11 @@ export default {
 
         const selectedProject = localStorage.getItem('apres_selected_project');
 
-        if(this.domainObject.configuration.violations){
+        if (this.domainObject.configuration.violations) {
             this.violations = this.domainObject.configuration.violations;
+        }
+        if (this.domainObject.configuration.chronicles) {
+            this.chronicles = this.domainObject.configuration.chronicles;
         }
     },
     beforeDestroy() {

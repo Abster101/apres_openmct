@@ -86,7 +86,6 @@ export default {
 
             if (selectedProject && selectedProject !== 'new') {
                 this.getProjectDocs(selectedProject).then((projectJSON) => {
-                    console.log(this.globalAttributes);
                     const timelineBounds = {
                         start: Date.parse(projectJSON.planningProject.activityPlan.planStart),
                         end: Date.parse(projectJSON.planningProject.activityPlan.planEnd)
@@ -253,7 +252,6 @@ export default {
 
             return axios.get(globalAttributesUrl).then((resp) => {
                 if (resp && resp.data) {
-                    console.log(resp.data);
                     this.globalAttributes = resp.data;
                 }
             })
