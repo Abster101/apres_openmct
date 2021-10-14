@@ -33,7 +33,7 @@ const timelineUtil = {
             uuid: actionJSON.uuid,
             name: actionJSON.actionName,
             note: actionJSON.note,
-            type: actionJSON.type,
+            type: actionJSON.actionType,
             colorHex: colorHex,
             timelineLegend: timelineLegend,
             startTime: actionJSON.actionStart,

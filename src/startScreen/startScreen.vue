@@ -117,6 +117,10 @@ export default {
                         this.isLoading = false;
                     }, 2000);
                 })
+            } else if (selectedProject && selectedProject === 'new') {
+                this.getNewProjectData().then((newProjectData) => {
+                    console.log(newProjectData);
+                })
             }
         },
         installDefaultPlugins(bounds) {
@@ -253,7 +257,6 @@ export default {
 
             return axios.get(globalAttributesUrl).then((resp) => {
                 if (resp && resp.data) {
-                    console.log(resp.data);
                     this.globalAttributes = resp.data;
                 }
             })
@@ -265,6 +268,15 @@ export default {
             const projectUrl = `${config['apres_service_root_url']}/loadproject?projectname=${projectName}`
 
             return axios.get(projectUrl).then((resp) => {
+                if (resp && resp.data) {
+                    return resp.data;
+                }
+            })
+        },
+        getNewProjectData() {
+            const newProjectDataUrl = `${config['apres_service_root_url']}/newprojectdata`;
+
+            return axios.get(newProjectDataUrl).then((resp) => {
                 if (resp && resp.data) {
                     return resp.data;
                 }
