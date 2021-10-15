@@ -9,6 +9,7 @@
 <script>
 
 const ACTIVITY_HEIGHT = 40;
+const NUMERIC_HEIGHT = 34
 
 export default {
   inject: ['openmct'],
@@ -107,16 +108,15 @@ export default {
     height() {
         if(this.endPoints){
             const top = 0;
-            const bottom = 34;
             const value = parseFloat(this.domainObject.value);
             const boundsDiff = this.endPoints.max - this.endPoints.min;
-            const pixelHeightMultiplier = boundsDiff / 34;
+            const pixelHeightMultiplier = boundsDiff / NUMERIC_HEIGHT;
             let height = 0;
 
             if(this.endPoints.max === value) {
                 height = 0;
             } else if (this.endPoints.min === value) {
-                height = 34
+                height = NUMERIC_HEIGHT;
             } else {
                 const diff = this.endPoints.max - value;
                 height = Math.floor(diff / pixelHeightMultiplier);
