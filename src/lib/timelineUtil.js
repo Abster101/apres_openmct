@@ -29,6 +29,8 @@ const timelineUtil = {
     },
     getChroniclesConfig(chronicleJSON, config = {}, projectEndTime) {
         let timelineLegend = config.variable || 'Default';
+        let maxNumeric;
+        let minNumeric; 
 
         chronicleJSON.episodes.forEach((episode, index) => {
             const episodeStartTime = Date.parse(episode.time);
@@ -36,8 +38,31 @@ const timelineUtil = {
                 return state.stateVal === episode.value;
             });
 
-            episode.colorHex = episodeConfig && episodeConfig.length > 0 ? episodeConfig[0].colorHex : '#000000';
-            episode.textColorHex = episodeConfig && episodeConfig.length > 0 ? episodeConfig[0].textColorHex  : '#000000';
+            if (!isNaN(episode.value)) {
+                const parsedValue = parseFloat(episode.value);
+
+                episode.colorHex = config.colorHex ? config.colorHex : '#000000';
+                episode.textColorHex =  config.colorHex ? config.colorHex : '#000000';
+
+                if(!maxNumeric){
+                    maxNumeric = parsedValue;
+                } else {
+                    if (maxNumeric < parsedValue) {
+                        maxNumeric = parsedValue;
+                    }
+                }
+
+                if (!minNumeric) {
+                    minNumeric = parsedValue;
+                } else {
+                    if(minNumeric > parsedValue){
+                        minNumeric = parsedValue;
+                    }
+                }
+            } else {
+                episode.colorHex = episodeConfig && episodeConfig.length > 0 ? episodeConfig[0].colorHex : '#000000';
+                episode.textColorHex = episodeConfig && episodeConfig.length > 0 ? episodeConfig[0].textColorHex  : '#000000';
+            }
 
             if (index < chronicleJSON.episodes.length - 1) {
                 const nextEpisodeStartTime = Date.parse(chronicleJSON.episodes[index + 1].time);
@@ -56,6 +81,13 @@ const timelineUtil = {
             episodes: chronicleJSON.episodes,
         };
 
+        if (maxNumeric && minNumeric) {
+            configuration.endPoints = {
+                min: minNumeric,
+                max: maxNumeric,
+            }
+        }
+
         return configuration;
     },
     processConfiguration(configuration) {
@@ -69,6 +101,10 @@ const timelineUtil = {
     },
     processChronicleConfiguration(configuration) {
         const configObject = {};
+
+        configuration.numericChronicleConfig.forEach((state) => {
+            configObject[state.varName] = state;
+        });
 
         configuration.stateChronicleConfig.forEach((state) => {
             configObject[state.varName] = state;

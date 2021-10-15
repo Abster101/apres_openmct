@@ -98,7 +98,7 @@
 	<violations-table
         :violations="violations"
 		@loadViolations="addErrorsOnLoad" 
-        	@resetBounds="resetTimeBoundsFromViolationClick"
+        @resetBounds="resetTimeBoundsFromViolationClick"
 		@clicked="onViolationClicked"
 		@violationClear="clearErrorsWithUpdates"
 	/>
@@ -107,7 +107,7 @@
 
 <script>
 import TimelineLegend from './timelineLegend.vue';
-import TimelineChronicleLegend from './timelineStateChronicleLegend.vue';
+import TimelineChronicleLegend from './stateChronicles/timelineStateChronicleLegend.vue';
 import TimelineLegendLabel from './timelineLegendLabel.vue';
 import TimelineAxis from './timeSystemAxis.vue';
 import ViolationsTable from './violations/table.vue';

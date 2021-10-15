@@ -1,7 +1,7 @@
 <template>
 <ul :style="legendStyle" v-if="inBoundsEpisodes.length > 0">
     <p :style="titleStyle">{{displayedValue}}</p>
-   <timeline-state-chronicle
+    <timeline-state-chronicle
         v-for="(episode, index) in inBoundsEpisodes"
         :key="'episode-' + episode.time"
         :domainObject="episode"
@@ -10,6 +10,7 @@
         :isEditing="isEditing"
         :startBounds="startBounds"
         :endBounds="endBounds"
+        :endPoints="endPoints"
         :pixelMultiplier="pixelMultiplier"
         :formatter="formatter"
         :errors="errors"
@@ -75,11 +76,16 @@ export default {
     data() {
         return {
             displayedValue: "",
+            endPoints: null,
         }
     },
     mounted() {
         const lastEpisode = this.chronicle.episodes[this.chronicle.episodes.length-1];
         this.displayedValue = lastEpisode.value;
+
+        if (typeof this.chronicle.endPoints !== 'undefined') {
+            this.endPoints = this.chronicle.endPoints;
+        }
     },
     computed: {
         legendStyle() {
