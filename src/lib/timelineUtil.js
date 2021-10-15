@@ -63,7 +63,7 @@ const timelineUtil = {
         return configObject;
     },
     getTimelineDomainObject(projectJSON) {
-        const timelineName = projectJSON.interfaceModel.description;
+        const timelineName = projectJSON.planningProject.projectInfo.projRef;
         const domainObjectConfiguration = {
             startTime: projectJSON.planningProject.activityPlan.planStart,
             endTime: projectJSON.planningProject.activityPlan.planEnd,
