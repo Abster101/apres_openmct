@@ -53,12 +53,24 @@ const saveTimeline = {
     group: 'view'
 }
 
+const deleteTimeline = {
+    name: 'Delete',
+    key: 'apres:delete-timeline',
+    cssClass: 'icon-trash',
+    description: 'Delete Timeline from APRES Service',
+    invoke: (objectPath, viewProvider) => {
+        viewProvider.getViewContext().deleteTimeline();
+    },
+    group: 'view'
+}
+
 const viewActions = [
     importTimeline,
     centerTimeline,
     zoomIn,
     zoomOut,,
-    saveTimeline
+    saveTimeline,
+    deleteTimeline
 ];
 
 viewActions.forEach(action => {

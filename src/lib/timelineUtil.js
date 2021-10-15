@@ -1,6 +1,7 @@
 const timelineUtil = {
     getProjectJsonFromTimelineObject(timelineObject) {
         const projectObject = {
+            $schema: './PlanningProjectSchema.json',
             projectInfo: timelineObject.configuration.projectInfo,
             activityPlan: {
                 actions: [],
@@ -13,8 +14,8 @@ const timelineUtil = {
             const actionObject = {
                 uuid,
                 actionName: action.name,
-                actionStart: action.startTime,
-                actionEnd: action.endTime,
+                actionStart: new Date(action.startTime).toJSON().split('.')[0]+'Z',
+                actionEnd: new Date(action.endTime).toJSON().split('.')[0]+'Z',
                 actionType: action.type,
             }
 
@@ -64,6 +65,7 @@ const timelineUtil = {
     },
     getTimelineDomainObject(projectJSON) {
         const timelineName = projectJSON.planningProject.projectInfo.projRef;
+        const notes = projectJSON.planningProject.projectInfo.note;
         const domainObjectConfiguration = {
             startTime: projectJSON.planningProject.activityPlan.planStart,
             endTime: projectJSON.planningProject.activityPlan.planEnd,
@@ -82,7 +84,8 @@ const timelineUtil = {
             modified: Date.now(),
             created: Date.now(),
             name: timelineName,
-            type: 'apres.timeline.type'
+            type: 'apres.timeline.type',
+            notes
         };
 
         projectJSON.planningProject.activityPlan.actions.forEach((action) => {

@@ -170,6 +170,7 @@ export default {
     },
     methods: {
         initializeOpenMctProject(projectJSON) {
+            console.log(projectJSON);
             if (!projectJSON.planningProject.activityPlan) {
                 projectJSON.planningProject.activityPlan = {
                     planStart: new Date(Date.now()).toJSON(),

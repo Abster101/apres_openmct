@@ -83,6 +83,8 @@
 </template>
 
 <script>
+import axios from 'axios';
+import config from '../../../apresConfig.js';
 import TimelineLegend from './timelineLegend.vue';
 import TimelineLegendLabel from './timelineLegendLabel.vue';
 import TimelineAxis from './timeSystemAxis.vue';
@@ -249,11 +251,6 @@ export default {
 
             this.pixelMultiplier = boundsDiff / width;
         },
-        saveTimeline() {
-            const projectJSON = timelineUtil.getProjectJsonFromTimelineObject(this.domainObject);
-
-            console.log(projectJSON);
-        },
         getViewContext() {
             return {
                 type: 'timeline-component',
@@ -261,7 +258,8 @@ export default {
                 zoomIn: this.zoomIn,
                 zoomOut: this.zoomOut,
                 importTimeline: this.importTimeline,
-                saveTimeline: this.saveTimeline
+                saveTimeline: this.saveTimeline,
+                deleteTimeline: this.deleteTimeline
             }
         },
         getFormatter(key) {
@@ -459,6 +457,42 @@ export default {
         importTimeline() {
             this.openmct.$injector.get('dialogService')
                 .getUserInput(this.getFormModel(), {}).then(this.processJsonTimeline);
+        },
+        saveTimeline() {
+            const saveUrl = `${config['apres_service_root_url']}/save`;
+            const projectJSON = timelineUtil.getProjectJsonFromTimelineObject(this.domainObject);
+
+            axios.put(saveUrl, projectJSON).then((success) => {
+                this.openmct.notifications.info('Success: Project Saved to APRES Service.');
+            });
+        },
+        deleteTimeline() {
+            const deleteUrl = `${config['apres_service_root_url']}/delete?projectname=${this.domainObject.name}`;
+            
+            const dialog = this.openmct.overlays.dialog({
+                iconClass: 'alert',
+                message: "Are you sure you want to delete this project?",
+                buttons: [
+                    {
+                        label: "Yes",
+                        emphasis: true,
+                        callback: () => {
+                            axios.delete(deleteUrl).then((success) => {
+                                localStorage.clear();
+                                this.openmct.destroy();
+                                window.location.reload();
+                            }).catch(error => console.log(error));
+                        }
+                    },
+                    {
+                        label: "No",
+                        emphasis: false,
+                        callback: () => {
+                            dialog.dismiss();
+                        }
+                    }
+                ]
+            });
         }
     },
     mounted() {
