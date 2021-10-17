@@ -1,0 +1,33 @@
+{
+  "$schema": "./ModelAttributesSchema.json",
+  "description": "The attributes that apply to all action types in the Drill Model",
+  "actionAttributes": [
+    {
+      "name": "uuid",
+      "editable": false
+    },
+    {
+      "name": "startTime",
+      "modelType": {
+        "type": "string"
+      },
+      "editable": true,
+      "userRequired": true
+    },
+    {
+      "name": "endTime",
+      "modelType": {
+        "type": "string",
+        "editable": false
+      }
+    },
+    {
+      "name": "note",
+      "modelType": {
+        "type": "string"
+      },
+      "editable": true,
+      "userRequired": false
+    }
+  ]
+}
