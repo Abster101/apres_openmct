@@ -5,8 +5,8 @@
 </template>
 
 <script>
-import TimelineActivity from './timelineActivity.vue';
-import TimelineStateChronicle from './timelineStateChronicle.vue';
+import TimelineActivity from './TimelineActivity.vue';
+import TimelineStateChronicle from './TimelineStateChronicle.vue';
 
 const ACTIVITY_HEIGHT = 44;
 

@@ -1,5 +1,5 @@
 import Vue from 'vue';
-import ActivityView from './components/activityView.vue';
+import ActivityView from './components/ActivityView.vue';
 
 export default class ActivityViewProvider {
     constructor(openmct) {

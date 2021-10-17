@@ -46,7 +46,7 @@
 			<div
 				style="min-width: 100%; min-height: 100%; position: relative"
 			>
-				<Error 
+				<ErrorDisplay 
 					v-for="(error, index) in errors"
 					:key="`error-${index}`"
 					:startTime="error.startTime"
@@ -83,15 +83,15 @@
 </template>
 
 <script>
-import TimelineLegend from './timelineLegend.vue';
-import TimelineLegendLabel from './timelineLegendLabel.vue';
-import TimelineAxis from './timeSystemAxis.vue';
-import ViolationsTable from './violations/table.vue';
-import TimelineStateChronicle from './timelineStateChronicle.vue';
+import TimelineLegend from './TimelineLegend.vue';
+import TimelineLegendLabel from './TimelineLegendLabel.vue';
+import TimelineAxis from './TimelineAxis.vue';
+import ViolationsTable from './violations/ViolationsTable.vue';
+import TimelineStateChronicle from './TimelineStateChronicle.vue';
 
 import simpleDrill from '../../../config/SimpleDrill.project.json';
 
-import Error from './error.vue';
+import ErrorDisplay from './ErrorDisplay.vue';
 import Moment from 'moment';
 import lodash from 'lodash';
 import uuid from 'uuid'
@@ -113,10 +113,9 @@ export default {
         TimelineLegend,
         TimelineLegendLabel,
         TimelineAxis,
-		Error,
+		ErrorDisplay,
 		ViolationsTable,
         TimelineStateChronicle,
-		Error,
     },
     computed: {
         inBoundErrors() {
@@ -231,6 +230,7 @@ export default {
 
             reorderPlan.forEach((reorderEvent) => {
                 this.$set(this.activities, reorderEvent.newIndex, oldActivities[reorderEvent.oldIndex]);
+
             });
         },
         initializeTimeBounds(timeBounds, tick) {

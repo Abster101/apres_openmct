@@ -9,7 +9,8 @@
     </li>
 </template>
 <script>
-import activityViewVue from '../../apresActivities/components/activityView.vue';
+// TODO not used (yet?)
+// import ActivityViewVue from '../../apresActivities/components/ActivityView.vue';
 
 const ACTIVITY_HEIGHT = 40;
 

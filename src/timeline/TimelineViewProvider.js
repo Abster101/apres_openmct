@@ -1,7 +1,7 @@
 import Vue from 'vue';
-import TimelineComponent from './components/timeline.vue';
+import ApresTimeline from './components/ApresTimeline.vue';
 
-export default class TimelineViewProvider{
+export default class TimelineViewProvider {
     constructor(openmct) {
         this._openmct = openmct;
 
@@ -26,7 +26,7 @@ export default class TimelineViewProvider{
                 component = new Vue({
                     el: element,
                     components: {
-                        TimelineComponent
+                        ApresTimeline
                     },
                     data() {
                         return {
@@ -38,7 +38,7 @@ export default class TimelineViewProvider{
                         openmct: this._openmct,
                         objectPath
                     },
-                    template: ` <timeline-component
+                    template: ` <apres-timeline
                                     ref="timelineComponent"
                                     :isEditing="isEditing"
                                     :domainObject="domainObject"
