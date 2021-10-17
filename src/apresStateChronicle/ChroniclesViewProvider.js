@@ -1,6 +1,7 @@
 import Vue from 'vue';
 export default class ChroniclesViewProvider{
-    constructor() {
+    constructor(openmct) {
+        this.openmct = openmct
         this.name = 'chronicle';
         this.key = 'apres.chronicle.view';
         this.priority = 1;
@@ -27,7 +28,7 @@ export default class ChroniclesViewProvider{
                         }
                     },
                     provide: {
-                        openmct,
+                        openmct: this.openmct,
                         domainObject,
                         objectPath
                     },
