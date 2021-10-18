@@ -250,15 +250,6 @@ export default {
 
             this.pixelMultiplier = boundsDiff / width;
         },
-        getViewContext() {
-            return {
-                type: 'timeline-component',
-                centerTimeline: this.setTimeBoundsFromConfiguration,
-                zoomIn: this.zoomIn,
-                zoomOut: this.zoomOut,
-                importTimeline: this.importTimeline
-            }
-        },
         getFormatter(key) {
             return this.openmct.telemetry.getValueFormatter({
                 format: key

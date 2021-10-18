@@ -21,7 +21,12 @@ export default class TimelineViewProvider {
     view(domainObject, objectPath, isEditing) {
         let component;
 
+        let vue = () => {
+            return component.$refs.timelineComponent
+        }
+
         const view =  {
+            type: 'apres-timeline',
             show: (element) => {
                 component = new Vue({
                     el: element,
@@ -48,20 +53,26 @@ export default class TimelineViewProvider {
             onEditModeChange: (isEditing) => {
                 component.isEditing = isEditing;
             },
-            getViewContext() {
-                if (component) {
-                    let ref = component.$refs.timelineComponent;
-
-                    return ref && ref.getViewContext();
-                } else {
-                    return {
-                        type: 'timeline-component'
-                    };
-                }
-            },
             destroy() {
                 component.$destroy();
-            }
+            },
+            
+            // The following methods proxy to the Vue component {{
+
+            centerTimeline() {
+                vue()?.setTimeBoundsFromConfiguration()
+            },
+            zoomIn() {
+                vue()?.zoomIn()
+            },
+            zoomOut() {
+                vue()?.zoomOut()
+            },
+            importTimeline() {
+                vue()?.importTimeline()
+            },
+                    
+            // }}
         }
 
         return view;
