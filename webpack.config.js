@@ -20,7 +20,6 @@ module.exports = {
         alias: {
             "@": path.join(__dirname, "node_modules/openmct"),
             "openmct": path.join(__dirname, "node_modules/openmct/dist/openmct.js"),
-            "vue": "vue/dist/vue.esm-bundler.js",
         }
     },
     plugins: [
