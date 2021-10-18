@@ -1,4 +1,4 @@
-import {createApp} from 'vue';
+import {createApp, reactive} from 'vue';
 import ApresTimeline from './components/ApresTimeline.vue';
 
 export default class TimelineViewProvider {
@@ -24,41 +24,22 @@ export default class TimelineViewProvider {
 
         /** @type {import('vue').ComponentPublicInstance} */
         let component;
+        
+        let props = reactive({ isEditing, domainObject })
 
-        const vue = () => {
-            return component.$refs.timelineComponent
-        }
-
-        const view =  {
+        return {
             type: 'apres-timeline',
             show: (/** @type {HTMLElement} */element) => {
                 element.style.setProperty('overflow-y', 'auto')
-
-                vueApp = createApp({
-                    components: {
-                        ApresTimeline
-                    },
-                    data() {
-                        return {
-                            isEditing,
-                            domainObject
-                        }
-                    },
-                    provide: {
-                        openmct: this._openmct,
-                        objectPath
-                    },
-                    template: ` <apres-timeline
-                                    ref="timelineComponent"
-                                    :isEditing="isEditing"
-                                    :domainObject="domainObject"
-                                /> `
-                });
+                
+                vueApp = createApp(ApresTimeline, props)
+                    .provide('openmct', this._openmct)
+                    .provide('objectPath', objectPath)
                 
                 component = vueApp.mount(element)
             },
             onEditModeChange: (isEditing) => {
-                component.isEditing = isEditing;
+                props.isEditing = isEditing
             },
             destroy() {
                 vueApp.unmount();
@@ -67,21 +48,19 @@ export default class TimelineViewProvider {
             // The following methods proxy to the Vue component {{
 
             centerTimeline() {
-                vue()?.setTimeBoundsFromConfiguration()
+                component.setTimeBoundsFromConfiguration()
             },
             zoomIn() {
-                vue()?.zoomIn()
+                component.zoomIn()
             },
             zoomOut() {
-                vue()?.zoomOut()
+                component.zoomOut()
             },
             importTimeline() {
-                vue()?.importTimeline()
+                component.importTimeline()
             },
                     
             // }}
         }
-
-        return view;
     }
 };

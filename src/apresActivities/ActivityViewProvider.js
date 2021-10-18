@@ -1,4 +1,4 @@
-import { createApp } from 'vue';
+import { createApp, reactive } from 'vue';
 import ActivityView from './components/ActivityView.vue';
 
 export default class ActivityViewProvider {
@@ -17,38 +17,18 @@ export default class ActivityViewProvider {
         /** @type {import('vue').App<Element>} */
         let vueApp;
 
-        /** @type {import('vue').ComponentPublicInstance} */
-        let component;
+        let props = reactive({ isEditing, domainObject })
 
         return {
             show: (element) => {
-                vueApp = createApp({
-                    components: {
-                        ActivityView
-                    },
-                    data() {
-                        return {
-                            isEditing,
-                            domainObject
-                        }
-                    },
-                    provide: {
-                        openmct: this.openmct,
-                        objectPath
-                    },
-                    template:
-                        `
-                        <activity-view
-                            :isEditing="isEditing"
-                            :domainObject="domainObject"
-                        />
-                        `
-                });
+                vueApp = createApp(ActivityView, props)
+                    .provide('openmct', this.openmct)
+                    .provide('objectPath', objectPath)
                 
-                component = vueApp.mount(element)
+                vueApp.mount(element)
             },
             onEditModeChange: (isEditing) => {
-                component.isEditing = isEditing;
+                props.isEditing = isEditing
             },
             destroy: () => {
                 vueApp.unmount();

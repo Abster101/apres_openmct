@@ -271,9 +271,6 @@ export default {
             })
         }
     },
-    onDestroy() {
-        openmct.onDestroy();
-    },
     mounted() {
         const session = Boolean(localStorage.getItem('apres_session'));
         

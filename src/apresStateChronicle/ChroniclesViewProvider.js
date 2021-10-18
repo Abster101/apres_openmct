@@ -1,4 +1,5 @@
 import { createApp } from 'vue';
+
 export default class ChroniclesViewProvider{
     constructor(openmct) {
         this.openmct = openmct
@@ -21,18 +22,12 @@ export default class ChroniclesViewProvider{
 
         return {
             show: (element) => {
-                vueApp = createApp({
-                    data() {
-                        return {
-                            isEditing: isEditing
-                        }
-                    },
-                    provide: {
-                        openmct: this.openmct,
-                        domainObject,
-                        objectPath
-                    },
-                });
+                const TodoSomeComponent = {}
+
+                vueApp = createApp(TodoSomeComponent)
+                    .provide('openmct', this.openmct)
+                    .provide('domainObject', domainObject)
+                    .provide('objectPath', objectPath)
                 
                 vueApp.mount(element)
             },

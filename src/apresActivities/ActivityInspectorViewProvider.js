@@ -26,35 +26,17 @@ export default class ActivityInspectorViewProvider{
 
         return {
             show: (element) => {
-                vueApp = createApp({
-                    components: {
-                        ActivityInspector
-                    },
-                    data() {
-                        return {
-                            actionObject: selection[0][0].context.layoutItem,
-                            parentDomainObject: selection[0][1].context.item
-                        }
-                    },
-                    provide: {
-                        openmct: this.openmct,
-                        actionAttributes: this.actionAttributes
-                    },
-                    template: `
-                        <activity-inspector
-                            :actionObject="actionObject"
-                            :parentDomainObject="parentDomainObject"
-                        />
-                    `
-                });
+                vueApp = createApp(ActivityInspector, {
+                    actionObject: selection[0][0].context.layoutItem,
+                    parentDomainObject: selection[0][1].context.item,
+                })
+                    .provide('openmct', this.openmct)
+                    .provide('actionAttributes', this.actionAttributes)
                 
                 vueApp.mount(element)
             },
             destroy() {
-                if (vueApp) {
-                    vueApp.unmount();
-                    vueApp = undefined;
-                }
+                vueApp.unmount();
             }
         };
     }
