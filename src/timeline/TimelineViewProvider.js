@@ -1,4 +1,4 @@
-import Vue from 'vue';
+import {createApp} from 'vue';
 import ApresTimeline from './components/ApresTimeline.vue';
 
 export default class TimelineViewProvider {
@@ -19,17 +19,22 @@ export default class TimelineViewProvider {
     }
 
     view(domainObject, objectPath, isEditing) {
+        /** @type {import('vue').App} */
+        let vueApp;
+
+        /** @type {import('vue').ComponentPublicInstance} */
         let component;
 
-        let vue = () => {
+        const vue = () => {
             return component.$refs.timelineComponent
         }
 
         const view =  {
             type: 'apres-timeline',
-            show: (element) => {
-                component = new Vue({
-                    el: element,
+            show: (/** @type {HTMLElement} */element) => {
+                element.style.setProperty('overflow-y', 'auto')
+
+                vueApp = createApp({
                     components: {
                         ApresTimeline
                     },
@@ -49,12 +54,14 @@ export default class TimelineViewProvider {
                                     :domainObject="domainObject"
                                 /> `
                 });
+                
+                component = vueApp.mount(element)
             },
             onEditModeChange: (isEditing) => {
                 component.isEditing = isEditing;
             },
             destroy() {
-                component.$destroy();
+                vueApp.unmount();
             },
             
             // The following methods proxy to the Vue component {{

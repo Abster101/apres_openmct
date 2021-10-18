@@ -70,12 +70,12 @@ export default {
         setValue(key, value) {
             if (key === 'startTime' || key === 'endTime') {
                 if(this.errors[key]) {
-                    this.$set(this.errors, key, undefined);
+                    this.errors[key] = undefined;
                 }
                 if (this.formatter.validate(value)) {
                     this.persistValue(key, value)
                 } else {
-                    this.$set(this.errors, key, 'Enter valid time string');
+                    this.errors[key] = 'Enter valid time string';
                 }
             } else {
                 this.persistValue(key, value);
@@ -91,7 +91,7 @@ export default {
     mounted() {
         this.openmct.editor.on('isEditing', this.setIsEditing);
     },
-    destroyed() {
+    unmounted() {
         this.openmct.editor.off('isEditing', this.setIsEditing);
     }
 }

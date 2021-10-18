@@ -1,4 +1,4 @@
-import Vue from 'vue';
+import { createApp } from 'vue';
 import ActivityView from './components/ActivityView.vue';
 
 export default class ActivityViewProvider {
@@ -14,12 +14,15 @@ export default class ActivityViewProvider {
     }
 
     view(domainObject, objectPath, isEditing) {
+        /** @type {import('vue').App<Element>} */
+        let vueApp;
+
+        /** @type {import('vue').ComponentPublicInstance} */
         let component;
 
         return {
             show: (element) => {
-                component = new Vue ({
-                    el: element,
+                vueApp = createApp({
                     components: {
                         ActivityView
                     },
@@ -41,12 +44,14 @@ export default class ActivityViewProvider {
                         />
                         `
                 });
+                
+                component = vueApp.mount(element)
             },
             onEditModeChange: (isEditing) => {
                 component.isEditing = isEditing;
             },
             destroy: () => {
-                component.$destroy();
+                vueApp.unmount();
             }
         }
     }

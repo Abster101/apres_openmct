@@ -1,5 +1,5 @@
 import ActivityInspector from "./components/ActivityInspector.vue";
-import Vue from 'vue';
+import { createApp } from 'vue';
 
 export default class ActivityInspectorViewProvider{
     constructor(openmct, actionAttributes) {
@@ -21,12 +21,12 @@ export default class ActivityInspectorViewProvider{
             && object.type === 'apres.activity.type'
     }
     view(selection) {
-        let component;
+        /** @type {import("vue").App<Element>} */
+        let vueApp;
 
         return {
             show: (element) => {
-                component = new Vue({
-                    el: element,
+                vueApp = createApp({
                     components: {
                         ActivityInspector
                     },
@@ -47,11 +47,13 @@ export default class ActivityInspectorViewProvider{
                         />
                     `
                 });
+                
+                vueApp.mount(element)
             },
             destroy() {
-                if (component) {
-                    component.$destroy();
-                    component = undefined;
+                if (vueApp) {
+                    vueApp.unmount();
+                    vueApp = undefined;
                 }
             }
         };

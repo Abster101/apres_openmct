@@ -199,7 +199,7 @@ export default {
             if (this.timelineLegends[activityTimelineLegend]) {
                 this.timelineLegends[activityTimelineLegend].push(activityDomainObjectCopy);
             } else {
-                this.$set(this.timelineLegends, activityTimelineLegend, [activityDomainObjectCopy]);
+                this.timelineLegends[activityTimelineLegend] = [activityDomainObjectCopy];
             }
         },
         addActivitiesFromConfiguration() {
@@ -229,7 +229,7 @@ export default {
             let oldActivities = this.activities.slice();
 
             reorderPlan.forEach((reorderEvent) => {
-                this.$set(this.activities, reorderEvent.newIndex, oldActivities[reorderEvent.oldIndex]);
+                this.activities[reorderEvent.newIndex] = oldActivities[reorderEvent.oldIndex];
 
             });
         },
@@ -473,7 +473,7 @@ export default {
             this.violations = this.domainObject.configuration.violations;
         }
     },
-    beforeDestroy() {
+    beforeUnmount() {
         this.unsubscribeFromComposition();
         this.openmct.time.off('bounds', (this.initializeTimeBounds));
     }

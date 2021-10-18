@@ -1,4 +1,4 @@
-import Vue from 'vue';
+import { createApp } from 'vue';
 import StartScreen from './startScreen/StartScreen.vue';
 
 // TODO are these needed?
@@ -12,13 +12,14 @@ import StartScreen from './startScreen/StartScreen.vue';
 function initializeApp() {
     const element = document.querySelector('#app');
 
-    const appComponent = new Vue({
-        el: element,
+    const vueApp = createApp({
         components: {
             StartScreen
         },
         template: '<StartScreen />'
     });
+
+    vueApp.mount(element)
 }
 
 document.addEventListener('DOMContentLoaded', initializeApp);
