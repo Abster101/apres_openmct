@@ -13,7 +13,8 @@
   "dependencies": {
     "axios": "^0.21.1",
     "lodash": "^4.17.21",
-    "openmct": "https://github.com/nasa/openmct.git"
+    "openmct": "https://github.com/nasa/openmct.git",
+    "plotly.js-dist": "^2.5.1"
   },
   "devDependencies": {
     "@babel/core": "^7.13.10",
