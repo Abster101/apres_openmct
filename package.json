@@ -13,7 +13,7 @@
   "dependencies": {
     "axios": "^0.21.1",
     "lodash": "^4.17.21",
-    "openmct": "nasa/openmct#4ba8f893a62e24afe8d40c8804e89f189940a7f9"
+    "openmct": "^1.7.0"
   },
   "devDependencies": {
     "@babel/core": "^7.13.10",
