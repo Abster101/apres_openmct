@@ -129,7 +129,8 @@ export default {
                 'overflow': 'hidden'
             }
 		},
-		containerStyle(){
+		/** @returns {import('@vue/runtime-dom').CSSProperties} */
+		containerStyle() {
 			return {
 				'width': '100%',
                 'height': '100%',
