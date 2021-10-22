@@ -111,6 +111,7 @@ export default {
 			this.clickedViolationIndex = index;
 			this.clickedViolationId = violation.violatedObj.objID;
 		},
+		// COMMENT -- Code for any updates, may not need
 		// onViolationChange: function(){
 		// 	this.$emit("violationClear");
 

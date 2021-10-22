@@ -179,7 +179,10 @@ export default {
         },
         liveDomainObject() {
             return this.domainObject;
-        }
+        }, 
+        projectEndTime() {
+            return this.domainObject.configuration.endTime;
+        },
     },
     data() {
         let timeSystem = this.openmct.time.timeSystem();
@@ -196,7 +199,7 @@ export default {
             violations: [],
             violationClicked: false,
             timeSystem,
-            timeFormatter
+            timeFormatter,
         }
     },
     methods: {
@@ -210,8 +213,6 @@ export default {
                 if (!fromFile) {
                     configuration.startTime = this.timeFormatter.parse(this.domainObject.configuration.startTime);
                 }
-
-                console.log(configuration);
 
                 this.openmct.objects.mutate(this.domainObject, `configuration.activities[${keystring}]`, configuration);
             }
