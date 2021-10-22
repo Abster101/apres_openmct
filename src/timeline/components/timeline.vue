@@ -168,6 +168,7 @@ export default {
     methods: {
         addActivityToConfiguration(activityDomainObject, fromFile) {
             let keystring = this.openmct.objects.makeKeyString(activityDomainObject.identifier);
+
             if (!this.domainObject.configuration.activities[keystring]) {
                 const configuration = lodash.cloneDeep(activityDomainObject.configuration);
                 let startTime;
@@ -175,6 +176,8 @@ export default {
                 if (!fromFile) {
                     configuration.startTime = this.timeFormatter.parse(this.domainObject.configuration.startTime);
                 }
+
+                console.log(configuration);
 
                 this.openmct.objects.mutate(this.domainObject, `configuration.activities[${keystring}]`, configuration);
             }
@@ -184,15 +187,16 @@ export default {
 
             // If its a dataset action, replace the key with a new uuid to allow multiple in one timeline.
             if (activityDomainObjectCopy.identifier.key.includes('actionsType')) {
+                const key = uuid();
+
                 activityDomainObjectCopy.identifier = {
-                    key: uuid(),
+                    key,
                     namespace: ''
                 }
+                activityDomainObjectCopy.configuration.uuid = key;
             }
 
             this.addActivityToConfiguration(activityDomainObjectCopy, fromFile);
-
-            // this.addError({startTime: this.timeFormatter.parse(activityDomainObjectCopy.configuration.startTime)});
 
             this.activities.push(activityDomainObjectCopy);
 
@@ -521,6 +525,7 @@ export default {
         }
     },
     beforeDestroy() {
+        this.openmct.objects.mutate(this.domainObject, 'composition', []); // Clear composition to prevent duplicate actions.
         this.unsubscribeFromComposition();
         this.openmct.time.off('bounds', (this.initializeTimeBounds));
     }

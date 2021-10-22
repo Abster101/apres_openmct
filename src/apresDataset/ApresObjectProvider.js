@@ -79,6 +79,8 @@ export default class ApresObjectProvider {
                 type: 'apres.action.type',
                 location: location,
                 configuration: {
+                    name: proctype,
+                    type: proctype,
                     colorHex: modelObject.colorHex,
                     timelineLegend: modelObject.timelineLegend,
                     startTime: 0,
