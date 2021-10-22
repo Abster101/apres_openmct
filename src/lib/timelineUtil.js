@@ -1,4 +1,29 @@
 const timelineUtil = {
+    getProjectJsonFromTimelineObject(timelineObject) {
+        const projectObject = {
+            $schema: './PlanningProjectSchema.json',
+            projectInfo: timelineObject.configuration.projectInfo,
+            activityPlan: {
+                actions: [],
+                planStart: timelineObject.configuration.startTime,
+                planEnd: timelineObject.configuration.endTime
+            }
+        };
+
+        Object.entries(timelineObject.configuration.activities).forEach(([uuid, action]) => {
+            const actionObject = {
+                uuid,
+                actionName: action.name,
+                actionStart: new Date(action.startTime).toJSON().split('.')[0]+'Z',
+                actionEnd: new Date(action.endTime).toJSON().split('.')[0]+'Z',
+                actionType: action.type,
+            }
+
+            projectObject.activityPlan.actions.push(actionObject);
+        });
+
+        return projectObject;
+    },
     getActionConfig(actionJSON, config = {}) {
         let colorHex = config.colorHex || '#4f6ffe';
         let timelineLegend = config.timelineLegend || 'Default';
@@ -8,6 +33,8 @@ const timelineUtil = {
         const configuration = {
             uuid: actionJSON.uuid,
             name: actionJSON.actionName,
+            note: actionJSON.note,
+            type: actionJSON.actionType,
             colorHex: colorHex,
             timelineLegend: timelineLegend,
             startTime: actionJSON.actionStart,
@@ -37,12 +64,14 @@ const timelineUtil = {
         return configObject;
     },
     getTimelineDomainObject(projectJSON) {
-        const timelineName = projectJSON.interfaceModel.description;
+        const timelineName = projectJSON.planningProject.projectInfo.projRef;
+        const notes = projectJSON.planningProject.projectInfo.note;
         const domainObjectConfiguration = {
             startTime: projectJSON.planningProject.activityPlan.planStart,
             endTime: projectJSON.planningProject.activityPlan.planEnd,
             activities: {},
             violations: projectJSON.planningProject.simulationInfo?.violations,
+            projectInfo: projectJSON.planningProject.projectInfo
         };
         const configuration = timelineUtil.processConfiguration(projectJSON.configuration);
         const domainObject = {
@@ -55,7 +84,8 @@ const timelineUtil = {
             modified: Date.now(),
             created: Date.now(),
             name: timelineName,
-            type: 'apres.timeline.type'
+            type: 'apres.timeline.type',
+            notes
         };
 
         projectJSON.planningProject.activityPlan.actions.forEach((action) => {
