@@ -61,9 +61,6 @@ const timelineUtil = {
 
         chronicleJSON.episodes.forEach((episode, index) => {
             const episodeStartTime = Date.parse(episode.time);
-            const episodeConfig = config.stateColors?.filter((state) => {
-                return state.stateVal === episode.value;
-            });
 
             if (!isNaN(episode.value)) {
                 const parsedValue = parseFloat(episode.value);
@@ -87,6 +84,10 @@ const timelineUtil = {
                     }
                 }
             } else {
+                const episodeConfig = config.stateColors?.filter((state) => {
+                    return state.stateVal === episode.value;
+                });
+                
                 episode.colorHex = episodeConfig && episodeConfig.length > 0 ? episodeConfig[0].colorHex : '#000000';
                 episode.textColorHex = episodeConfig && episodeConfig.length > 0 ? episodeConfig[0].textColorHex  : '#000000';
             }
