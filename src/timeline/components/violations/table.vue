@@ -49,7 +49,6 @@ export default {
 	},
 	data() {
         return {
-			// violations: [],
 			toggleClickedViolation: false,
 			clickedViolationIndex: null,
 			clickedViolationId: null,
