@@ -43,7 +43,7 @@ const timelineUtil = {
 
                 episode.colorHex = config.colorHex ? config.colorHex : '#000000';
                 episode.textColorHex =  config.colorHex ? config.colorHex : '#000000';
-
+                
                 if(!maxNumeric){
                     maxNumeric = parsedValue;
                 } else {
@@ -82,6 +82,14 @@ const timelineUtil = {
         };
 
         if (maxNumeric && minNumeric) {
+            if (config.resourceLimits?.minLimit) {
+                minNumeric = parseFloat(config.resourceLimits.minLimit);
+            }
+            
+            if (config.resourceLimits?.maxLimit) {
+                maxNumeric = parseFloat(config.resourceLimits.maxLimit);
+            }
+
             configuration.endPoints = {
                 min: minNumeric,
                 max: maxNumeric,
@@ -109,6 +117,18 @@ const timelineUtil = {
         configuration.stateChronicleConfig.forEach((state) => {
             configObject[state.varName] = state;
         });
+
+        for (const prop in configObject) {
+            const limits = configuration.resourceLimits.filter((limit) => {
+                if (prop === limit.variable) {
+                    return limit;
+                }
+            });
+
+            if (limits.length > 0) {
+                configObject[prop].resourceLimits = limits[0];
+            }
+        }
 
         return configObject;
     },

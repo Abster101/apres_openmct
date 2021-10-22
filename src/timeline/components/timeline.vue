@@ -87,6 +87,7 @@
 					:isEditing="isEditing"
 					:startBounds="bounds.start"
 					:endBounds="bounds.end"
+                    :projectEndTime="projectEndTime"
 					:pixelMultiplier="pixelMultiplier"
 					:formatter="timeFormatter"
                     :errors="errors"

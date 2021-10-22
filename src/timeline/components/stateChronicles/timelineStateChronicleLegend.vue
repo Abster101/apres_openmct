@@ -1,34 +1,60 @@
 <template>
 <ul :style="legendStyle" v-if="inBoundsEpisodes.length > 0">
-    <p :style="titleStyle">{{displayedValue}}</p>
-    <timeline-state-chronicle
-        v-for="(episode, index) in inBoundsEpisodes"
-        :key="'episode-' + episode.time"
-        :domainObject="episode"
-        :parentDomainObject="parentDomainObject"
-        :index="index"
-        :isEditing="isEditing"
-        :startBounds="startBounds"
-        :endBounds="endBounds"
-        :endPoints="endPoints"
-        :pixelMultiplier="pixelMultiplier"
-        :formatter="formatter"
-        :errors="errors"
-        :violationClicked="violationClicked"
-        @onEpisodeHover="changeDisplayValue" 
-    /> 
+    <div v-if="endPoints">
+        <div>
+            <TimelineNumericChronicle 
+                :episodes="inBoundsEpisodes"
+                :parentDomainObject="parentDomainObject"
+                :index="index"
+                :isEditing="isEditing"
+                :startBounds="startBounds"
+                :endBounds="endBounds"
+                :endPoints="endPoints"
+                :projectEndTime="projectEndTime"
+                :pixelMultiplier="pixelMultiplier"
+                :formatter="formatter"
+                :errors="errors"
+                :violationClicked="violationClicked"
+                @onEpisodeHover="changeDisplayValue" 
+            />
+        </div>
+    </div>
+    <div v-else>
+        <div
+            v-for="(episode, index) in inBoundsEpisodes"
+            :key="'episode-' + episode.time"
+        >
+            <p :style="titleStyle">{{displayedValue}}</p>
+            <timeline-state-chronicle
+                :domainObject="episode"
+                :parentDomainObject="parentDomainObject"
+                :index="index"
+                :isEditing="isEditing"
+                :startBounds="startBounds"
+                :endBounds="endBounds"
+                :endPoints="endPoints"
+                :pixelMultiplier="pixelMultiplier"
+                :formatter="formatter"
+                :errors="errors"
+                :violationClicked="violationClicked"
+                @onEpisodeHover="changeDisplayValue" 
+            /> 
+        </div>
+    </div>
 </ul>
 </template>
 
 <script>
 import TimelineStateChronicle from './timelineStateChronicle.vue';
+import TimelineNumericChronicle from './timelineNumericChronicle.vue';
 
 const ACTIVITY_HEIGHT = 44;
 
 export default {
     inject: ['openmct'],
     components: {
-        TimelineStateChronicle
+        TimelineStateChronicle,
+        TimelineNumericChronicle,
     },
     props: {
         chronicle: {
@@ -59,6 +85,9 @@ export default {
         },
         endBounds: {
             type: Number
+        },
+        projectEndTime: {
+            type: String
         },
         pixelMultiplier: {
             type: Number
