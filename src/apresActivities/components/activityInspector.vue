@@ -67,12 +67,16 @@ export default {
             }).formatter;
         },
         setValue(key, value) {
-            if (key === 'startTime' || key === 'endTime') {
+            if (key === 'startTime') {
                 if(this.errors[key]) {
                     this.$set(this.errors, key, undefined);
                 }
                 if (this.formatter.validate(value)) {
-                    this.persistValue(key, value)
+                    const startTimeSeconds = this.formatter.parse(value);
+                    const endTime = this.formatter.format(startTimeSeconds + this.duration);
+
+                    this.persistValue('startTime', value);
+                    this.persistValue('endTime', endTime);
                 } else {
                     this.$set(this.errors, key, 'Enter valid time string');
                 }

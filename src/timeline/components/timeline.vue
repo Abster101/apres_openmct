@@ -107,13 +107,15 @@
 </template>
 
 <script>
+import axios from 'axios';
+import config from '../../../apresConfig.js';
 import TimelineLegend from './timelineLegend.vue';
 import TimelineChronicleLegend from './stateChronicles/timelineStateChronicleLegend.vue';
 import TimelineLegendLabel from './timelineLegendLabel.vue';
 import TimelineAxis from './timeSystemAxis.vue';
 import ViolationsTable from './violations/table.vue';
 
-import simpleDrill from '../../../config/SimpleDrill.project.json';
+import timelineUtil from '../../lib/timelineUtil';
 
 import Error from './error.vue';
 import Moment from 'moment';
@@ -194,13 +196,13 @@ export default {
             violations: [],
             violationClicked: false,
             timeSystem,
-            timeFormatter,
-            projectEndTime: ""
+            timeFormatter
         }
     },
     methods: {
         addActivityToConfiguration(activityDomainObject, fromFile) {
             let keystring = this.openmct.objects.makeKeyString(activityDomainObject.identifier);
+
             if (!this.domainObject.configuration.activities[keystring]) {
                 const configuration = lodash.cloneDeep(activityDomainObject.configuration);
                 let startTime;
@@ -208,6 +210,8 @@ export default {
                 if (!fromFile) {
                     configuration.startTime = this.timeFormatter.parse(this.domainObject.configuration.startTime);
                 }
+
+                console.log(configuration);
 
                 this.openmct.objects.mutate(this.domainObject, `configuration.activities[${keystring}]`, configuration);
             }
@@ -217,15 +221,16 @@ export default {
 
             // If its a dataset action, replace the key with a new uuid to allow multiple in one timeline.
             if (activityDomainObjectCopy.identifier.key.includes('actionsType')) {
+                const key = uuid();
+
                 activityDomainObjectCopy.identifier = {
-                    key: uuid(),
+                    key,
                     namespace: ''
                 }
+                activityDomainObjectCopy.configuration.uuid = key;
             }
 
             this.addActivityToConfiguration(activityDomainObjectCopy, fromFile);
-
-            // this.addError({startTime: this.timeFormatter.parse(activityDomainObjectCopy.configuration.startTime)});
 
             this.activities.push(activityDomainObjectCopy);
 
@@ -290,7 +295,9 @@ export default {
                 centerTimeline: this.setTimeBoundsFromConfiguration,
                 zoomIn: this.zoomIn,
                 zoomOut: this.zoomOut,
-                importTimeline: this.importTimeline
+                importTimeline: this.importTimeline,
+                saveTimeline: this.saveTimeline,
+                deleteTimeline: this.deleteTimeline
             }
         },
         getFormatter(key) {
@@ -488,6 +495,42 @@ export default {
         importTimeline() {
             this.openmct.$injector.get('dialogService')
                 .getUserInput(this.getFormModel(), {}).then(this.processJsonTimeline);
+        },
+        saveTimeline() {
+            const saveUrl = `${config['apres_service_root_url']}/save`;
+            const projectJSON = timelineUtil.getProjectJsonFromTimelineObject(this.domainObject);
+
+            axios.put(saveUrl, projectJSON).then((success) => {
+                this.openmct.notifications.info('Success: Project Saved to APRES Service.');
+            });
+        },
+        deleteTimeline() {
+            const deleteUrl = `${config['apres_service_root_url']}/delete?projectname=${this.domainObject.name}`;
+            
+            const dialog = this.openmct.overlays.dialog({
+                iconClass: 'alert',
+                message: "Are you sure you want to delete this project?",
+                buttons: [
+                    {
+                        label: "Yes",
+                        emphasis: true,
+                        callback: () => {
+                            axios.delete(deleteUrl).then((success) => {
+                                localStorage.clear();
+                                this.openmct.destroy();
+                                window.location.reload();
+                            }).catch(error => console.log(error));
+                        }
+                    },
+                    {
+                        label: "No",
+                        emphasis: false,
+                        callback: () => {
+                            dialog.dismiss();
+                        }
+                    }
+                ]
+            });
         }
     },
     mounted() {
@@ -501,7 +544,6 @@ export default {
         composition.on('remove', this.removeActivity);
         composition.on('reorder', this.reorderActivities);
         composition.load();
-        this.projectEndTime = simpleDrill.activityPlan.planEnd;
 
         this.unsubscribeFromComposition = () => {
             composition.off('add', this.addActivity);
@@ -520,6 +562,7 @@ export default {
         }
     },
     beforeDestroy() {
+        this.openmct.objects.mutate(this.domainObject, 'composition', []); // Clear composition to prevent duplicate actions.
         this.unsubscribeFromComposition();
         this.openmct.time.off('bounds', (this.initializeTimeBounds));
     }
