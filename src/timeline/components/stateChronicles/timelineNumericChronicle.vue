@@ -126,7 +126,7 @@ export default {
             },
             yaxis: {
                 showgrid: false,
-                range: [2800, yMax],
+                range: [yMin, yMax],
                 fixedrange: true,
             },
         };
