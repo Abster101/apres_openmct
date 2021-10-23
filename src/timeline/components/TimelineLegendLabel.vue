@@ -6,7 +6,7 @@
 
 <script>
 import TimelineActivity from './TimelineActivity.vue';
-import TimelineStateChronicle from './TimelineStateChronicle.vue';
+import TimelineStateChronicle from './stateChronicles/TimelineStateChronicle.vue';
 
 const ACTIVITY_HEIGHT = 44;
 

@@ -1,5 +1,5 @@
 <template>
-<div :style="testingStyle">
+<div :style="divStyle">
     <h3>VIOLATIONS</h3>
 	<table>
         <thead>
@@ -13,14 +13,14 @@
         </thead>
         <tbody>
 			<tr  v-for="(violation, index) in violations" v-on:click="onRowClick(violation, index)" :style="tableRow">
-				<td>
+				<td style="padding-top: 15px">
 					<span :style="redDot" v-if="clickedViolationId === violation.violatedObj.objID & toggleClickedViolation"></span> 
 					{{violation.violationTime}}
 				</td>
-				<td>{{violation.violationType}}</td>
-				<td>{{violation.violatedObj.tableText}}</td>
-				<td>{{violation.violatedObjValue}}</td>
-				<td>
+				<td style="padding-top: 15px">{{violation.violationType}}</td>
+				<td style="padding-top: 15px">{{violation.violatedObj.tableText}}</td>
+				<td style="padding-top: 15px">{{violation.violatedObjValue}}</td>
+				<td style="padding-top: 15px">
 					<tr v-for="(violator, index) in violation.violators">
 						<td>{{violator.tableText}}</td>
 					</tr>
@@ -56,7 +56,6 @@ export default {
 	],
 	data() {
         return {
-			// violations: [],
 			toggleClickedViolation: false,
 			clickedViolationIndex: null,
 			clickedViolationId: null,
@@ -64,14 +63,17 @@ export default {
         }
 	},
     computed: {
-		testingStyle() {
+		divStyle() {
             return {
+				'max-height': '20%',
                 'margin-top': 'auto',
+				'overflow-y': 'auto',
             };
 		},
 		tableRow() {
             return {
                 'height': '40px',
+				'cursor': 'pointer',
             };
 		},
 		redDot() {
@@ -115,6 +117,7 @@ export default {
 			this.clickedViolationIndex = index;
 			this.clickedViolationId = violation.violatedObj.objID;
 		},
+		// COMMENT -- Code for any updates, may not need
 		// onViolationChange: function(){
 		// 	this.$emit("violationClear");
 
