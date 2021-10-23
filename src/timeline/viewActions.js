@@ -56,9 +56,10 @@ const saveTimeline = {
     description: 'Save Timeline to APRES Service',
     cssClass: 'icon-save',
     invoke: (objectPath, viewProvider) => {
-        viewProvider.getViewContext().saveTimeline();
+        viewProvider.saveTimeline();
     },
-    group: 'view'
+    group: 'view',
+    appliesTo,
 }
 
 const deleteTimeline = {
@@ -67,18 +68,19 @@ const deleteTimeline = {
     cssClass: 'icon-trash',
     description: 'Delete Timeline from APRES Service',
     invoke: (objectPath, viewProvider) => {
-        viewProvider.getViewContext().deleteTimeline();
+        viewProvider.deleteTimeline();
     },
-    group: 'view'
+    group: 'view',
+    appliesTo,
 }
 
 const viewActions = [
-    importTimeline,
     centerTimeline,
     zoomIn,
-    zoomOut,,
+    zoomOut,
+    importTimeline,
     saveTimeline,
-    deleteTimeline
+    deleteTimeline,
 ];
 
 export default viewActions;

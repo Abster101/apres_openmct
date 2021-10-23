@@ -59,6 +59,12 @@ export default class TimelineViewProvider {
             importTimeline() {
                 component.importTimeline()
             },
+            saveTimeline() {
+                component.saveTimeline()
+            },
+            deleteTimeline() {
+                component.deleteTimeline()
+            },
                     
             // }}
         }
