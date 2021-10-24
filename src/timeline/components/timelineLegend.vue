@@ -13,6 +13,7 @@
         :formatter="formatter"
         :errors="errors"
         :violationClicked="violationClicked"
+        @removeAction="removeAction"
     />
 </ul>
 </template>
@@ -102,6 +103,16 @@ export default {
                     this.formatter.parse(activity.configuration.startTime) <= this.endBounds
                 );
             })
+        }
+    },
+    methods: {
+         removeAction(actionId) {
+            const payload = {
+                actionId,
+                legendId: this.title
+            }
+
+            this.$emit('removeAction', payload);
         }
     }
 }
