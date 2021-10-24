@@ -25,7 +25,7 @@
 				<timeline-legend-label
 					v-for="(legend, index) in legends"
 					:key="'timeline-legend-label' + index"
-					:num-activities="timelineLegends[legend].length"
+					:num-activities="timelineLegends[legend] && timelineLegends[legend].length"
 					:title="legend"
 				>
 					{{legend}}
@@ -206,6 +206,8 @@ export default {
             } else {
                 this.$set(this.timelineLegends, activityTimelineLegend, [activityDomainObjectCopy]);
             }
+
+            this.openmct.objects.mutate(this.domainObject, 'composition', []);
         },
         addActivitiesFromConfiguration() {
             Object.entries(this.domainObject.configuration.activities).forEach(([key, configuration]) => {
@@ -542,7 +544,6 @@ export default {
         }
     },
     beforeDestroy() {
-        this.openmct.objects.mutate(this.domainObject, 'composition', []); // Clear composition to prevent duplicate actions.
         this.unsubscribeFromComposition();
         this.openmct.time.off('bounds', (this.initializeTimeBounds));
     }
