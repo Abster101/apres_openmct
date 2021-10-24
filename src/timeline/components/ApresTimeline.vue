@@ -201,6 +201,8 @@ export default {
             violationClicked: false,
             timeSystem,
             timeFormatter,
+            /** @type {SVGSVGElement | null} */
+            scrubber: null,
         }
     },
     methods: {
@@ -275,16 +277,16 @@ export default {
 
             });
         },
-        initializeTimeBounds(timeBounds, tick) {
+        setTimeBounds(timeBounds, tick) {
             if (tick) {
                 return;
             }
 
             this.bounds = timeBounds;
 
-            this.initializePixelMultiplier();
+            this.setPixelMultiplier();
         },
-        initializePixelMultiplier() {
+        setPixelMultiplier() {
             let container = this.$refs['timeline-container'];
             let boundingClientRect = container.getBoundingClientRect();
             let width = boundingClientRect.width;
@@ -523,11 +525,70 @@ export default {
                     }
                 ]
             });
-        }
+        },
+        updateOnTimelineDrag() {
+            // The OpenMCT `bounds` event fires only after letting go of the
+            // timeline scrubber, but we want to update the timeline continually as
+            // the user drags, so we update the timeline continually while the user
+            // has a pointer down.
+            //
+            // It is a bit hacky reaching into OpenMCT components like this, but I'm not sure
+            // if there's another way to do this yet.
+            // 
+            // Is there some way to make OpenMCT notify continually? Perhaps OpenMCT needs an update.
+            const scrubber = document.querySelector('.l-shell__time-conductor svg')
+
+            let pointerId = -1
+
+            scrubber.addEventListener('pointerdown', (/** @type {PointerEvent} */event) => {
+                console.log('POINTER DOWN')
+
+                pointerId = event.pointerId
+                
+                // Make an animation loop
+                
+                let frame = 0
+                
+                const loop = () => {
+                    const bounds = this.openmct.time.bounds()
+
+                    // Update the timeline view continually.
+                    this.setTimeBounds(bounds);
+
+                    console.log('LOOP', bounds)
+
+                    // Keep the loop going.
+                    frame = requestAnimationFrame(loop)
+                }
+                
+                frame = requestAnimationFrame(loop)
+
+                // Stop the animation loop when the user lets go.
+                const onPointerup = (/** @type {PointerEvent} */event) => {
+                    // We want to handle pointer up for the same pointer (finger).
+                    if (event.pointerId !== pointerId) return
+
+                    console.log('POINTER UP')
+
+                    cancelAnimationFrame(frame)
+                    document.removeEventListener('pointerup', onPointerup)
+                }
+                
+                document.addEventListener('pointerup', onPointerup)
+            })
+        },
     },
     mounted() {
-        this.openmct.time.on('bounds', this.initializeTimeBounds);
-        this.initializeTimeBounds(this.openmct.time.bounds());
+        // this.openmct.time.on('bounds', this.setTimeBounds);
+        debugger
+        const timeContext = this.openmct.time.getContextForView([]);
+        console.log('The same as openmct.time???????????', this.openmct.time === timeContext)
+        timeContext.on('bounds', this.setTimeBounds);
+
+        this.setTimeBounds(this.openmct.time.bounds());
+        
+        this.updateOnTimelineDrag()
+
         this.timeSystem = this.openmct.timeSystem;
 
         const composition = this.openmct.composition.get(this.domainObject);
@@ -556,7 +617,7 @@ export default {
     beforeUnmount() {
         this.openmct.objects.mutate(this.domainObject, 'composition', []); // Clear composition to prevent duplicate actions.
         this.unsubscribeFromComposition();
-        this.openmct.time.off('bounds', (this.initializeTimeBounds));
+        this.openmct.time.off('bounds', (this.setTimeBounds));
     }
 }
 </script>
