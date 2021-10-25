@@ -18,7 +18,7 @@
 </template>
 
 <script>
-import TimelineActivity from './timelineActivity.vue';
+import TimelineActivity from './TimelineActivity.vue';
 
 const ACTIVITY_HEIGHT = 44;
 

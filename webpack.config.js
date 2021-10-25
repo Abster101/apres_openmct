@@ -20,7 +20,7 @@ module.exports = {
         alias: {
             "@": path.join(__dirname, "node_modules/openmct"),
             "openmct": path.join(__dirname, "node_modules/openmct/dist/openmct.js"),
-            "vue": path.join(__dirname, "node_modules/vue/dist/vue.js")
+            "plotly": path.join(__dirname, "node_modules/plotly.js/dist/plotly.js"),
         }
     },
     plugins: [
