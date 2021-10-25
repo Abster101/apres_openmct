@@ -84,6 +84,7 @@ export default {
             if(this.plotLoaded){
                 const plotConfig = {
                     width: width,
+                    showlegend: false,
                 };
 
                 this.resizeGraph(plotConfig);
@@ -109,7 +110,7 @@ export default {
         var layout = {
             autosize: false,
             dragMode: false,
-            showLegend: false,
+            showlegend: false,
             height: 40,
             width: graphWidth,
             paper_bgcolor: '#393939',
@@ -191,14 +192,11 @@ export default {
                 y: y,
                 mode: 'lines',
                 type: 'scatter',
-                marker: {
-                    size: 4,
-                },
                 line: {
                     color: color,
                     width: 2,
                     shape: 'hv',
-                }
+                },
             };
         },
         sortLimits: function(limits, episodes) {
@@ -206,7 +204,7 @@ export default {
             const color = 'B81306';
             const dataPoints = [];
 
-            if(typeof limits.minLimit !== 'undfined'){
+            if(typeof limits.minLimit !== 'undefined'){
                 const x = [];
                 const y = [];
 
@@ -223,19 +221,16 @@ export default {
                     y: y,
                     mode: 'lines',
                     type: 'scatter',
-                    marker: {
-                        size: 4,
-                    },
                     line: {
                         color: color,
                         width: 2,
-                    }
+                    },
                 };
 
-                dataPoints.push(plotConfig)
+                dataPoints.push(plotConfig);
             }
 
-            if(typeof limits.maxLimit !== 'undfined'){
+            if(typeof limits.maxLimit !== 'undefined'){
                 const x = [];
                 const y = [];
 
@@ -258,10 +253,11 @@ export default {
                     line: {
                         color: color,
                         width: 2,
-                    }
+                    },
+                    showLegend: false,
                 };
 
-                dataPoints.push(plotConfig)
+                dataPoints.push(plotConfig);
             }
 
             return dataPoints;
