@@ -581,7 +581,7 @@ export default {
     mounted() {
         // this.openmct.time.on('bounds', this.setTimeBounds);
         debugger
-        const timeContext = this.openmct.time.getContextForView([]);
+        const timeContext = this.openmct.time.getContextForView([/* TODO Fill this with the path of the view. */]);
         console.log('The same as openmct.time???????????', this.openmct.time === timeContext)
         timeContext.on('bounds', this.setTimeBounds);
 
