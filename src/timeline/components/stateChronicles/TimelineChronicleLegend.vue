@@ -10,6 +10,7 @@
                 :startBounds="startBounds"
                 :endBounds="endBounds"
                 :endPoints="endPoints"
+                :limits="limits"
                 :projectEndTime="projectEndTime"
                 :pixelMultiplier="pixelMultiplier"
                 :formatter="formatter"
@@ -106,6 +107,7 @@ export default {
         return {
             displayedValue: "",
             endPoints: null,
+            limits: null,
         }
     },
     mounted() {
@@ -114,6 +116,10 @@ export default {
 
         if (typeof this.chronicle.endPoints !== 'undefined') {
             this.endPoints = this.chronicle.endPoints;
+        }
+
+        if (typeof this.chronicle.limits !== 'undefined') {
+            this.limits = this.chronicle.limits;
         }
     },
     computed: {
