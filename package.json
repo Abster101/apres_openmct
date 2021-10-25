@@ -5,8 +5,10 @@
   "private": true,
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "webpack",
-    "start": "webpack serve"
+    "build": "npm run webpack",
+    "start": "npm run webpack -- serve",
+    "webpack": "NODE_OPTIONS=--openssl-legacy-provider webpack",
+    "// webpack comment:": "the --openssl-legacy-provider flag prevents an error in Node 17+"
   },
   "author": "",
   "license": "ISC",
