@@ -177,7 +177,7 @@ export default {
                     actions: []
                 }
             }
-            console.log(projectJSON);
+
             const timelineBounds = {
                 start: Date.parse(projectJSON.planningProject.activityPlan.planStart),
                 end: Date.parse(projectJSON.planningProject.activityPlan.planEnd)
