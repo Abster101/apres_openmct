@@ -69,7 +69,7 @@ export default {
         setValue(key, value) {
             if (key === 'startTime') {
                 if(this.errors[key]) {
-                    this.$set(this.errors, key, undefined);
+                    this.errors[key] = undefined;
                 }
                 if (this.formatter.validate(value)) {
                     const startTimeSeconds = this.formatter.parse(value);
@@ -78,7 +78,7 @@ export default {
                     this.persistValue('startTime', value);
                     this.persistValue('endTime', endTime);
                 } else {
-                    this.$set(this.errors, key, 'Enter valid time string');
+                    this.errors[key] = 'Enter valid time string';
                 }
             } else {
                 this.persistValue(key, value);
@@ -94,7 +94,7 @@ export default {
     mounted() {
         this.openmct.editor.on('isEditing', this.setIsEditing);
     },
-    destroyed() {
+    unmounted() {
         this.openmct.editor.off('isEditing', this.setIsEditing);
     }
 }

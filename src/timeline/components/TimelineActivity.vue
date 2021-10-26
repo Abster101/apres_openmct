@@ -10,9 +10,6 @@
     </li>
 </template>
 <script>
-import lodash from 'lodash';
-import activityViewVue from '../../apresActivities/components/activityView.vue';
-
 const ACTIVITY_HEIGHT = 40;
 
 export default {
@@ -236,7 +233,7 @@ export default {
 
         this.initializeSelectable();
     },
-    beforeDestroy() {
+    beforeUnmount() {
         this.removeSelectable();
     }
 }

@@ -1,6 +1,6 @@
 <template>
 <div :style="containerStyle">
-	<div class="flex flex-row w-full">
+	<div class="flex flex-row w-full" :style="timelineStyle">
 		<div
 			class="w-10-10"
 		>
@@ -30,12 +30,19 @@
 				>
 					{{legend}}
 				</timeline-legend-label>
+                <timeline-legend-label
+					v-for="(legend, index) in chronicles"
+					:key="'timeline-chronicle-egend--label ' + index"
+                    :num-activities="1"
+					:title="legend.name"
+				>
+					{{legend}}
+				</timeline-legend-label>
 			</div>
 		</div>
 		<div
 			ref="timeline-container"
 			class="w-9-10"
-			:style="style"
 		>
 			<timeline-axis
 				:bounds="bounds"
@@ -45,8 +52,9 @@
 			/>
 			<div
 				style="min-width: 100%; min-height: 100%; position: relative"
+                :style="style"
 			>
-				<Error 
+				<ErrorDisplay 
 					v-for="(error, index) in errors"
 					:key="`error-${index}`"
 					:startTime="error.startTime"
@@ -70,13 +78,29 @@
                     :violationClicked="violationClicked"
                     @removeAction="removeAction"
 				/>
+                <timeline-chronicle-legend
+					v-for="(chronicle, index) in chronicles"
+					:key="'timeline-chronicle-legend-' + index"
+					:title="chronicle.name"
+					:chronicle="chronicle"
+					:parentDomainObject="liveDomainObject"
+					:index="index"
+					:isEditing="isEditing"
+					:startBounds="bounds.start"
+					:endBounds="bounds.end"
+                    :projectEndTime="projectEndTime"
+					:pixelMultiplier="pixelMultiplier"
+					:formatter="timeFormatter"
+                    :errors="errors"
+                    :violationClicked="violationClicked"
+				/>
 			</div>
 		</div>
 	</div>
 	<violations-table
         :violations="violations"
 		@loadViolations="addErrorsOnLoad" 
-        	@resetBounds="resetTimeBoundsFromViolationClick"
+        @resetBounds="resetTimeBoundsFromViolationClick"
 		@clicked="onViolationClicked"
 		@violationClear="clearErrorsWithUpdates"
 	/>
@@ -86,15 +110,15 @@
 <script>
 import axios from 'axios';
 import config from '../../../apresConfig.js';
-import TimelineLegend from './timelineLegend.vue';
-import TimelineLegendLabel from './timelineLegendLabel.vue';
-import TimelineAxis from './timeSystemAxis.vue';
-import ViolationsTable from './violations/table.vue';
-import TimelineStateChronicle from './timelineStateChronicle.vue';
+import TimelineLegend from './TimelineLegend.vue';
+import TimelineChronicleLegend from './stateChronicles/TimelineChronicleLegend.vue';
+import TimelineLegendLabel from './TimelineLegendLabel.vue';
+import TimelineAxis from './TimelineAxis.vue';
+import ViolationsTable from './violations/ViolationsTable.vue';
 
 import timelineUtil from '../../lib/timelineUtil';
 
-import Error from './error.vue';
+import ErrorDisplay from './ErrorDisplay.vue';
 import Moment from 'moment';
 import lodash from 'lodash';
 import uuid from 'uuid'
@@ -116,10 +140,10 @@ export default {
         TimelineLegend,
         TimelineLegendLabel,
         TimelineAxis,
-		Error,
+		ErrorDisplay,
 		ViolationsTable,
-        TimelineStateChronicle,
-		Error,
+		ErrorDisplay,
+        TimelineChronicleLegend,
     },
     computed: {
         inBoundErrors() {
@@ -130,10 +154,11 @@ export default {
         },
         style() {
             return {
-                'overflow': 'hidden'
+                'overflow': 'hidden',
             }
 		},
-		containerStyle(){
+		/** @returns {import('@vue/runtime-dom').CSSProperties} */
+		containerStyle() {
 			return {
 				'width': '100%',
                 'height': '100%',
@@ -141,12 +166,25 @@ export default {
     			'flex-direction': 'column',
             }
 		},
+        timelineStyle(){
+            return {
+                'overflow-x': 'hidden',
+                'max-height': '80%',
+                'overflow-y': 'auto',
+            }
+        },
         legends() {
             return Object.keys(this.timelineLegends);
         },
+        chronicleLegends() {
+            return Object.keys(this.chronicles);
+        },
         liveDomainObject() {
             return this.domainObject;
-        }
+        }, 
+        projectEndTime() {
+            return this.domainObject.configuration.endTime;
+        },
     },
     data() {
         let timeSystem = this.openmct.time.timeSystem();
@@ -163,7 +201,7 @@ export default {
             violations: [],
             violationClicked: false,
             timeSystem,
-            timeFormatter
+            timeFormatter,
         }
     },
     methods: {
@@ -204,7 +242,7 @@ export default {
             if (this.timelineLegends[activityTimelineLegend]) {
                 this.timelineLegends[activityTimelineLegend].push(activityDomainObjectCopy);
             } else {
-                this.$set(this.timelineLegends, activityTimelineLegend, [activityDomainObjectCopy]);
+                this.timelineLegends[activityTimelineLegend] = [activityDomainObjectCopy];
             }
 
             this.openmct.objects.mutate(this.domainObject, 'composition', []);
@@ -236,7 +274,8 @@ export default {
             let oldActivities = this.activities.slice();
 
             reorderPlan.forEach((reorderEvent) => {
-                this.$set(this.activities, reorderEvent.newIndex, oldActivities[reorderEvent.oldIndex]);
+                this.activities[reorderEvent.newIndex] = oldActivities[reorderEvent.oldIndex];
+
             });
         },
         initializeTimeBounds(timeBounds, tick) {
@@ -255,17 +294,6 @@ export default {
             let boundsDiff = this.bounds.end - this.bounds.start;
 
             this.pixelMultiplier = boundsDiff / width;
-        },
-        getViewContext() {
-            return {
-                type: 'timeline-component',
-                centerTimeline: this.setTimeBoundsFromConfiguration,
-                zoomIn: this.zoomIn,
-                zoomOut: this.zoomOut,
-                importTimeline: this.importTimeline,
-                saveTimeline: this.saveTimeline,
-                deleteTimeline: this.deleteTimeline
-            }
         },
         getFormatter(key) {
             return this.openmct.telemetry.getValueFormatter({
@@ -334,30 +362,30 @@ export default {
                 this.centerTimeline();
             }
 		},
-        addErrorsOnLoad(value) {
-            this.addError(value.violation);
-                this.violationClicked = value.violationClicked;
+	    addErrorsOnLoad(value) {
+	        this.addError(value.violation);
+            this.violationClicked = value.violationClicked;
+	    },
+	    onViolationClicked(value) {
+            let violationTime = this.timeFormatter.parse(value.violation.violationTime);
+            let end = Math.ceil(violationTime + TIMELINE_PADDING);
+            let start = Math.floor(violationTime - TIMELINE_PADDING);
+            
+            this.openmct.time.bounds({start, end});
+	        this.clearErrors();
+            this.violationClicked = value.violationClicked;
+	        this.addError({
+		        startTime: value.violation.violationTime,
+                actionID: value.violation.violatedObj.objID,
+		        violators: value.violation.violators,
+            });
+	    },
+        resetTimeBoundsFromViolationClick(value) {
+        	this.centerTimeline();
         },
-        onViolationClicked(value) {
-                let violationTime = this.timeFormatter.parse(value.violation.violationTime);
-                let end = Math.ceil(violationTime + TIMELINE_PADDING);
-                let start = Math.floor(violationTime - TIMELINE_PADDING);
-
-                this.openmct.time.bounds({start, end});
-            this.clearErrors();
-                this.violationClicked = value.violationClicked;
-            this.addError({
-            startTime: value.violation.violationTime,
-                    actionID: value.violation.violatedObj.objID,
-            violators: value.violation.violators,
-                });
-        },
-            resetTimeBoundsFromViolationClick(value) {
-                this.centerTimeline();
-            },
-        clearErrorsWithUpdates(value){
-            this.clearErrors();
-        },
+	    clearErrorsWithUpdates(value){
+	        this.clearErrors();
+	    },
         getFormModel() {
             return {
                 name: "Import Timeline",
@@ -396,7 +424,7 @@ export default {
             let colorHex = config.colorHex || '#4f6ffe';
             let timelineLegend = config.timelineLegend || 'Default';
             const startTime = this.timeFormatter.parse(action.actionStart);
-            const endTime = this.timeFormatter.parse(action.actionEnd)
+            const endTime = this.timeFormatter.parse(action.actionEnd);
 
             const configuration = {
                 name: action.actionName,
@@ -539,11 +567,15 @@ export default {
 
         const selectedProject = localStorage.getItem('apres_selected_project');
 
-        if(this.domainObject.configuration.violations){
+        if (this.domainObject.configuration.violations) {
             this.violations = this.domainObject.configuration.violations;
         }
+        if (this.domainObject.configuration.chronicles) {
+            this.chronicles = this.domainObject.configuration.chronicles;
+        }
     },
-    beforeDestroy() {
+    beforeUnmount() {
+        this.openmct.objects.mutate(this.domainObject, 'composition', []); // Clear composition to prevent duplicate actions.
         this.unsubscribeFromComposition();
         this.openmct.time.off('bounds', (this.initializeTimeBounds));
     }

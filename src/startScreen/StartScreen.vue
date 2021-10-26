@@ -177,7 +177,7 @@ export default {
                     actions: []
                 }
             }
-            console.log(projectJSON);
+
             const timelineBounds = {
                 start: Date.parse(projectJSON.planningProject.activityPlan.planStart),
                 end: Date.parse(projectJSON.planningProject.activityPlan.planEnd)
@@ -417,9 +417,6 @@ export default {
                 })
                 .catch((error) => console.log(error));
         }
-    },
-    onDestroy() {
-        openmct.onDestroy();
     },
     mounted() {
         const session = Boolean(localStorage.getItem('apres_session'));

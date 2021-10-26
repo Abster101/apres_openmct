@@ -1,6 +1,6 @@
-import ChroniclesViewProvider from '../apresStateChronicle/chroniclesViewProvider';
-import ActivityViewProvider from "../apresActivities/activityViewProvider";
-import TimelineViewProvider from "./timelineViewProvider";
+import ChroniclesViewProvider from '../apresStateChronicle/ChroniclesViewProvider';
+import ActivityViewProvider from "../apresActivities/ActivityViewProvider";
+import TimelineViewProvider from "./TimelineViewProvider";
 import viewActions from "./viewActions";
 
 export default function () {

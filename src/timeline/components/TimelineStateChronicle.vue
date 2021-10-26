@@ -164,7 +164,7 @@ export default {
 
     this.initializeSelectable();
   },
-  beforeDestroy() {
+  beforeUnmount() {
     this.removeSelectable();
   }
 }

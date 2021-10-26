@@ -1,22 +1,9 @@
-import Vue from 'vue';
-import StartScreen from './startScreen/startScreen.vue';
-import openmct from 'openmct';
-import apresTimeline from './timeline/plugin'
-import apresActivities from './apresActivities/plugin';
-import apresDataset from './apresDataset/plugin';
-import apresStateChronicle from './apresStateChronicle/plugin';
-import { activityTypes } from '../config/action_types';
+import { createApp } from 'vue';
+import StartScreen from './startScreen/StartScreen.vue';
 
 function initializeApp() {
     const element = document.querySelector('#app');
-
-    const appComponent = new Vue({
-        el: element,
-        components: {
-            StartScreen
-        },
-        template: '<StartScreen />'
-    });
+    createApp(StartScreen).mount(element)
 }
 
 document.addEventListener('DOMContentLoaded', initializeApp);

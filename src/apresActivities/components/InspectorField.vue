@@ -59,12 +59,13 @@ export default {
             required: false
         }
     },
+    emits: ['valueChanged'],
     methods: {
         onBlur(event) {
             const value = event.target.value;
 
             this.$emit('valueChanged', this.label, value);
         }
-    }
+    },
 }
 </script>
