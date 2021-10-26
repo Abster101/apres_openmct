@@ -119,7 +119,6 @@ import ViolationsTable from './violations/ViolationsTable.vue';
 import timelineUtil from '../../lib/timelineUtil';
 
 import ErrorDisplay from './ErrorDisplay.vue';
-import Moment from 'moment';
 import lodash from 'lodash';
 import uuid from 'uuid'
 
@@ -142,7 +141,6 @@ export default {
         TimelineAxis,
 		ErrorDisplay,
 		ViolationsTable,
-		ErrorDisplay,
         TimelineChronicleLegend,
     },
     computed: {
@@ -210,7 +208,6 @@ export default {
 
             if (!this.domainObject.configuration.activities[keystring]) {
                 const configuration = lodash.cloneDeep(activityDomainObject.configuration);
-                let startTime;
 
                 if (!fromFile) {
                     configuration.startTime = this.timeFormatter.parse(this.domainObject.configuration.startTime);

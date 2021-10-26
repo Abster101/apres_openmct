@@ -6,7 +6,6 @@
 import Plotly from 'plotly';
 
 const ACTIVITY_HEIGHT = 40;
-const NUMERIC_HEIGHT = 34
 
 export default {
     inject: ['openmct'],

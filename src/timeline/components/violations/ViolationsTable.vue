@@ -32,11 +32,6 @@
 </template>
 
 <script>
-import simpleDrill from '../../../../config/SimpleDrillViolated_EpSim_Output.json';
-import simpleDrill2 from '../../../../config/SimpleDrillViolated2_EpSim_Output.json';
-import simpleDrill3 from '../../../../config/SimpleDrillViolated3_EpSim_Output.json';
-import simpleDrill4 from '../../../../config/SimpleDrillViolated4_EpSim_Output.json';
-
 export default {
     inject: ['openmct'],
     components: {
@@ -50,8 +45,6 @@ export default {
 	emits: [
 		'resetBounds',
 		'clicked',
-		// 'violationClear',
-		'violationClear',
 		'loadViolations',
 	],
 	data() {
@@ -117,36 +110,6 @@ export default {
 			this.clickedViolationIndex = index;
 			this.clickedViolationId = violation.violatedObj.objID;
 		},
-		// COMMENT -- Code for any updates, may not need
-		// onViolationChange: function(){
-		// 	this.$emit("violationClear");
-
-		// 	if(this.violationChange === 1){
-		// 		this.violationChange = this.violationChange + 1;
-		// 		this.violations = simpleDrill2.simulationInfo.violations
-		// 	}else if(this.violationChange === 2){
-		// 		this.violationChange = this.violationChange + 1;
-		// 		this.violations = simpleDrill3.simulationInfo.violations
-		// 	}else if(this.violationChange === 3){
-		// 		this.violationChange = this.violationChange + 1;
-		// 		this.violations = simpleDrill4.simulationInfo.violations
-		// 	}else{
-		// 		this.violationChange = 1;
-		// 		this.violations = simpleDrill.simulationInfo.violations
-		// 	}
-
-		// 	const match = this.violations.filter(violation => {
-		// 		return violation.violatedObj.objID === this.clickedViolationId
-		// 	})
-
-		// 	if (match.length === 0) {
-		// 		this.toggleClickedViolation = false;
-		// 		this.clickedViolationIndex = null;
-		// 		this.clickedViolationId = null;
-		// 	}
-
-		// 	this.resetViolationRedLine();
-		// },
 		resetViolationRedLine: function(){
 			for(let i in this.violations) {
 				const violationObj = {

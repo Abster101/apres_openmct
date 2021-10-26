@@ -11,6 +11,10 @@
         "checkJs": true,
         "target": "ES2020",
         "moduleResolution": "node",
-        "noImplicitThis": true
-    }
+        "noImplicitThis": true,
+        "noUnusedLocals": true,
+        "noUnusedParameters": true,
+        "allowSyntheticDefaultImports": true
+    },
+    "include": "src/**/*"
 }
