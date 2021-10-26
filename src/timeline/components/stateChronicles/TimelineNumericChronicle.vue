@@ -44,6 +44,9 @@ export default {
         endPoints: {
             type: Object
         },
+        limits: {
+            type: Object
+        },
         pixelMultiplier: {
             type: Number
         },
@@ -81,6 +84,7 @@ export default {
             if(this.plotLoaded){
                 const plotConfig = {
                     width: width,
+                    showlegend: false,
                 };
 
                 this.resizeGraph(plotConfig);
@@ -97,6 +101,7 @@ export default {
         const xMin = new Date(this.startTime);
         const xMax = new Date(this.projectEndTime);
         const data = this.sortData(this.episodes);
+        const limits = this.sortLimits(this.limits, this.episodes);
 
         this.duration = this.calculateTotalDuration(this.episodes);
 
@@ -105,7 +110,7 @@ export default {
         var layout = {
             autosize: false,
             dragMode: false,
-            showLegend: false,
+            showlegend: false,
             height: 40,
             width: graphWidth,
             paper_bgcolor: '#393939',
@@ -131,7 +136,7 @@ export default {
             },
         };
 
-        this.data = [data];
+        this.data = [data, ...limits];
 
         Plotly.newPlot(this.$refs.graph, this.data, layout, {displayModeBar: false});
 
@@ -187,15 +192,75 @@ export default {
                 y: y,
                 mode: 'lines',
                 type: 'scatter',
-                marker: {
-                    size: 4,
-                },
                 line: {
                     color: color,
                     width: 2,
                     shape: 'hv',
-                }
+                },
             };
+        },
+        sortLimits: function(limits, episodes) {
+            const xMax = new Date(this.projectEndTime);
+            const color = 'B81306';
+            const dataPoints = [];
+
+            if(typeof limits.minLimit !== 'undefined'){
+                const x = [];
+                const y = [];
+
+                if(episodes.length > 0){
+                    x.push(episodes[0].time);
+                    x.push(xMax);
+
+                    y.push(limits.minLimit);
+                    y.push(limits.minLimit);
+                }
+
+                const plotConfig = {
+                    x: x,
+                    y: y,
+                    mode: 'lines',
+                    type: 'scatter',
+                    line: {
+                        color: color,
+                        width: 2,
+                    },
+                };
+
+                dataPoints.push(plotConfig);
+            }
+
+            if(typeof limits.maxLimit !== 'undefined'){
+                const x = [];
+                const y = [];
+
+                if(episodes.length > 0){
+                    x.push(episodes[0].time);
+                    x.push(xMax);
+
+                    y.push(limits.maxLimit);
+                    y.push(limits.maxLimit);
+                }
+
+                const plotConfig = {
+                    x: x,
+                    y: y,
+                    mode: 'lines',
+                    type: 'scatter',
+                    marker: {
+                        size: 4,
+                    },
+                    line: {
+                        color: color,
+                        width: 2,
+                    },
+                    showLegend: false,
+                };
+
+                dataPoints.push(plotConfig);
+            }
+
+            return dataPoints;
         },
     },
     watch: {
