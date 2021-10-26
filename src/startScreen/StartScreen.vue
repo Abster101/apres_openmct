@@ -418,9 +418,6 @@ export default {
                 .catch((error) => console.log(error));
         }
     },
-    onDestroy() {
-        openmct.onDestroy();
-    },
     mounted() {
         const session = Boolean(localStorage.getItem('apres_session'));
         

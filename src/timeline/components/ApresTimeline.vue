@@ -54,7 +54,7 @@
 				style="min-width: 100%; min-height: 100%; position: relative"
                 :style="style"
 			>
-				<Error 
+				<ErrorDisplay 
 					v-for="(error, index) in errors"
 					:key="`error-${index}`"
 					:startTime="error.startTime"
@@ -109,15 +109,15 @@
 <script>
 import axios from 'axios';
 import config from '../../../apresConfig.js';
-import TimelineLegend from './timelineLegend.vue';
-import TimelineChronicleLegend from './stateChronicles/timelineChronicleLegend.vue';
-import TimelineLegendLabel from './timelineLegendLabel.vue';
-import TimelineAxis from './timeSystemAxis.vue';
-import ViolationsTable from './violations/table.vue';
+import TimelineLegend from './TimelineLegend.vue';
+import TimelineChronicleLegend from './stateChronicles/TimelineChronicleLegend.vue';
+import TimelineLegendLabel from './TimelineLegendLabel.vue';
+import TimelineAxis from './TimelineAxis.vue';
+import ViolationsTable from './violations/ViolationsTable.vue';
 
 import timelineUtil from '../../lib/timelineUtil';
 
-import Error from './error.vue';
+import ErrorDisplay from './ErrorDisplay.vue';
 import Moment from 'moment';
 import lodash from 'lodash';
 import uuid from 'uuid'
@@ -139,9 +139,9 @@ export default {
         TimelineLegend,
         TimelineLegendLabel,
         TimelineAxis,
-		Error,
+		ErrorDisplay,
 		ViolationsTable,
-		Error,
+		ErrorDisplay,
         TimelineChronicleLegend,
     },
     computed: {
@@ -156,7 +156,8 @@ export default {
                 'overflow': 'hidden',
             }
 		},
-		containerStyle(){
+		/** @returns {import('@vue/runtime-dom').CSSProperties} */
+		containerStyle() {
 			return {
 				'width': '100%',
                 'height': '100%',
@@ -240,7 +241,7 @@ export default {
             if (this.timelineLegends[activityTimelineLegend]) {
                 this.timelineLegends[activityTimelineLegend].push(activityDomainObjectCopy);
             } else {
-                this.$set(this.timelineLegends, activityTimelineLegend, [activityDomainObjectCopy]);
+                this.timelineLegends[activityTimelineLegend] = [activityDomainObjectCopy];
             }
         },
         addActivitiesFromConfiguration() {
@@ -270,7 +271,8 @@ export default {
             let oldActivities = this.activities.slice();
 
             reorderPlan.forEach((reorderEvent) => {
-                this.$set(this.activities, reorderEvent.newIndex, oldActivities[reorderEvent.oldIndex]);
+                this.activities[reorderEvent.newIndex] = oldActivities[reorderEvent.oldIndex];
+
             });
         },
         initializeTimeBounds(timeBounds, tick) {
@@ -289,17 +291,6 @@ export default {
             let boundsDiff = this.bounds.end - this.bounds.start;
 
             this.pixelMultiplier = boundsDiff / width;
-        },
-        getViewContext() {
-            return {
-                type: 'timeline-component',
-                centerTimeline: this.setTimeBoundsFromConfiguration,
-                zoomIn: this.zoomIn,
-                zoomOut: this.zoomOut,
-                importTimeline: this.importTimeline,
-                saveTimeline: this.saveTimeline,
-                deleteTimeline: this.deleteTimeline
-            }
         },
         getFormatter(key) {
             return this.openmct.telemetry.getValueFormatter({
@@ -562,7 +553,7 @@ export default {
             this.chronicles = this.domainObject.configuration.chronicles;
         }
     },
-    beforeDestroy() {
+    beforeUnmount() {
         this.openmct.objects.mutate(this.domainObject, 'composition', []); // Clear composition to prevent duplicate actions.
         this.unsubscribeFromComposition();
         this.openmct.time.off('bounds', (this.initializeTimeBounds));

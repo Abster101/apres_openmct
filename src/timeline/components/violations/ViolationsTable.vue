@@ -47,6 +47,13 @@ export default {
             required: true,
         },
 	},
+	emits: [
+		'resetBounds',
+		'clicked',
+		// 'violationClear',
+		'violationClear',
+		'loadViolations',
+	],
 	data() {
         return {
 			toggleClickedViolation: false,

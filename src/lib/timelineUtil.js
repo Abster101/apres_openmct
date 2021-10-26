@@ -110,17 +110,29 @@ const timelineUtil = {
         };
 
         if (maxNumeric && minNumeric) {
-            if (config.resourceLimits?.minLimit) {
-                minNumeric = parseFloat(config.resourceLimits.minLimit);
+            if (config.minBound) {
+                minNumeric = parseFloat(config.minBound);
             }
             
-            if (config.resourceLimits?.maxLimit) {
-                maxNumeric = parseFloat(config.resourceLimits.maxLimit);
+            if (config.maxBound) {
+                maxNumeric = parseFloat(config.maxBound);
             }
 
             configuration.endPoints = {
                 min: minNumeric,
                 max: maxNumeric,
+            }
+        }
+
+        if (config.minLimit || config.maxLimit) {
+            configuration.limits = {};
+
+            if (config.minLimit) {
+                configuration.limits.minLimit = parseFloat(config.minLimit);
+            }
+            
+            if (config.maxLimit) {
+                configuration.limits.maxLimit = parseFloat(config.minLimit);
             }
         }
 
@@ -145,18 +157,6 @@ const timelineUtil = {
         configuration.stateChronicleConfig.forEach((state) => {
             configObject[state.varName] = state;
         });
-
-        for (const prop in configObject) {
-            const limits = configuration.resourceLimits.filter((limit) => {
-                if (prop === limit.variable) {
-                    return limit;
-                }
-            });
-
-            if (limits.length > 0) {
-                configObject[prop].resourceLimits = limits[0];
-            }
-        }
 
         return configObject;
     },

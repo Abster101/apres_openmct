@@ -57,6 +57,7 @@ export default {
             type:String
         }
     },
+    emits: ['onEpisodeHover'],
     computed: {
         activityStyle() {
             const stateChronicles = {
