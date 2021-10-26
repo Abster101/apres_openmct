@@ -4,14 +4,12 @@
         :title="domainObject.name"
         class="timeline-activity"
         @mousedown="onMouseDown"
+        @contextmenu.prevent="showContextMenu"
     >
         <span class="w-full text-align-center align-self-center">{{domainObject.name}}</span>
     </li>
 </template>
 <script>
-// TODO not used (yet?)
-// import ActivityViewVue from '../../apresActivities/components/ActivityView.vue';
-
 const ACTIVITY_HEIGHT = 40;
 
 export default {
@@ -209,7 +207,24 @@ export default {
             }
 
             return this.defaultStyle[property];
-        } 
+        },
+        getRemoveActionObject() {
+            return {
+                name: 'Remove',
+                key: 'apres:remove-action',
+                cssClass: 'icon-trash',
+                description: 'Remove action from timeline.',
+                callBack: (objectPath, viewProvider) => {
+                    this.$emit('removeAction', this.keystring);
+                },
+                group: 'view'
+            }
+        },
+        showContextMenu(event) {
+            const removeAction = this.getRemoveActionObject();
+
+            this.openmct.menus.showMenu(event.x, event.y, [removeAction]);
+        }
     },
     mounted() {
         let boundingClientRect = this.$el.getBoundingClientRect();

@@ -25,7 +25,7 @@
 				<timeline-legend-label
 					v-for="(legend, index) in legends"
 					:key="'timeline-legend-label' + index"
-					:num-activities="timelineLegends[legend].length"
+					:num-activities="timelineLegends[legend] && timelineLegends[legend].length"
 					:title="legend"
 				>
 					{{legend}}
@@ -76,6 +76,7 @@
 					:formatter="timeFormatter"
                     :errors="errors"
                     :violationClicked="violationClicked"
+                    @removeAction="removeAction"
 				/>
                 <timeline-chronicle-legend
 					v-for="(chronicle, index) in chronicles"
@@ -243,6 +244,8 @@ export default {
             } else {
                 this.timelineLegends[activityTimelineLegend] = [activityDomainObjectCopy];
             }
+
+            this.openmct.objects.mutate(this.domainObject, 'composition', []);
         },
         addActivitiesFromConfiguration() {
             Object.entries(this.domainObject.configuration.activities).forEach(([key, configuration]) => {
@@ -523,6 +526,24 @@ export default {
                     }
                 ]
             });
+        },
+        removeAction(payload) {
+            const { actionId, legendId } = payload;
+            const filteredLegendActivities = this.timelineLegends[legendId].filter((activity) => activity.identifier.key !== actionId);
+            const activitiesConfiguration = lodash.cloneDeep(this.domainObject.configuration.activities);
+
+            delete activitiesConfiguration[actionId]; // Remove action from domainObject configuration.
+
+            // If no actions remain in legend, remove legend. Else set filtered actions array to legend.
+            if (filteredLegendActivities.length === 0) {
+                this.$set(this.timelineLegends, legendId, undefined);
+            } else {
+                this.$set(this.timelineLegends, legendId, filteredLegendActivities);
+            }
+
+            // Remove action from activities array.
+            this.activities = this.activities.filter((activity) => activity.identifier.key !== actionId);
+            this.openmct.objects.mutate(this.domainObject, 'configuration.activities', activitiesConfiguration);
         }
     },
     mounted() {

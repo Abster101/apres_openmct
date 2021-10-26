@@ -4,7 +4,7 @@
         v-for="attribute in actionAttributes"
         :key="attribute.name"
         :label="attribute.name"
-        :value="configuration[attribute.name]"
+        :value="configuration && configuration[attribute.name]"
         :isEditable="isEditing && attribute.editable === true"
         :error="errors[attribute.name]"
         @valueChanged="setValue"
@@ -38,10 +38,10 @@ export default {
     },
     computed: {
         startTime() {
-            return this.configuration.startTime;
+            return this.configuration && this.configuration.startTime;
         },
         duration() {
-            return this.configuration.duration;
+            return this.configuration && this.configuration.duration;
         },
         configuration() {
             return this.parentDomainObject.configuration.activities[this.id];
