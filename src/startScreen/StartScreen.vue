@@ -132,7 +132,6 @@ import axios from 'axios';
 import apresTimeline from '../timeline/plugin'
 import apresActivities from '../apresActivities/plugin';
 import apresDataset from '../apresDataset/plugin';
-import apresStateChronicle from '../apresStateChronicle/plugin';
 import apresSessionIndicator from '../apresSessionIndicator/plugin';
 import config from '../../apresConfig.js';
 import domainObjectUtil from '../lib/domainObjectUtil';
@@ -194,7 +193,6 @@ export default {
             const actionAttributes = this.globalAttributes.modelAttributes && this.globalAttributes.modelAttributes.actionAttributes;
 
             openmct.install(apresActivities(actionAttributes));
-            // openmct.install(apresStateChronicle());
             openmct.install(apresTimeline());
             openmct.install(apresDataset(projectJSON.configuration));
             openmct.install(apresSessionIndicator())

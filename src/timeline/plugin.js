@@ -1,4 +1,3 @@
-import ChroniclesViewProvider from '../apresStateChronicle/ChroniclesViewProvider';
 import ActivityViewProvider from "../apresActivities/ActivityViewProvider";
 import TimelineViewProvider from "./TimelineViewProvider";
 import viewActions from "./viewActions";
@@ -50,6 +49,5 @@ export default function () {
         });
         openmct.objectViews.addProvider(new TimelineViewProvider(openmct));
         openmct.objectViews.addProvider(new ActivityViewProvider(openmct));
-        openmct.objectViews.addProvider(new ChroniclesViewProvider(openmct));
     }
 };
