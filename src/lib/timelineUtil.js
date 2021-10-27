@@ -54,11 +54,108 @@ const timelineUtil = {
 
         return configuration;
     },
+    getChroniclesConfig(chronicleJSON, config = {}, projectEndTime) {
+        let timelineLegend = config.variable || 'Default';
+        let maxNumeric;
+        let minNumeric; 
+
+        chronicleJSON.episodes.forEach((episode, index) => {
+            const episodeStartTime = Date.parse(episode.time);
+
+            if (!isNaN(episode.value)) {
+                const parsedValue = parseFloat(episode.value);
+
+                episode.colorHex = config.colorHex ? config.colorHex : '#000000';
+                episode.textColorHex =  config.colorHex ? config.colorHex : '#000000';
+                
+                if(!maxNumeric){
+                    maxNumeric = parsedValue;
+                } else {
+                    if (maxNumeric < parsedValue) {
+                        maxNumeric = parsedValue;
+                    }
+                }
+
+                if (!minNumeric) {
+                    minNumeric = parsedValue;
+                } else {
+                    if(minNumeric > parsedValue){
+                        minNumeric = parsedValue;
+                    }
+                }
+            } else {
+                const episodeConfig = config.stateColors?.filter((state) => {
+                    return state.stateVal === episode.value;
+                });
+                
+                episode.colorHex = episodeConfig && episodeConfig.length > 0 ? episodeConfig[0].colorHex : '#000000';
+                episode.textColorHex = episodeConfig && episodeConfig.length > 0 ? episodeConfig[0].textColorHex  : '#000000';
+            }
+
+            if (index < chronicleJSON.episodes.length - 1) {
+                const nextEpisodeStartTime = Date.parse(chronicleJSON.episodes[index + 1].time);
+
+                episode.duration = nextEpisodeStartTime - episodeStartTime;
+            } else {
+                const endTime = Date.parse(projectEndTime);
+
+                episode.duration = endTime - episodeStartTime;
+            }
+        });
+
+        const configuration = {
+            name: chronicleJSON.variable,
+            timelineLegend: timelineLegend,
+            episodes: chronicleJSON.episodes,
+        };
+
+        if (maxNumeric && minNumeric) {
+            if (config.minBound) {
+                minNumeric = parseFloat(config.minBound);
+            }
+            
+            if (config.maxBound) {
+                maxNumeric = parseFloat(config.maxBound);
+            }
+
+            configuration.endPoints = {
+                min: minNumeric,
+                max: maxNumeric,
+            }
+        }
+
+        if (config.minLimit || config.maxLimit) {
+            configuration.limits = {};
+
+            if (config.minLimit) {
+                configuration.limits.minLimit = parseFloat(config.minLimit);
+            }
+            
+            if (config.maxLimit) {
+                configuration.limits.maxLimit = parseFloat(config.minLimit);
+            }
+        }
+
+        return configuration;
+    },
     processConfiguration(configuration) {
         const configObject = {};
 
         configuration.modelConfig.forEach((model) => {
             configObject[model.actProcType] = model;
+        });
+
+        return configObject;
+    },
+    processChronicleConfiguration(configuration) {
+        const configObject = {};
+
+        configuration.numericChronicleConfig.forEach((state) => {
+            configObject[state.varName] = state;
+        });
+
+        configuration.stateChronicleConfig.forEach((state) => {
+            configObject[state.varName] = state;
         });
 
         return configObject;
@@ -70,10 +167,13 @@ const timelineUtil = {
             startTime: projectJSON.planningProject.activityPlan.planStart,
             endTime: projectJSON.planningProject.activityPlan.planEnd,
             activities: {},
+            chronicles: [],
             violations: projectJSON.planningProject.simulationInfo?.violations,
             projectInfo: projectJSON.planningProject.projectInfo
         };
+
         const configuration = timelineUtil.processConfiguration(projectJSON.configuration);
+        const chronicleConfiguration = timelineUtil.processChronicleConfiguration(projectJSON.configuration);
         const domainObject = {
             configuration: domainObjectConfiguration,
             identifier: {
@@ -91,6 +191,13 @@ const timelineUtil = {
         projectJSON.planningProject.activityPlan.actions.forEach((action) => {
             const actionConfig = timelineUtil.getActionConfig(action, configuration[action.actionType]);
             domainObject.configuration.activities[action.uuid] = actionConfig;
+        });
+
+        projectJSON.planningProject.simulationInfo?.chronicles?.forEach((chronicle) => {
+            const projectEndTime = projectJSON.planningProject.activityPlan.planEnd;
+            const chronicleConfig = timelineUtil.getChroniclesConfig(chronicle, chronicleConfiguration[chronicle.variable], projectEndTime);
+
+            domainObject.configuration.chronicles.push(chronicleConfig);
         });
 
         return domainObject;

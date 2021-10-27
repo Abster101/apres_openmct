@@ -30,6 +30,14 @@
 				>
 					{{legend}}
 				</timeline-legend-label>
+                <timeline-legend-label
+					v-for="(legend, index) in chronicles"
+					:key="'timeline-chronicle-egend--label ' + index"
+                    :num-activities="1"
+					:title="legend.name"
+				>
+					{{legend}}
+				</timeline-legend-label>
 			</div>
 		</div>
 		<div
@@ -69,13 +77,29 @@
                     :errors="errors"
                     :violationClicked="violationClicked"
 				/>
+                <timeline-chronicle-legend
+					v-for="(chronicle, index) in chronicles"
+					:key="'timeline-chronicle-legend-' + index"
+					:title="chronicle.name"
+					:chronicle="chronicle"
+					:parentDomainObject="liveDomainObject"
+					:index="index"
+					:isEditing="isEditing"
+					:startBounds="bounds.start"
+					:endBounds="bounds.end"
+                    :projectEndTime="projectEndTime"
+					:pixelMultiplier="pixelMultiplier"
+					:formatter="timeFormatter"
+                    :errors="errors"
+                    :violationClicked="violationClicked"
+				/>
 			</div>
 		</div>
 	</div>
 	<violations-table
         :violations="violations"
 		@loadViolations="addErrorsOnLoad" 
-        	@resetBounds="resetTimeBoundsFromViolationClick"
+        @resetBounds="resetTimeBoundsFromViolationClick"
 		@clicked="onViolationClicked"
 		@violationClear="clearErrorsWithUpdates"
 	/>
@@ -87,6 +111,7 @@ import axios from 'axios';
 import config from '../../../apresConfig.js';
 import TimelineLegend from './timelineLegend.vue';
 import TimelineLegendLabel from './timelineLegendLabel.vue';
+import TimelineChronicleLegend from './stateChronicles/TimelineChronicleLegend.vue';
 import TimelineAxis from './timeSystemAxis.vue';
 import ViolationsTable from './violations/table.vue';
 import TimelineStateChronicle from './timelineStateChronicle.vue';
@@ -117,8 +142,7 @@ export default {
         TimelineAxis,
 		Error,
 		ViolationsTable,
-        TimelineStateChronicle,
-		Error,
+        TimelineChronicleLegend,
     },
     computed: {
         inBoundErrors() {
@@ -145,7 +169,10 @@ export default {
         },
         liveDomainObject() {
             return this.domainObject;
-        }
+        },
+        projectEndTime() {
+            return this.domainObject.configuration.endTime;
+        },
     },
     data() {
         let timeSystem = this.openmct.time.timeSystem();
@@ -522,6 +549,10 @@ export default {
 
         if(this.domainObject.configuration.violations){
             this.violations = this.domainObject.configuration.violations;
+        }
+
+        if (this.domainObject.configuration.chronicles) {
+            this.chronicles = this.domainObject.configuration.chronicles;
         }
     },
     beforeDestroy() {
