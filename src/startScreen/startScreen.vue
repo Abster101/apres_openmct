@@ -134,6 +134,7 @@ import apresActivities from '../apresActivities/plugin';
 import apresDataset from '../apresDataset/plugin';
 import apresStateChronicle from '../apresStateChronicle/plugin';
 import apresSessionIndicator from '../apresSessionIndicator/plugin';
+import localStoragePersistencePlugin from '../localStorage/plugin';
 import config from '../../apresConfig.js';
 import domainObjectUtil from '../lib/domainObjectUtil';
 
@@ -177,7 +178,7 @@ export default {
                     actions: []
                 }
             }
-            console.log(projectJSON);
+
             const timelineBounds = {
                 start: Date.parse(projectJSON.planningProject.activityPlan.planStart),
                 end: Date.parse(projectJSON.planningProject.activityPlan.planEnd)
@@ -193,6 +194,7 @@ export default {
             
             const actionAttributes = this.globalAttributes.modelAttributes && this.globalAttributes.modelAttributes.actionAttributes;
 
+            openmct.install(localStoragePersistencePlugin());
             openmct.install(apresActivities(actionAttributes));
             // openmct.install(apresStateChronicle());
             openmct.install(apresTimeline());
@@ -233,7 +235,7 @@ export default {
                 openmct.legacyRegistry.enable.bind(openmct.legacyRegistry)
             );
 
-            openmct.install(openmct.plugins.LocalStorage());
+            // openmct.install(openmct.plugins.LocalStorage());
             openmct.install(openmct.plugins.Espresso());
             openmct.install(openmct.plugins.MyItems());
             openmct.install(openmct.plugins.Generator());
