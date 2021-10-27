@@ -36,6 +36,9 @@ module.exports = {
         }),
         new CopyWebpackPlugin([
             {
+                // This config currently serves no purpose.
+                // TODO The index page needs to link the OpenMCT favicons in. Or
+                // better yet, we need our own APRES favicons.
                 from: 'node_modules/openmct/src/images/favicons',
                 to: 'favicons'
             },
@@ -71,24 +74,8 @@ module.exports = {
             },
             {
                 test: /\.(jpg|jpeg|png|svg|ico|woff2?|eot|ttf)$/,
-                loader: 'file-loader',
-                options: {
-                    name: '[name].[ext]',
-                    outputPath(url, resourcePath, context) {
-                        if (/\.(jpg|jpeg|png|svg)$/.test(url)) {
-                            return `images/${url}`
-                        }
-                        if (/\.ico$/.test(url)) {
-                            return `icons/${url}`
-                        }
-                        if (/\.(woff2?|eot|ttf)$/.test(url)) {
-                            return `fonts/${url}`
-                        } else {
-                            return `${url}`;
-                        }
-                    }
-                }
-            }
+                type: 'asset/resource',
+            },
         ]
     },
     devServer: {
