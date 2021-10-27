@@ -3,7 +3,7 @@
 </template>
 
 <script>
-// import Plotly from 'plotly';
+import Plotly from 'plotly';
 
 const ACTIVITY_HEIGHT = 40;
 const NUMERIC_HEIGHT = 34
