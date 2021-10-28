@@ -1,0 +1,106 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "JSON Schema for representing the aspects of the domain model used in the Interface",
+  "type": "object",
+  "properties": {
+    "actionTypes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "name",
+          "duration"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "duration": {
+            "type": "string"
+          },
+          "parameters": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "name",
+                "modelType"
+              ],
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "units": {
+                  "type": "string"
+                },
+                "defaultVal": {
+                  "type": "string"
+                },
+                "modelType": {
+                  "type": "object",
+                  "required": [
+                    "name"
+                  ],
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "restrictRange": {
+                      "type": "array",
+                      "items": {
+                        "lowerBound": {
+                          "lbType": {
+                            "type": "string",
+                            "enum": [
+                              ">",
+                              ">="
+                            ]
+                          },
+                          "lbVal": {
+                            "type": "number"
+                          }
+                        },
+                        "upperBound": {
+                          "ubType": {
+                            "type": "string",
+                            "enum": [
+                              "<",
+                              "<="
+                            ]
+                          },
+                          "ubVal": {
+                            "type": "number"
+                          }
+                        }
+                      }
+                    },
+                    "restictSet": {
+                      "type": "array"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "modelConstants": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "variable": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          },
+          "units": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,67 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "JSON Schema for the attributes that apply to all action types",
+  "type": "object",
+  "properties": {
+    "actionAttributes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "name"       
+         ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "units": {
+            "type": "string"
+          },
+          "default": {},
+          "editable": {
+            "type": "boolean"
+          },
+          "userRequired": {
+            "type": "boolean"
+          },
+          "modelType": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "restrictRange": {
+                "type": "object",
+                "properties": {
+                  "lbType": {
+                    "type": "string",
+                    "enum": [
+                      ">",
+                      ">="
+                    ]
+                  },
+                  "lbVal": {
+                    "type": "number"
+                  },
+                  "ubType": {
+                    "type": "string",
+                    "enum": [
+                      "<",
+                      "<="
+                    ]
+                  },
+                  "ubVal": {
+                    "type": "number"
+                  }
+                }
+              },
+              "restictSet": {
+                "type": "array"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

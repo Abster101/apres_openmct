@@ -1,0 +1,77 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "Configuration information",
+  "type": "object",
+  "properties": {
+    "modelConfig": {
+      "type": "array",
+      "items": {
+        "required": [
+          "actProcType"
+        ],
+        "actProcType": {
+          "type": "string"
+        },
+        "colorHex": {
+          "type": "string",
+          "default": "#d9d9d9"
+        },
+        "textColorHex": {
+          "type": "string",
+          "default": "#000000"
+        },
+        "timelineLegend": {
+          "type": "string",
+          "default": "Miscellaneous"
+        }
+      }
+    },
+    "numericChronicleConfig": {
+      "type": "array",
+      "items": {
+        "required": [
+          "varName"
+        ],
+        "varName": {
+          "type": "string"
+        },
+        "colorHex": {
+          "type": "string",
+          "default": "#000000"
+        }
+      }
+    },
+    "stateChronicleConfig": {
+      "type": "array",
+      "items": {
+        "required": [
+          "varName",
+          "stateColors"
+        ],
+        "varName": {
+          "type": "string"
+        },
+        "stateColors": {
+          "type": "array",
+          "items": {
+            "stateVal": {
+              "type": "string"
+            },
+            "colorHex": {
+              "type": "string",
+              "default": "#d9d9d9"
+            },
+            "textColorHex": {
+              "type": "string",
+              "default": "#000000"
+            },
+            "showText": {
+              "type": "boolean",
+              "default": true
+            }
+          }
+        }
+      }
+    }
+  }
+}

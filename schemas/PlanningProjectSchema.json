@@ -1,0 +1,339 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "JSON Schema for representing a Planning Project",
+  "type": "object",
+  "required": [
+    "projectInfo"
+  ],
+  "properties": {
+    "projectInfo": {
+      "type": "object",
+      "required": [
+        "projRef",
+        "modelRef",
+        "configRef"
+      ],
+      "properties": {
+        "note": {
+          "type": "string"
+        },
+        "author": {
+          "type": "string"
+        },
+        "lastModDate": {
+          "type": "string",
+          "format": "date"
+        },
+        "projRef": {
+          "type": "string"
+        },
+        "modelRef": {
+          "type": "string"
+        },
+        "configRef": {
+          "type": "string"
+        },
+        "problemRef": {
+          "type": "string"
+        }
+      }
+    },
+    "activityPlan": {
+      "type": "object",
+      "required": [
+        "planStart",
+        "planEnd"
+      ],
+      "properties": {
+        "planStart": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "planEnd": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "actions": {
+          "type": "array",
+          "items": {
+            "required": [
+              "uuid",
+              "actionType",
+              "actionStart",
+              "actionEnd"
+            ],
+            "note": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "uuid": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "actionType": {
+              "type": "string"
+            },
+            "actionStart": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "actionEnd": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "parameters": {
+              "type": "array",
+              "items": {
+                "required": [
+                  "name",
+                  "value"
+                ],
+                "name": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "processes": {
+          "type": "array",
+          "items": {
+            "required": [
+              "uuid",
+              "processType",
+              "processStart"
+            ],
+            "note": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "uuid": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "processType": {
+              "type": "string"
+            },
+            "processStart": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "processEnd": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "parameters": {
+              "type": "array",
+              "items": {
+                "required": [
+                  "name",
+                  "value"
+                ],
+                "name": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "constraints": {
+          "type": "array",
+          "items": {
+            "required": [
+              "uuid",
+              "timepointA",
+              "relation"
+            ],
+            "note": {
+              "type": "string"
+            },
+            "uuid": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "timepointA": {
+              "type": "object",
+              "required": [
+                "timepointType",
+                "instanceID"
+              ],
+              "properties": {
+                "timepointType": "string",
+                "enum": [
+                  "start",
+                  "end"
+                ],
+                "instanceName": {
+                  "type": "string"
+                },
+                "instanceID": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              }
+            },
+            "timepointB": {
+              "type": "object",
+              "required": [
+                "timepointType",
+                "instanceID"
+              ],
+              "properties": {
+                "timepointType": "string",
+                "enum": [
+                  "start",
+                  "end"
+                ],
+                "instanceName": {
+                  "type": "string"
+                },
+                "instanceID": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              }
+            }
+          },
+          "relation": {
+            "type": "string",
+            "enum": [
+              ">",
+              ">=",
+              "<",
+              "<=",
+              "=="
+            ]
+          },
+          "oneOf": [
+            {
+              "temporalDist": {
+                "type": "object",
+                "properties": {
+                  "sign": {
+                    "type": "string",
+                    "enum": [
+                      "+",
+                      "-"
+                    ]
+                  },
+                  "hours": {
+                    "type": "integer"
+                  },
+                  "minutes": {
+                    "type": "integer"
+                  },
+                  "seconds": {
+                    "type": "integer"
+                  }
+                }
+              }
+            },
+            {
+              "absoluteTime": {
+                "type": "string",
+                "format": "date-time"
+              }
+            }
+          ]
+        },
+        "simulationInfo": {
+          "type": "object",
+          "properties": {
+            "chronicles": {
+              "type": "array",
+              "items": {
+                "required": [
+                  "variable",
+                  "episodes"
+                ],
+                "variable": {
+                  "type": "string"
+                },
+                "episodes": {
+                  "type": "array",
+                  "items": {
+                    "required": [
+                      "time",
+                      "value"
+                    ],
+                    "time": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "value": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            },
+            "violations": {
+              "type": "array",
+              "required": [
+                "violationTime",
+                "violationType",
+                "violatedObj",
+                "violators"
+              ],
+              "items": {
+                "violationTime": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "violationType": {
+                  "type": "string",
+                  "enum": [
+                    "variable-bounds",
+                    "unsatisfied-condition",
+                    "violated-condition",
+                    "inconsistent-effect",
+                    "inconsistent-assignment",
+                    "duplicate-action",
+                    "temporal-constraint"
+                  ]
+                },
+                "violatedObj": {
+                  "type": "object",
+                  "items": {
+                    "tableText": {
+                      "type": "string"
+                    },
+                    "objID": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  },
+                  "violatedObjValue": {
+                    "type": "string"
+                  },
+                  "violators": {
+                    "type": "array",
+                    "items": {
+                      "tableText": {
+                        "type": "string"
+                      },
+                      "objID": {
+                        "type": "string",
+                        "format": "uuid"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
