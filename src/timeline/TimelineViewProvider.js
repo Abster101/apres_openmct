@@ -25,7 +25,7 @@ export default class TimelineViewProvider {
         /** @type {import('vue').ComponentPublicInstance} */
         let component;
         
-        let props = reactive({ isEditing, domainObject })
+        let props = reactive({ isEditing: { value: isEditing }, domainObject })
 
         return {
             type: 'apres-timeline',
@@ -39,7 +39,7 @@ export default class TimelineViewProvider {
                 component = vueApp.mount(element)
             },
             onEditModeChange: (isEditing) => {
-                props.isEditing = isEditing
+                props.isEditing.value = isEditing
             },
             destroy() {
                 vueApp.unmount();

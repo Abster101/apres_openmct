@@ -17,7 +17,7 @@ export default class ActivityViewProvider {
         /** @type {import('vue').App<Element>} */
         let vueApp;
 
-        let props = reactive({ isEditing, domainObject })
+        let props = reactive({ isEditing: { value: isEditing }, domainObject })
 
         return {
             show: (element) => {
@@ -28,7 +28,7 @@ export default class ActivityViewProvider {
                 vueApp.mount(element)
             },
             onEditModeChange: (isEditing) => {
-                props.isEditing = isEditing
+                props.isEditing.value = isEditing
             },
             destroy: () => {
                 vueApp.unmount();

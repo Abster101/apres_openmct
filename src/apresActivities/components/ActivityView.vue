@@ -23,7 +23,8 @@ export default {
     inject: ['openmct', 'objectPath'],
     props: {
         isEditing: {
-            type: Boolean
+            type: Object,
+            default: { value: false },
         },
         domainObject: {
             type: Object
