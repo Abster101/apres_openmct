@@ -132,7 +132,6 @@ import axios from 'axios';
 import apresTimeline from '../timeline/plugin'
 import apresActivities from '../apresActivities/plugin';
 import apresDataset from '../apresDataset/plugin';
-import apresStateChronicle from '../apresStateChronicle/plugin';
 import apresSessionIndicator from '../apresSessionIndicator/plugin';
 import config from '../../apresConfig.js';
 import domainObjectUtil from '../lib/domainObjectUtil';
@@ -177,7 +176,7 @@ export default {
                     actions: []
                 }
             }
-            console.log(projectJSON);
+
             const timelineBounds = {
                 start: Date.parse(projectJSON.planningProject.activityPlan.planStart),
                 end: Date.parse(projectJSON.planningProject.activityPlan.planEnd)
