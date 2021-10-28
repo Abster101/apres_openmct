@@ -69,7 +69,7 @@
 					:activities="timelineLegends[legend]"
 					:parentDomainObject="liveDomainObject"
 					:index="index"
-					:isEditing="isEditing"
+					:isEditing="isEditing.value"
 					:startBounds="bounds.start"
 					:endBounds="bounds.end"
 					:pixelMultiplier="pixelMultiplier"
@@ -85,7 +85,7 @@
 					:chronicle="chronicle"
 					:parentDomainObject="liveDomainObject"
 					:index="index"
-					:isEditing="isEditing"
+					:isEditing="isEditing.value"
 					:startBounds="bounds.start"
 					:endBounds="bounds.end"
                     :projectEndTime="projectEndTime"
@@ -129,7 +129,8 @@ export default {
     inject: ['openmct', 'objectPath'],
     props: {
         isEditing: {
-            type: Boolean
+            type: Object,
+            default: { value: false }
         },
         domainObject: {
             type: Object
