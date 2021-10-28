@@ -25,7 +25,7 @@
 				<timeline-legend-label
 					v-for="(legend, index) in legends"
 					:key="'timeline-legend-label' + index"
-					:num-activities="timelineLegends[legend].length"
+					:num-activities="timelineLegends[legend] && timelineLegends[legend].length"
 					:title="legend"
 				>
 					{{legend}}
@@ -76,6 +76,7 @@
 					:formatter="timeFormatter"
                     :errors="errors"
                     :violationClicked="violationClicked"
+                    @removeAction="removeAction"
 				/>
                 <timeline-chronicle-legend
 					v-for="(chronicle, index) in chronicles"
@@ -114,12 +115,10 @@ import TimelineLegendLabel from './timelineLegendLabel.vue';
 import TimelineChronicleLegend from './stateChronicles/TimelineChronicleLegend.vue';
 import TimelineAxis from './timeSystemAxis.vue';
 import ViolationsTable from './violations/table.vue';
-import TimelineStateChronicle from './timelineStateChronicle.vue';
 
 import timelineUtil from '../../lib/timelineUtil';
 
 import Error from './error.vue';
-import Moment from 'moment';
 import lodash from 'lodash';
 import uuid from 'uuid'
 
@@ -204,8 +203,6 @@ export default {
                     configuration.startTime = this.timeFormatter.parse(this.domainObject.configuration.startTime);
                 }
 
-                console.log(configuration);
-
                 this.openmct.objects.mutate(this.domainObject, `configuration.activities[${keystring}]`, configuration);
             }
         },
@@ -234,6 +231,29 @@ export default {
             } else {
                 this.$set(this.timelineLegends, activityTimelineLegend, [activityDomainObjectCopy]);
             }
+            
+
+            // Remove action from composition. We should allow multiple of the same action.
+            this.openmct.objects.mutate(this.domainObject, 'composition', []);
+        },
+        removeAction(payload) {
+            const { actionId, legendId } = payload;
+            const filteredLegendActivities = this.timelineLegends[legendId].filter((activity) => activity.identifier.key !== actionId);
+            const activitiesConfiguration = lodash.cloneDeep(this.domainObject.configuration.activities);
+            delete activitiesConfiguration[actionId]; // Remove action from domainObject configuration.
+
+            // If no actions remain in legend, remove legend. Else set filtered actions array to legend.
+            if (filteredLegendActivities.length === 0) {
+                const copiedLegends = lodash.cloneDeep(this.timelineLegends);
+                delete copiedLegends[legendId];
+                this.timelineLegends = copiedLegends;
+            } else {
+                this.$set(this.timelineLegends, legendId, filteredLegendActivities);
+            }
+
+            // Remove action from activities array.
+            this.activities = this.activities.filter((activity) => activity.identifier.key !== actionId);
+            this.openmct.objects.mutate(this.domainObject, 'configuration.activities', activitiesConfiguration);
         },
         addActivitiesFromConfiguration() {
             Object.entries(this.domainObject.configuration.activities).forEach(([key, configuration]) => {
@@ -254,9 +274,6 @@ export default {
 		},
 		clearErrors() {
 			this.errors = [];
-        },
-        removeActivity(activityIdentifier) {
-            console.log(activityIdentifier);
         },
         reorderActivities(reorderPlan) {
             let oldActivities = this.activities.slice();
@@ -534,18 +551,14 @@ export default {
         const composition = this.openmct.composition.get(this.domainObject);
 
         composition.on('add', this.addActivity);
-        composition.on('remove', this.removeActivity);
         composition.on('reorder', this.reorderActivities);
         composition.load();
 
         this.unsubscribeFromComposition = () => {
             composition.off('add', this.addActivity);
-            composition.off('remove', this.removeActivity);
         }
         
         this.addActivitiesFromConfiguration();
-
-        const selectedProject = localStorage.getItem('apres_selected_project');
 
         if(this.domainObject.configuration.violations){
             this.violations = this.domainObject.configuration.violations;
@@ -556,7 +569,6 @@ export default {
         }
     },
     beforeDestroy() {
-        this.openmct.objects.mutate(this.domainObject, 'composition', []); // Clear composition to prevent duplicate actions.
         this.unsubscribeFromComposition();
         this.openmct.time.off('bounds', (this.initializeTimeBounds));
     }
