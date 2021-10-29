@@ -6,7 +6,6 @@
 
 <script>
 import TimelineActivity from './timelineActivity.vue';
-import TimelineStateChronicle from './timelineStateChronicle.vue';
 
 const ACTIVITY_HEIGHT = 44;
 
@@ -14,7 +13,6 @@ export default {
     inject: ['openmct'],
     components: {
         TimelineActivity,
-        TimelineStateChronicle
     },
     props: {
         numActivities: {
