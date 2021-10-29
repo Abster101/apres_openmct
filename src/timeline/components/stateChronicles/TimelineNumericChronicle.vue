@@ -112,8 +112,8 @@ export default {
     mounted() {
         this.calculateStarTime();
 
-        const yMin = this.endPoints.min;
-        const yMax = this.endPoints.max;
+        const yMin = this.endPoints.min + (this.endPoints.min/4);
+        const yMax = this.endPoints.max + (this.endPoints.max/4);
         const xMin = new Date(this.startTime);
         const xMax = new Date(this.projectEndTime);
         const data = this.sortData(this.episodes);
