@@ -25,6 +25,7 @@
 				<timeline-legend-label
 					v-for="(legend, index) in legends"
 					:key="'timeline-legend-label' + index"
+                    :index="index"
 					:num-activities="timelineLegends[legend] && timelineLegends[legend].length"
 					:title="legend"
 				>
@@ -33,6 +34,7 @@
                 <timeline-legend-label
 					v-for="(legend, index) in chronicles"
 					:key="'timeline-chronicle-egend--label ' + index"
+                    :index="index"
                     :num-activities="1"
 					:title="legend.name"
                     :numericHeightInfo="numericHeightInfo"

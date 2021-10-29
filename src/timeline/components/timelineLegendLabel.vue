@@ -28,6 +28,9 @@ export default {
         numericHeightInfo: {
             type: Array
         },
+        index: {
+            type: Number
+        },
     },
     computed: {
         legendLabelStyle() {
@@ -52,8 +55,8 @@ export default {
                 return ACTIVITY_HEIGHT * this.numActivities;
             } else {
                 const match = this.numericHeightInfo.filter((info) => {
-                    return this.title === info.name;
-                })
+                    return this.index === info.index;
+                });
 
                 if(match.length > 0){
                     return match[0].height;

@@ -180,6 +180,7 @@ export default {
 
             const labelHeightInfo = {
                 name: this.chronicle.name,
+                index: this.index,
                 height: this.numericHeight + 4,
             }
 
@@ -190,9 +191,10 @@ export default {
 
             if(newHeight >= 40){
                 this.numericHeight = newHeight;
-                
+
                 const labelHeightInfo = {
                     name: this.chronicle.name,
+                    index: this.index,
                     height: this.numericHeight + 4,
                 };
 
