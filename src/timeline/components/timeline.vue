@@ -35,6 +35,7 @@
 					:key="'timeline-chronicle-egend--label ' + index"
                     :num-activities="1"
 					:title="legend.name"
+                    :numericHeightInfo="numericHeightInfo"
 				>
 					{{legend}}
 				</timeline-legend-label>
@@ -93,6 +94,7 @@
 					:formatter="timeFormatter"
                     :errors="errors"
                     :violationClicked="violationClicked"
+                    @changeNumericHeight="changeNumericLabelHeight"
 				/>
 			</div>
 		</div>
@@ -187,8 +189,9 @@ export default {
             errors: [],
             violations: [],
             violationClicked: false,
+            numericHeightInfo: [],
             timeSystem,
-            timeFormatter
+            timeFormatter,
         }
     },
     methods: {
@@ -541,7 +544,19 @@ export default {
                     }
                 ]
             });
-        }
+        },
+        changeNumericLabelHeight(val) {
+            if (this.numericHeightInfo.length === 0) {
+                this.numericHeightInfo.push(val);
+            } else {
+                for (const chronicle of this.numericHeightInfo) {
+                    if (chronicle.name === val.name) {
+                        chronicle.height = val.height;
+                        break;
+                    }
+                }
+            }
+        },
     },
     mounted() {
         this.openmct.time.on('bounds', this.initializeTimeBounds);
@@ -560,7 +575,7 @@ export default {
         
         this.addActivitiesFromConfiguration();
 
-        if(this.domainObject.configuration.violations){
+        if (this.domainObject.configuration.violations) {
             this.violations = this.domainObject.configuration.violations;
         }
 

@@ -2,6 +2,10 @@
 <ul :style="legendStyle" v-if="inBoundsEpisodes.length > 0">
     <div v-if="endPoints">
         <div>
+            <div :style="zoomStyle">
+                <button :style="buttonStyle" @click="expandNumericHeight"> + </button>
+                <button :style="buttonStyle" @click="decreaseNumericHeight"> - </button>
+            </div>
             <TimelineNumericChronicle 
                 :episodes="inBoundsEpisodes"
                 :parentDomainObject="parentDomainObject"
@@ -16,6 +20,7 @@
                 :formatter="formatter"
                 :errors="errors"
                 :violationClicked="violationClicked"
+                :numericHeight="numericHeight"
                 @onEpisodeHover="changeDisplayValue" 
             />
         </div>
@@ -108,6 +113,7 @@ export default {
             displayedValue: "",
             endPoints: null,
             limits: null,
+            numericHeight: 40,
         }
     },
     mounted() {
@@ -126,8 +132,8 @@ export default {
         legendStyle() {
             return {
                 'position': 'relative',
-                'max-height': `${ACTIVITY_HEIGHT * 1}px`,
-                'min-height': `${ACTIVITY_HEIGHT * 1}px`,
+                'height': `${this.numericHeight + 4}px`,
+                'min-height': `${ACTIVITY_HEIGHT}px`,
                 'border-top': '2px solid #6c6c6c',
                 'border-bottom': '2px solid #6c6c6c',
                 'margin-top': '10px',
@@ -139,6 +145,19 @@ export default {
                 'position': 'absolute',
                 'margin-left': '10px',
                 'z-index': '5',
+            }
+        },
+        zoomStyle(){
+            return {
+                'position': 'absolute',
+                'color': 'white',
+                'margin-left': '10px',
+                'z-index': '5',
+            }
+        },
+        buttonStyle(){
+            return {
+                'font-size': '20px',
             }
         },
         inBoundsEpisodes() {
@@ -155,6 +174,30 @@ export default {
     methods: {
         changeDisplayValue(value) {
             this.displayedValue = value;
+        },
+        expandNumericHeight() {
+            this.numericHeight = this.numericHeight + 20;
+
+            const labelHeightInfo = {
+                name: this.chronicle.name,
+                height: this.numericHeight + 4,
+            }
+
+            this.$emit('changeNumericHeight', labelHeightInfo);
+        },
+        decreaseNumericHeight() {
+            const newHeight = this.numericHeight - 20;
+
+            if(newHeight >= 40){
+                this.numericHeight = newHeight;
+                
+                const labelHeightInfo = {
+                    name: this.chronicle.name,
+                    height: this.numericHeight + 4,
+                };
+
+                this.$emit('changeNumericHeight', labelHeightInfo);
+            }
         },
     },
 }
