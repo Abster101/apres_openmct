@@ -1,10 +1,20 @@
 <template>
 <ul :style="legendStyle" v-if="inBoundsEpisodes.length > 0">
     <div v-if="endPoints">
-        <div>
-            <div :style="zoomStyle">
-                <button :style="buttonStyle" @click="expandNumericHeight"> + </button>
-                <button :style="buttonStyle" @click="decreaseNumericHeight"> - </button>
+        <div @mouseover="showOptionBar = true" @mouseleave="showOptionBar = false">
+            <div :style="zoomStyle" v-show="showOptionBar">
+                <button
+					class="c-icon-button icon-plus"
+                    :style="buttonStyle"
+					title="zoom in"
+					@click="expandNumericHeight"
+				></button>
+				<button
+					class="c-icon-button icon-minus"
+                    :style="buttonStyle"
+					title="zoom out"
+					@click="decreaseNumericHeight"
+				></button>
             </div>
             <TimelineNumericChronicle 
                 :episodes="inBoundsEpisodes"
@@ -114,6 +124,7 @@ export default {
             endPoints: null,
             limits: null,
             numericHeight: 40,
+            showOptionBar: false,
         }
     },
     mounted() {
@@ -151,13 +162,16 @@ export default {
             return {
                 'position': 'absolute',
                 'color': 'white',
-                'margin-left': '10px',
+                'padding-top': '10px',
+                'padding-left': '10px',
+                'height': `${this.numericHeight + 4}px`,
                 'z-index': '5',
             }
         },
         buttonStyle(){
             return {
-                'font-size': '20px',
+                'background-color': 'rgba(99, 112, 120, 0.8)',
+                'font-size': '10px',
             }
         },
         inBoundsEpisodes() {
