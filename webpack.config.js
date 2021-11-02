@@ -6,7 +6,8 @@ const CopyWebpackPlugin = require("copy-webpack-plugin");
 module.exports = {
     entry: {
         main: './src/index.js',
-        espressoTheme: './node_modules/openmct/src/plugins/themes/espresso-theme.scss'
+        // espressoTheme: './node_modules/openmct/src/plugins/themes/espresso-theme.scss', // Syntax error with the new `sass` package. WIP: https://github.com/nasa/openmct/issues/4365
+        espressoTheme: './node_modules/openmct/dist/espressoTheme.css',
     },
     mode: 'development',
     devtool: 'eval-source-map',
