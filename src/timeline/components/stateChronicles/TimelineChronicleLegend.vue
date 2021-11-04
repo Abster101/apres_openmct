@@ -65,6 +65,8 @@ import TimelineStateChronicle from './TimelineStateChronicle.vue';
 import TimelineNumericChronicle from './TimelineNumericChronicle.vue';
 
 const ACTIVITY_HEIGHT = 44;
+const NUMERIC_HEIGHT = 40;
+const NUMERIC_HEIGHT_EXPAND = 20;
 
 export default {
     inject: ['openmct'],
@@ -123,7 +125,7 @@ export default {
             displayedValue: "",
             endPoints: null,
             limits: null,
-            numericHeight: 40,
+            numericHeight: NUMERIC_HEIGHT,
             showOptionBar: false,
         }
     },
@@ -181,7 +183,6 @@ export default {
                 );
             });
 
-            const test = [filteredEpisodes[filteredEpisodes.length-1]]
             return filteredEpisodes;
         }
     },
@@ -190,7 +191,7 @@ export default {
             this.displayedValue = value;
         },
         expandNumericHeight() {
-            this.numericHeight = this.numericHeight + 20;
+            this.numericHeight = this.numericHeight + NUMERIC_HEIGHT_EXPAND;
 
             const labelHeightInfo = {
                 name: this.chronicle.name,
@@ -201,9 +202,9 @@ export default {
             this.$emit('changeNumericHeight', labelHeightInfo);
         },
         decreaseNumericHeight() {
-            const newHeight = this.numericHeight - 20;
+            const newHeight = this.numericHeight - NUMERIC_HEIGHT_EXPAND;
 
-            if(newHeight >= 40){
+            if(newHeight >= NUMERIC_HEIGHT){
                 this.numericHeight = newHeight;
 
                 const labelHeightInfo = {

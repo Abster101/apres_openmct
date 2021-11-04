@@ -5,7 +5,7 @@
 <script>
 import Plotly from 'plotly';
 
-const ACTIVITY_HEIGHT = 40;
+const NUMERIC_HEIGHT = 40;
 
 export default {
     inject: ['openmct'],
@@ -72,7 +72,7 @@ export default {
         activityStyle() {
             return {
                 'left': `${this.leftPosition}px`,
-                'min-height': `40px`,
+                'min-height': `${NUMERIC_HEIGHT}px`,
                 'height': `${this.height}px`,
                 'width': `${this.width}px`,
             };
@@ -101,7 +101,7 @@ export default {
                     showlegend: false,
                 };
 
-                if (this.numericHeight >= 40) {
+                if (this.numericHeight >= NUMERIC_HEIGHT) {
                     this.resizeGraph(plotConfig);
                 }
             }
