@@ -197,7 +197,6 @@ export default {
 
             if (!this.domainObject.configuration.activities[keystring]) {
                 const configuration = lodash.cloneDeep(activityDomainObject.configuration);
-                let startTime;
 
                 if (!fromFile) {
                     configuration.startTime = this.timeFormatter.parse(this.domainObject.configuration.startTime);
@@ -306,7 +305,6 @@ export default {
                 zoomIn: this.zoomIn,
                 zoomOut: this.zoomOut,
                 importTimeline: this.importTimeline,
-                saveTimeline: this.saveTimeline,
                 deleteTimeline: this.deleteTimeline
             }
         },
@@ -505,14 +503,6 @@ export default {
         importTimeline() {
             this.openmct.$injector.get('dialogService')
                 .getUserInput(this.getFormModel(), {}).then(this.processJsonTimeline);
-        },
-        saveTimeline() {
-            const saveUrl = `${config['apres_service_root_url']}/save`;
-            const projectJSON = timelineUtil.getProjectJsonFromTimelineObject(this.domainObject);
-
-            axios.put(saveUrl, projectJSON).then((success) => {
-                this.openmct.notifications.info('Success: Project Saved to APRES Service.');
-            });
         },
         deleteTimeline() {
             const deleteUrl = `${config['apres_service_root_url']}/delete?projectname=${this.domainObject.name}`;

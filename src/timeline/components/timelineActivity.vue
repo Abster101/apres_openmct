@@ -222,6 +222,10 @@ export default {
             }
         },
         showContextMenu(event) {
+            if (!this.isEditing) {
+                return;
+            }
+
             const removeAction = this.getRemoveActionObject();
             this.openmct.menus.showMenu(event.x, event.y, [removeAction]);
         }
