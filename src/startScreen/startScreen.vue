@@ -131,6 +131,7 @@ import openmct from 'openmct';
 import axios from 'axios';
 import apresTimeline from '../timeline/plugin'
 import apresActivities from '../apresActivities/plugin';
+import persistencePlugin from '../persistence/plugin';
 import apresDataset from '../apresDataset/plugin';
 import apresSessionIndicator from '../apresSessionIndicator/plugin';
 import config from '../../apresConfig.js';
@@ -192,8 +193,8 @@ export default {
             
             const actionAttributes = this.globalAttributes.modelAttributes && this.globalAttributes.modelAttributes.actionAttributes;
 
+            openmct.install(persistencePlugin());
             openmct.install(apresActivities(actionAttributes));
-            // openmct.install(apresStateChronicle());
             openmct.install(apresTimeline());
             openmct.install(apresDataset(projectJSON.configuration));
             openmct.install(apresSessionIndicator())
@@ -232,7 +233,6 @@ export default {
                 openmct.legacyRegistry.enable.bind(openmct.legacyRegistry)
             );
 
-            openmct.install(openmct.plugins.LocalStorage());
             openmct.install(openmct.plugins.Espresso());
             openmct.install(openmct.plugins.MyItems());
             openmct.install(openmct.plugins.Generator());
