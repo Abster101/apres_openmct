@@ -2,23 +2,24 @@
     <div class="c-inspector__properties c-inspect-properties">
         <div class="c-inspect-properties__header">{{label}}</div>
         <li class="c-inspect-properties__row">
-            <div 
+            <div
                 v-if="!isEditable"
                 class="c-inspect-properties__label"
                 style="white-space: nowrap;"
             >
                 {{value}}
             </div>
-            <div 
+            <div
                 v-if="isEditable"
             >
                 <input
                     class="c-input--datetime"
                     type="text"
-                    :value="value"
-                    @blur="onBlur"
+                    :value="currentValue"
+                    @blur="onChange"
+                    @input="onChange"
                 />
-                <div 
+                <div
                     v-if="error"
                     class="c-inspect-properties__value"
                     style="color: red;"
@@ -27,7 +28,7 @@
                 </div>
             </div>
         </li>
-        
+
     </div>
 </template>
 <script>
@@ -59,9 +60,22 @@ export default {
             required: false
         }
     },
+    watch: {
+        value(val) {
+            this.currentValue = val
+        }
+    },
+    data() {
+        return {
+            // Ugh, Vue. This redundant data property is needed because https://stackoverflow.com/questions/47392991
+            currentValue: this.value
+        }
+    },
     methods: {
-        onBlur(event) {
+        onChange(event) {
             const value = event.target.value;
+
+            this.currentValue = value
 
             this.$emit('valueChanged', this.label, value);
         }

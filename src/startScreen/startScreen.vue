@@ -1,27 +1,27 @@
 <template>
-    <div 
+    <div
         style="display: flex; justify-content: center; position: relative;"
     >
-        <div 
+        <div
             v-if="isLoading"
             style="height: 100vh; width: 100vw; position: absolute; z-index: 10001; background: white; display: flex; justify-content: center;"
         >
             <h1>Loading...</h1>
         </div>
-        <div 
+        <div
             v-if="!openmctStarted && !isLoading"
         >
             <h1>Welcome to APRES</h1>
 
-            <div 
+            <div
                 v-if="!newProjectData"
                 style="display: flex; flex-direction: column; justify-content: center;"
             >
-                
+
                 <div>
                     <label for="projects">Choose a project:</label>
 
-                    <select 
+                    <select
                         name="projects"
                         id="projects"
                         @change="setSelectedProject"
@@ -33,7 +33,7 @@
                             :value="project">{{ project }}</option>
                     </select>
                 </div>
-                <button 
+                <button
                     @click="initializeApp"
                     style="margin-top: 20px;"
                 >
@@ -46,7 +46,7 @@
                 <div style="margin-top: 20px;">
                     <label for="configuration">Configuration:</label>
 
-                    <select 
+                    <select
                         name="configuration"
                         id="configuration"
                         @change="setSelectedConfiguration"
@@ -60,7 +60,7 @@
                 <div style="margin-top: 20px;">
                     <label for="model">Model:</label>
 
-                    <select 
+                    <select
                         name="model"
                         id="model"
                         @change="setSelectedModel"
@@ -74,7 +74,7 @@
                 <div style="margin-top: 20px;">
                     <label for="problem">Problem:</label>
 
-                    <select 
+                    <select
                         name="problem"
                         id="problem"
                         @change="setSelectedProblem"
@@ -88,7 +88,7 @@
 
                 <div style="margin-top: 20px;">
                     <label for="author">Author:</label>
-                    <input 
+                    <input
                         id="author"
                         @change="setAuthor"
                     />
@@ -96,7 +96,7 @@
 
                 <div style="margin-top: 20px;">
                     <label for="note">Note:</label>
-                    <textarea 
+                    <textarea
                         id="note"
                         @change="setNote"
                     />
@@ -104,13 +104,13 @@
 
                 <div style="margin-top: 20px;">
                     <label for="project_name">Project Name:</label>
-                    <input 
+                    <input
                         id="project_name"
                         @change="setProjectName"
                     />
                 </div>
 
-                <button 
+                <button
                     @click="initializeNewProject"
                     style="margin-top: 20px;"
                 >
@@ -118,7 +118,7 @@
                 </button>
             </div>
         </div>
-        <div 
+        <div
             ref="openmct"
             :style="openmctContainerStyle"
         >
@@ -161,14 +161,22 @@ export default {
     },
     data() {
         return {
+            /** @type {boolean} */
             openmctStarted: false,
+            /** @type {string[]} */
             projects: [],
+            /** @type {GlobalInfo} */
             globalAttributes: undefined,
+            /** @type {boolean} */
             isLoading: true,
-            newProjectData: undefined
+            /** @type {boolean} */
+            newProjectData: undefined,
+            /** @type {string} */
+            projectName: "",
         }
     },
     methods: {
+        /** @param {PlanningProjectJson} projectJSON */
         initializeOpenMctProject(projectJSON) {
             if (!projectJSON.planningProject.activityPlan) {
                 projectJSON.planningProject.activityPlan = {
@@ -188,19 +196,23 @@ export default {
             if (!localStorage.getItem('mct')) {
                 localStorage.setItem('mct', JSON.stringify(mctObject));
             }
+            // ^ And then?.... (The 'mct' localStorage variable never seems to be used)
 
             this.installDefaultPlugins(timelineBounds);
-            
-            const actionAttributes = this.globalAttributes.modelAttributes && this.globalAttributes.modelAttributes.actionAttributes;
+
+            /** @type {GlobalInfo} */
+            const globalAttributes = this.globalAttributes
+
+            const actionAttributes = globalAttributes.modelAttributes && globalAttributes.modelAttributes.actionAttributes;
 
             openmct.install(persistencePlugin());
-            openmct.install(apresActivities(actionAttributes));
+            openmct.install(apresActivities(actionAttributes, projectJSON));
             openmct.install(apresTimeline());
             openmct.install(apresDataset(projectJSON.configuration));
             openmct.install(apresSessionIndicator())
 
             localStorage.setItem('apres_session', true);
-            
+
             this.openmctStarted = true;
             openmct.start(this.$refs.openmct);
 
@@ -216,8 +228,8 @@ export default {
             if (selectedProject && selectedProject !== 'new') {
                 return this.getProjectDocs(selectedProject).then(this.initializeOpenMctProject);
             }
-            
-            this.getNewProjectData().then((newProjectData) => {
+
+            return this.getNewProjectData().then((newProjectData) => {
                 this.isLoading = false;
                 this.newProjectData = newProjectData;
 
@@ -226,6 +238,7 @@ export default {
                 this.problem = newProjectData.problems[0];
             });
         },
+        /** @param {{start: number, end: number}} bounds */
         installDefaultPlugins(bounds) {
             [
                 'example/eventGenerator'
@@ -339,12 +352,16 @@ export default {
 
             return axios.get(listProjectsUrl).then((resp) => {
                 if (resp && resp.data) {
-                    resp.data.forEach((project) => {
+                    /** @type {string[]} */
+                    const data = resp.data
+
+                    data.forEach((project) => {
                         this.projects.push(project);
                     });
                 }
             })
         },
+        /** @returns {Promise<void>} */
         getGlobalAttributes() {
             const globalAttributesUrl = `${config['apres_service_root_url']}/getglobalinfo`;
 
@@ -357,6 +374,7 @@ export default {
         setSelectedProject(event) {
             localStorage.setItem('apres_selected_project', event.target.value);
         },
+        /** @returns {Promise<PlanningProjectJson>} */
         getProjectDocs(projectName) {
             const projectUrl = `${config['apres_service_root_url']}/loadproject?projectname=${projectName}`
 
@@ -366,6 +384,7 @@ export default {
                 }
             })
         },
+        /** @returns {Promise<NewProjectData>} */
         getNewProjectData() {
             const newProjectDataUrl = `${config['apres_service_root_url']}/newprojectdata`;
 
@@ -395,17 +414,19 @@ export default {
         },
         initializeNewProject() {
             const initNewProjectUrl = `${config['apres_service_root_url']}/initproject`;
+
+            /** @type {PlanningProjectJson['planningProject']} */
             const payload = {
-                $schema: "./PlanningProjectSchema.json",
+                // $schema: "./PlanningProjectSchema.json",
                 projectInfo: {
                     author: this.author,
                     note: this.note,
-                    lastModDate: Date.now(),
+                    lastModDate: Date.now(), // FIXME The schema says this type should be a string in date format, but Date.now() returns a number.
                     projRef: this.projectName,
                     modelRef: this.model,
                     configRef: this.configuration,
                     problemRef: this.problem
-                }
+                },
             };
 
             axios.post(initNewProjectUrl, payload)
@@ -417,12 +438,10 @@ export default {
                 .catch((error) => console.log(error));
         }
     },
-    onDestroy() {
-        openmct.onDestroy();
-    },
+    // Vue doesn't have an onDestroy life cycle method.
     mounted() {
         const session = Boolean(localStorage.getItem('apres_session'));
-        
+
         this.getGlobalAttributes().then(this.getProjectsList);
 
 

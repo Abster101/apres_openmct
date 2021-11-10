@@ -1,5 +1,5 @@
 <template>
-    <li 
+    <li
         :style="activityStyle"
         :title="domainObject.name"
         class="timeline-activity"
@@ -97,20 +97,16 @@ export default {
             return borderStyle;
         },
         leftPosition() {
-            const start = this.formatter.parse(this.configuration.startTime);
-
-            return Math.floor((start - this.startBounds) / this.pixelMultiplier);
+            return Math.floor((this.start - this.startBounds) / this.pixelMultiplier);
         },
         width() {
-            return Math.floor(this.configuration.duration / this.pixelMultiplier);
-        },
-        configuration() {
-            return this.parentDomainObject.configuration.activities[this.keystring];
+            console.log(this.duration)
+            return Math.floor(this.duration / this.pixelMultiplier);
         }
     },
     data() {
         let keystring = this.openmct.objects.makeKeyString(this.domainObject.identifier);
-        let configuration = this.parentDomainObject.configuration.activities[keystring];
+        let configuration = this.getActivityConfig(keystring)
         let defaultStyle = {
             backgroundColor: this.domainObject.configuration.colorHex,
             border: this.domainObject.configuration.colorHex,
@@ -127,14 +123,20 @@ export default {
         }
     },
     methods: {
+        getActivityConfig(keystring = this.keystring) {
+            /** @type {TimelineDomainObject} */
+            const domain = this.parentDomainObject
+
+            return domain.configuration.activities[keystring];
+        },
         onMouseDown(event) {
             if (!this.isEditing) {
                 return;
             }
             event.preventDefault();
-            
+
             // Need to reset the start time because it may have changed from the inspector.
-            this.start = this.formatter.parse(this.configuration.startTime);
+            this.start = this.formatter.parse(this.getActivityConfig().startTime);
 
             document.addEventListener('mousemove', this.move);
             document.addEventListener('mouseup', this.endMove);
@@ -167,7 +169,7 @@ export default {
         endMove() {
             document.removeEventListener('mousemove', this.move);
             document.removeEventListener('mouseup', this.endMove);
-            
+
             this.start = Math.floor(this.start);
             this.end = Math.floor(this.end);
 
@@ -178,11 +180,14 @@ export default {
             const startTimestamp = this.formatter.format(this.start);
             const endTimestamp = this.formatter.format(this.start + this.duration);
 
-            this.openmct.objects.mutate(this.parentDomainObject, `${configPath}.startTime`, startTimestamp);
-            this.openmct.objects.mutate(this.parentDomainObject, `${configPath}.endTime`, endTimestamp);
+            /** @type {TimelineDomainObject} */
+            const domain = this.parentDomainObject
+
+            this.openmct.objects.mutate(domain, `${configPath}.startTime`, startTimestamp);
+            this.openmct.objects.mutate(domain, `${configPath}.endTime`, endTimestamp);
         },
         initializeSelectable() {
-            const configuration = this.parentDomainObject.configuration.activities[this.keystring]
+            const configuration = this.getActivityConfig()
             const backgroundColor = configuration.colorHex;
 
             let context = {
@@ -196,15 +201,21 @@ export default {
 
             this.removeSelectable = this.openmct.selection.selectable(this.$el, context);
         },
+        /** @param {string} property */
         getStyle(property) {
-            const configuration = this.parentDomainObject.configuration;
+            /** @type {TimelineDomainObject} */
+            const domainObject = this.parentDomainObject
+            const configuration = domainObject.configuration;
+
+            // FIXME Property objectStyles does not exist on TimelineDomainObject. See where the TimelineDomainObject object is created.
             const objectStyles = configuration.objectStyles && configuration.objectStyles[this.keystring];
 
+            // This branch is never fired because objectStyles does not exist on TimelineDomainObject.
             if (objectStyles) {
                 const staticStyle = objectStyles.staticStyle || {};
                 const styles = staticStyle.style || {};
 
-                return styles[property];
+                return styles[property]; // This may return undefined
             }
 
             return this.defaultStyle[property];
@@ -232,7 +243,7 @@ export default {
     },
     mounted() {
         let boundingClientRect = this.$el.getBoundingClientRect();
-        
+
         this.activityHeight = boundingClientRect.height;
 
         this.initializeSelectable();

@@ -1,7 +1,11 @@
 
 export default class ApresObjectProvider {
-    constructor(actionTypes) {
-        this.actionTypes = actionTypes;
+    /** @type {PlanninProjectConfiguration} */
+    planningProjectConfig
+
+    /** @param {PlanninProjectConfiguration} planningProjectConfig */
+    constructor(planningProjectConfig) {
+        this.planningProjectConfig = planningProjectConfig;
 
         this.getActionDefinitions = this.getActionDefinitions.bind(this);
         this.getActionTypesComposition = this.getActionTypesComposition.bind(this);
@@ -15,44 +19,56 @@ export default class ApresObjectProvider {
         this.stateChronicleDefinitions = this.getStateChronicleDefinitions();
     }
 
+    /** @returns {Record<string, TimelineModelConfig>} */
     getActionDefinitions() {
+        /** @type {Record<string, TimelineModelConfig>} */
         const definitions = {};
 
-        this.actionTypes.modelConfig.forEach(action => {
+        this.planningProjectConfig.modelConfig.forEach(action => {
             definitions[action.actProcType] = action;
         });
 
         return definitions;
     }
 
+    /** @returns {Record<string, TimelineStateChronicleConfig>} */
     getStateChronicleDefinitions(){
+        /** @type {Record<string, TimelineStateChronicleConfig>} */
         const definitions = {};
 
-        this.actionTypes.stateChronicleConfig.forEach(stateChronicle => {
+        this.planningProjectConfig.stateChronicleConfig.forEach(stateChronicle => {
             definitions[stateChronicle.varName] = stateChronicle;
         });
 
         return definitions;
     }
 
+    /** @returns {string[]} */
     getActionTypesComposition(identifier) {
+        /** @type {string[]} */
         const composition = [];
 
-        this.actionTypes.modelConfig.forEach(action => {
+        this.planningProjectConfig.modelConfig.forEach(action => {
             composition.push(`apres:actionsType::${action.actProcType}::${identifier.key}`);
         });
 
         return composition;
     }
+
+    /** @returns {string[]} */
     getStateChronicleTypesComposition(identifier) {
+        /** @type {string[]} */
         const composition = [];
 
+        // FIXME The activityTypes property is not defined in this class, and this class doesn't not inherit from any class.
         this.activityTypes.stateChronicleConfig.forEach(stateChronicle => {
             composition.push(`apres:stateChroniclesType::${stateChronicle.varName}::${identifier.key}`);
         });
 
         return composition;
     }
+
+    /** @param {Identifier} identifier */
     getAction(identifier) {
         const keyArray = identifier.key.split('::');
 
@@ -63,6 +79,7 @@ export default class ApresObjectProvider {
                 type: 'apres.action.source',
                 location: keyArray[2],
                 configuration: {
+                    // TODO rename stuff, there is confusion because "actionTypes" in the code base is not "actionTypes" in the data models, but something else.
                     actionTypes: this.actionDefinitions
                 },
                 composition: this.getActionTypesComposition(identifier)
@@ -72,7 +89,7 @@ export default class ApresObjectProvider {
             const modelObject = this.actionDefinitions[proctype];
             const location = `${identifier.namespace}:${keyArray.slice(2).join('::')}`;
 
-            return Promise.resolve({
+            const actionObject = {
                 identifier,
                 name: proctype,
                 cssClass: 'icon-activity',
@@ -102,9 +119,13 @@ export default class ApresObjectProvider {
                         }
                     }
                 }
-            });
+            }
+
+            return Promise.resolve(actionObject);
         }
     }
+
+    /** @param {Identifier} identifier */
     getStateChronicle(identifier){
         const keyArray = identifier.key.split('::');
 
@@ -124,6 +145,8 @@ export default class ApresObjectProvider {
             const modelObject = this.stateChronicleDefinitions[varName];
             const location = `${identifier.namespace}:${keyArray.slice(2).join('::')}`;
 
+            if (modelObject.colorHex) debugger
+
             return Promise.resolve({
                 identifier,
                 name: varName,
@@ -133,7 +156,7 @@ export default class ApresObjectProvider {
                 configuration: {
                     stateColors: modelObject.stateColors,
                     stateVal: "idle",
-                    colorHex: modelObject.colorHex,
+                    colorHex: modelObject.colorHex, // FIXME The colorHex property does not exist on modelObject objects, so this is always undefined.
                     timelineLegend: modelObject.varName,
                     startTime: 0,
                     duration: 360000,
@@ -141,6 +164,8 @@ export default class ApresObjectProvider {
             });
         }
     }
+
+    /** @param {Identifier} identifier */
     get(identifier) {
         const keyArray = identifier.key.split('::');
 

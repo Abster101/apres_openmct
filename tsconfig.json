@@ -1,0 +1,23 @@
+{
+    // This configuration does not add TypeScript to the project, but for
+    // anyone using an editor that has TypeScript support, this will show them
+    // helpful intellisense, warnings, and errors even on our plain JavaScript
+    // source code. This does not change any requirements or processes on how
+    // the source code is currently developed.
+    //
+    // Vue TypeScript docs, https://v3.vuejs.org/guide/typescript-support.html
+    "compilerOptions": {
+        "allowJs": true,
+        "checkJs": true,
+        "target": "ES2020",
+        "moduleResolution": "node",
+        "noImplicitThis": true,
+        "noUnusedLocals": true,
+        "noUnusedParameters": true,
+        "allowSyntheticDefaultImports": true,
+
+        // Type safety first!
+        "strict": true
+    },
+    "include": "src/**/*"
+}

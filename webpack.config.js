@@ -52,7 +52,19 @@ module.exports = {
             },
             {
                 test: /\.js$/,
-                loader: 'babel-loader'
+                use: {
+                    loader: 'babel-loader',
+                    options: {
+                        plugins: [
+                            // Class fields (including private fields) syntax
+                            // features are supported in every browser (except
+                            // for private methods which is release everywhere
+                            // except Safari, but coming up).
+                            '@babel/plugin-proposal-class-properties',
+                            '@babel/plugin-proposal-private-methods',
+                        ]
+                    },
+                },
             },
             // this will apply to both plain `.css` files
             // AND `<style>` blocks in `.vue` files

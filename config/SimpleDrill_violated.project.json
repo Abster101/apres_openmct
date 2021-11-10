@@ -13,7 +13,8 @@
     "planStart": "2022-08-12T06:00:00Z",
     "planEnd": "2022-08-19T20:00:00Z",
     "actions": [
-      {"uuid": "d0a45e46-21e1-4509-8a48-e0445417fa7a",
+      {
+        "uuid": "d0a45e46-21e1-4509-8a48-e0445417fa7a",
         "actionName": "Problem Definition",
         "actionType": "Pseudo_Action",
         "actionStart": "2022-08-12T06:00:00Z",

@@ -1,6 +1,7 @@
 import timelineUtil from './timelineUtil';
 
 const domainObjectUtil = {
+    /** @param {string[]} composition */
     getRootObject(composition) {
         return {
             composition,
@@ -11,17 +12,22 @@ const domainObjectUtil = {
             type: "folder"
         }
     },
+
+    /** @param {PlanningProjectJson} projectJSON */
     getApresTimelineObject(projectJSON) {
         return timelineUtil.getTimelineDomainObject(projectJSON);
     },
+
     getApresActionsDataset() {
         return {
+            /** @type {string[]} */
             composition: [],
             location: 'mine', // Root object
             modified: Date.now(),
             persisted: Date.now(),
             type: 'apres.dataset.type',
             actionTypes: true,
+            /** @type {Identifier} */
             identifier: {
                 key: 'apres.actions.dataset',
                 namespace: ''
@@ -29,6 +35,8 @@ const domainObjectUtil = {
             name: 'APRES Actions'
         }
     },
+
+    /** @param {PlanningProjectJson} projectJSON */
     getMctLocalStorageObject(projectJSON) {
         const apresTimelineObject = domainObjectUtil.getApresTimelineObject(projectJSON);
         const apresActionsDataset = domainObjectUtil.getApresActionsDataset();

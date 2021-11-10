@@ -16,9 +16,16 @@
     },
     {
       "name": "endTime",
+      "editable": false,
       "modelType": {
-        "type": "string",
-        "editable": false
+        "type": "string"
+      }
+    },
+    {
+      "name": "duration",
+      "editable": false,
+      "modelType": {
+        "type": "integer"
       }
     },
     {

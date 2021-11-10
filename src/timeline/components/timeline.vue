@@ -57,7 +57,7 @@
 			<div
 				style="min-width: 100%; min-height: 100%; position: relative"
 			>
-				<Error 
+				<Error
 					v-for="(error, index) in errors"
 					:key="`error-${index}`"
 					:startTime="error.startTime"
@@ -103,7 +103,7 @@
 	</div>
 	<violations-table
         :violations="violations"
-		@loadViolations="addErrorsOnLoad" 
+		@loadViolations="addErrorsOnLoad"
         @resetBounds="resetTimeBoundsFromViolationClick"
 		@clicked="onViolationClicked"
 		@violationClear="clearErrorsWithUpdates"
@@ -159,6 +159,7 @@ export default {
                 'overflow': 'hidden'
             }
 		},
+		/** @returns {import('@vue/runtime-dom').CSSProperties} */
 		containerStyle(){
 			return {
 				'width': '100%',
@@ -185,7 +186,7 @@ export default {
             activities: [],
             timelineLegends: {},
             chronicles: [],
-            savedBounds: {},
+            // savedBounds is not used anywhere
             bounds: {},
             pixelMultiplier: PIXEL_MULTIPLIER,
             errors: [],
@@ -235,7 +236,7 @@ export default {
             } else {
                 this.$set(this.timelineLegends, activityTimelineLegend, [activityDomainObjectCopy]);
             }
-            
+
 
             // Remove action from composition. We should allow multiple of the same action.
             this.openmct.objects.mutate(this.domainObject, 'composition', []);
@@ -511,7 +512,7 @@ export default {
         },
         deleteTimeline() {
             const deleteUrl = `${config['apres_service_root_url']}/delete?projectname=${this.domainObject.name}`;
-            
+
             const dialog = this.openmct.overlays.dialog({
                 iconClass: 'alert',
                 message: "Are you sure you want to delete this project?",
@@ -564,7 +565,7 @@ export default {
         this.unsubscribeFromComposition = () => {
             composition.off('add', this.addActivity);
         }
-        
+
         this.addActivitiesFromConfiguration();
 
         if (this.domainObject.configuration.violations) {
