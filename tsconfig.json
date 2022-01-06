@@ -11,6 +11,13 @@
         "checkJs": true,
         "target": "ES2020",
         "moduleResolution": "node",
-        "noImplicitThis": true
-    }
+        "noImplicitThis": true,
+        "noUnusedLocals": true,
+        "noUnusedParameters": true,
+        "allowSyntheticDefaultImports": true,
+
+        // Type safety first!
+        "strict": true
+    },
+    "include": "src/**/*"
 }

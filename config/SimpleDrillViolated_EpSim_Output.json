@@ -1,0 +1,207 @@
+{
+  "$schema": "./PlanningProjectSchema.json",
+  "projectInfo": {
+    "author": "John Bresina",
+    "lastModDate": "2021-02-18",
+    "projRef": "SimpleDrill_violated.project",
+    "modelRef": "VerySimple_Drill_model",
+    "configRef": "DrillConfig2",
+    "problemRef": "Simple_Drill_problem",
+    "note": "SIMPLE Example project for testing the initial version of EpSim"
+  },
+  "activityPlan": {
+    "planStart": "2022-08-12T06:00:00Z",
+    "planEnd": "2022-08-19T20:00:00Z",
+    "actions": [
+      {
+        "uuid": "0795e496-2dc0-3df3-9ee8-11b65e588f3c",
+        "actionName": "Problem Definition",
+        "actionType": "Pseudo_Action",
+        "actionStart": "2022-08-12T06:00:00Z",
+        "actionEnd": "2022-08-19T20:00:00Z",
+        "note": "Pseudo action to represent initial conditions and incons"
+      },
+      {
+        "uuid": "f9da8912-00f1-4c1f-899e-265a213e7896",
+        "actionName": "drillCam_pwron1",
+        "actionType": "DrillCam_PwrOn",
+        "actionStart": "2022-08-14T12:30:00Z",
+        "actionEnd": "2022-08-14T12:30:30Z",
+        "note": "Required by DrillAuger"
+      },
+      {
+        "uuid": "855b6ae1-b977-4fff-bea8-401d10e873c9",
+        "actionName": "drillcam_op1",
+        "actionType": "DrillCam_Operate",
+        "actionStart": "2022-08-14T12:30:30Z",
+        "actionEnd": "2022-08-14T15:00:00Z",
+        "parameters": [
+          {
+            "name": "drillCamDur",
+            "value": "9000"
+          }
+        ]
+      },
+      {
+        "uuid": "1b129a37-d655-4858-aaef-e2fce4bd7207",
+        "actionName": "auger1",
+        "actionType": "DrillAuger",
+        "actionStart": "2022-08-14T13:00:00Z",
+        "actionEnd": "2022-08-14T14:00:00Z",
+        "parameters": [
+          {
+            "name": "drillDur",
+            "value": "3600"
+          }
+        ],
+        "note": "First auger at station A"
+      },
+      {
+        "uuid": "f2ece2c0-6c8f-4d74-af96-2119e6b5d553",
+        "actionName": "drill_stow1",
+        "actionType": "DrillStow",
+        "actionStart": "2022-08-14T14:30:00Z",
+        "actionEnd": "2022-08-14T14:50:00Z",
+        "note": "Required by Drive"
+      },
+      {
+        "uuid": "2c2f3df1-28f1-4d8f-909d-22a829e4197f",
+        "actionName": "drillCam_pwroff1",
+        "actionType": "DrillCam_PwrOff",
+        "actionStart": "2022-08-14T15:00:00Z",
+        "actionEnd": "2022-08-14T15:00:30Z"
+      }
+    ]
+  },
+  "simulationInfo": {
+    "chronicles": [
+      {
+        "variable": "DrillArm_sys",
+        "episodes": [
+          {
+            "time": "1975-04-06T15:01:00Z",
+            "value": "stowed"
+          },
+          {
+            "time": "1975-04-06T20:39:00Z",
+            "value": "Stowing"
+          },
+          {
+            "time": "1975-04-06T20:41:00Z",
+            "value": "stowed"
+          }
+        ]
+      },
+      {
+        "variable": "BatteryCharge",
+        "episodes": [
+          {
+            "time": "1975-04-06T15:01:00Z",
+            "value": "3000"
+          },
+          {
+            "time": "1975-04-06T20:27:03Z",
+            "value": "2999.9167"
+          },
+          {
+            "time": "1975-04-06T20:36:00Z",
+            "value": "2954.9167"
+          },
+          {
+            "time": "1975-04-06T20:41:00Z",
+            "value": "2946.5837"
+          },
+          {
+            "time": "1975-04-06T20:42:00Z",
+            "value": "2696.3837"
+          },
+          {
+            "time": "1975-04-06T20:42:03Z",
+            "value": "2696.3004"
+          }
+        ]
+      },
+      {
+        "variable": "Drill_sys",
+        "episodes": [
+          {
+            "time": "1975-04-06T15:01:00Z",
+            "value": "idle"
+          },
+          {
+            "time": "1975-04-06T20:30:00Z",
+            "value": "Auger"
+          },
+          {
+            "time": "1975-04-06T20:36:00Z",
+            "value": "idle"
+          }
+        ]
+      },
+      {
+        "variable": "Mobility_sys",
+        "episodes": [
+          {
+            "time": "1975-04-06T15:01:00Z",
+            "value": "idle"
+          }
+        ]
+      },
+      {
+        "variable": "DrillCam_sys",
+        "episodes": [
+          {
+            "time": "1975-04-06T15:01:00Z",
+            "value": "off"
+          },
+          {
+            "time": "1975-04-06T20:27:00Z",
+            "value": "PwrOn"
+          },
+          {
+            "time": "1975-04-06T20:27:03Z",
+            "value": "on"
+          },
+          {
+            "time": "1975-04-06T20:42:00Z",
+            "value": "PwrOff"
+          },
+          {
+            "time": "1975-04-06T20:42:03Z",
+            "value": "off"
+          }
+        ]
+      }
+    ],
+    "violations": [
+      {
+        "violationTime": "2022-08-14T13:00:00Z",
+        "violationType": "unsatisfied condition",
+        "violatedObj": {
+          "tableText": "DrillArm_sys == unstowed",
+          "objID": "1b129a37-d655-4858-aaef-e2fce4bd7207"
+        },
+        "violators": [
+          {
+            "tableText": "DrillArm_sys := stowed",
+            "objID": "0795e496-2dc0-3df3-9ee8-11b65e588f3c"
+          }
+        ]
+      },
+      {
+        "violationTime": "2022-08-14T14:30:00Z",
+        "violationType": "unsatisfied condition",
+        "violatedObj": {
+          "tableText": "DrillArm_sys == unstowed",
+          "objID": "f2ece2c0-6c8f-4d74-af96-2119e6b5d553"
+        },
+        "violators": [
+          {
+            "tableText": "DrillArm_sys := stowed",
+            "objID": "0795e496-2dc0-3df3-9ee8-11b65e588f3c"
+          }
+        ]
+      }
+    ]
+  }
+}
