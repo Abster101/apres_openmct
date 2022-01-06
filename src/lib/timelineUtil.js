@@ -177,7 +177,7 @@ const timelineUtil = {
         const domainObject = {
             configuration: domainObjectConfiguration,
             identifier: {
-                key: 'test'
+                key: 'apres.timeline'
             },
             composition: [],
             location: 'mine',

@@ -1,5 +1,5 @@
-import ActivityViewProvider from './ActivityViewProvider';
-import ActivityInspectorViewProvider from './ActivityInspectorViewProvider';
+import ActivityViewProvider from './activityViewProvider';
+import ActivityInspectorViewProvider from './activityInspectorViewProvider';
 
 export default function (actionAttributes) {
     return function install (openmct) {
@@ -11,6 +11,6 @@ export default function (actionAttributes) {
 
         openmct.types.addType('apres.action.type', actionTypeDef);
         openmct.objectViews.addProvider(new ActivityViewProvider(openmct));
-        openmct.inspectorViews.addProvider(new ActivityInspectorViewProvider(openmct, actionAttributes));
+        openmct.inspectorViews.addProvider(ActivityInspectorViewProvider(openmct, actionAttributes));
     }
 }

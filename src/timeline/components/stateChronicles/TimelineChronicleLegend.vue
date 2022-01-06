@@ -1,7 +1,21 @@
 <template>
 <ul :style="legendStyle" v-if="inBoundsEpisodes.length > 0">
     <div v-if="endPoints">
-        <div>
+        <div @mouseover="showOptionBar = true" @mouseleave="showOptionBar = false">
+            <div :style="zoomStyle" v-show="showOptionBar">
+                <button
+					class="c-icon-button icon-plus"
+                    :style="buttonStyle"
+					title="zoom in"
+					@click="expandNumericHeight"
+				></button>
+				<button
+					class="c-icon-button icon-minus"
+                    :style="buttonStyle"
+					title="zoom out"
+					@click="decreaseNumericHeight"
+				></button>
+            </div>
             <TimelineNumericChronicle 
                 :episodes="inBoundsEpisodes"
                 :parentDomainObject="parentDomainObject"
@@ -16,6 +30,7 @@
                 :formatter="formatter"
                 :errors="errors"
                 :violationClicked="violationClicked"
+                :numericHeight="numericHeight"
                 @onEpisodeHover="changeDisplayValue" 
             />
         </div>
@@ -50,6 +65,8 @@ import TimelineStateChronicle from './TimelineStateChronicle.vue';
 import TimelineNumericChronicle from './TimelineNumericChronicle.vue';
 
 const ACTIVITY_HEIGHT = 44;
+const NUMERIC_HEIGHT = 40;
+const NUMERIC_HEIGHT_EXPAND = 20;
 
 export default {
     inject: ['openmct'],
@@ -108,6 +125,8 @@ export default {
             displayedValue: "",
             endPoints: null,
             limits: null,
+            numericHeight: NUMERIC_HEIGHT,
+            showOptionBar: false,
         }
     },
     mounted() {
@@ -126,8 +145,8 @@ export default {
         legendStyle() {
             return {
                 'position': 'relative',
-                'max-height': `${ACTIVITY_HEIGHT * 1}px`,
-                'min-height': `${ACTIVITY_HEIGHT * 1}px`,
+                'height': `${this.numericHeight + 4}px`,
+                'min-height': `${ACTIVITY_HEIGHT}px`,
                 'border-top': '2px solid #6c6c6c',
                 'border-bottom': '2px solid #6c6c6c',
                 'margin-top': '10px',
@@ -141,6 +160,22 @@ export default {
                 'z-index': '5',
             }
         },
+        zoomStyle(){
+            return {
+                'position': 'absolute',
+                'color': 'white',
+                'padding-top': '10px',
+                'padding-left': '10px',
+                'height': `${this.numericHeight + 4}px`,
+                'z-index': '5',
+            }
+        },
+        buttonStyle(){
+            return {
+                'background-color': 'rgba(99, 112, 120, 0.8)',
+                'font-size': '10px',
+            }
+        },
         inBoundsEpisodes() {
             const filteredEpisodes = this.chronicle.episodes.filter(episode => {
                 return (
@@ -148,13 +183,38 @@ export default {
                 );
             });
 
-            const test = [filteredEpisodes[filteredEpisodes.length-1]]
             return filteredEpisodes;
         }
     },
     methods: {
         changeDisplayValue(value) {
             this.displayedValue = value;
+        },
+        expandNumericHeight() {
+            this.numericHeight = this.numericHeight + NUMERIC_HEIGHT_EXPAND;
+
+            const labelHeightInfo = {
+                name: this.chronicle.name,
+                index: this.index,
+                height: this.numericHeight + 4,
+            }
+
+            this.$emit('changeNumericHeight', labelHeightInfo);
+        },
+        decreaseNumericHeight() {
+            const newHeight = this.numericHeight - NUMERIC_HEIGHT_EXPAND;
+
+            if(newHeight >= NUMERIC_HEIGHT){
+                this.numericHeight = newHeight;
+
+                const labelHeightInfo = {
+                    name: this.chronicle.name,
+                    index: this.index,
+                    height: this.numericHeight + 4,
+                };
+
+                this.$emit('changeNumericHeight', labelHeightInfo);
+            }
         },
     },
 }

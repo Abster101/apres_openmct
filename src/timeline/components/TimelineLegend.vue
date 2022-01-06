@@ -19,7 +19,7 @@
 </template>
 
 <script>
-import TimelineActivity from './TimelineActivity.vue';
+import TimelineActivity from './timelineActivity.vue';
 
 const ACTIVITY_HEIGHT = 44;
 
@@ -111,7 +111,6 @@ export default {
                 actionId,
                 legendId: this.title
             }
-
             this.$emit('removeAction', payload);
         }
     }

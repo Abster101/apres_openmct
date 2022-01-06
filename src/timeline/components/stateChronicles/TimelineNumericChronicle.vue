@@ -5,8 +5,7 @@
 <script>
 import Plotly from 'plotly';
 
-const ACTIVITY_HEIGHT = 40;
-const NUMERIC_HEIGHT = 34
+const NUMERIC_HEIGHT = 40;
 
 export default {
     inject: ['openmct'],
@@ -55,6 +54,9 @@ export default {
         },
         projectEndTime:{
             type:String
+        },
+        numericHeight:{
+            type: Number
         }
     },
     data() {
@@ -70,8 +72,8 @@ export default {
         activityStyle() {
             return {
                 'left': `${this.leftPosition}px`,
-                'min-height': `${ACTIVITY_HEIGHT}px`,
-                'max-height': `${ACTIVITY_HEIGHT}px`,
+                'min-height': `${NUMERIC_HEIGHT}px`,
+                'height': `${this.height}px`,
                 'width': `${this.width}px`,
             };
         },
@@ -92,12 +94,26 @@ export default {
 
             return width;
         },
+        height(){
+            if(this.plotLoaded){
+                const plotConfig = {
+                    height: this.numericHeight,
+                    showlegend: false,
+                };
+
+                if (this.numericHeight >= NUMERIC_HEIGHT) {
+                    this.resizeGraph(plotConfig);
+                }
+            }
+
+            return this.numericHeight;
+        },
     },
     mounted() {
         this.calculateStarTime();
 
-        const yMin = this.endPoints.min;
-        const yMax = this.endPoints.max;
+        const yMin = this.endPoints.min + (this.endPoints.min/4);
+        const yMax = this.endPoints.max + (this.endPoints.max/4);
         const xMin = new Date(this.startTime);
         const xMax = new Date(this.projectEndTime);
         const data = this.sortData(this.episodes);
@@ -111,7 +127,7 @@ export default {
             autosize: false,
             dragMode: false,
             showlegend: false,
-            height: 40,
+            height: this.height,
             width: graphWidth,
             paper_bgcolor: '#393939',
             plot_bgcolor: '#393939',

@@ -5,8 +5,7 @@
 </template>
 
 <script>
-import TimelineActivity from './TimelineActivity.vue';
-import TimelineStateChronicle from './stateChronicles/TimelineStateChronicle.vue';
+import TimelineActivity from './timelineActivity.vue';
 
 const ACTIVITY_HEIGHT = 44;
 
@@ -14,7 +13,6 @@ export default {
     inject: ['openmct'],
     components: {
         TimelineActivity,
-        TimelineStateChronicle
     },
     props: {
         numActivities: {
@@ -26,13 +24,19 @@ export default {
         },
         title: {
             type: String
-        }
+        },
+        numericHeightInfo: {
+            type: Array
+        },
+        index: {
+            type: Number
+        },
     },
     computed: {
         legendLabelStyle() {
             return {
-                'max-height': `${ACTIVITY_HEIGHT * this.numActivities}px`,
-                'min-height': `${ACTIVITY_HEIGHT * this.numActivities}px`,
+                'height': `${this.height}px`,
+                'min-height': `44px`,
                 'border-top': '2px solid #6c6c6c',
                 'border-bottom': '2px solid #6c6c6c',
                 'margin-top': '10px',
@@ -45,7 +49,20 @@ export default {
                 'text-align': 'center',
                 'color': '#dddddd'
             }
-        }
+        },
+        height() {
+            if (typeof this.numericHeightInfo === 'undefined' || this.numericHeightInfo?.length === 0) {
+                return ACTIVITY_HEIGHT * this.numActivities;
+            } else {
+                const match = this.numericHeightInfo.filter((info) => {
+                    return this.index === info.index;
+                });
+
+                if(match.length > 0){
+                    return match[0].height;
+                }
+            }
+        },
     }
 }
 </script>

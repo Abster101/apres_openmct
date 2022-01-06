@@ -1,6 +1,6 @@
 <template>
 <div :style="containerStyle">
-	<div class="flex flex-row w-full" :style="timelineStyle">
+	<div class="flex flex-row w-full">
 		<div
 			class="w-10-10"
 		>
@@ -25,6 +25,7 @@
 				<timeline-legend-label
 					v-for="(legend, index) in legends"
 					:key="'timeline-legend-label' + index"
+                    :index="index"
 					:num-activities="timelineLegends[legend] && timelineLegends[legend].length"
 					:title="legend"
 				>
@@ -33,8 +34,10 @@
                 <timeline-legend-label
 					v-for="(legend, index) in chronicles"
 					:key="'timeline-chronicle-egend--label ' + index"
+                    :index="index"
                     :num-activities="1"
 					:title="legend.name"
+                    :numericHeightInfo="numericHeightInfo"
 				>
 					{{legend}}
 				</timeline-legend-label>
@@ -43,6 +46,7 @@
 		<div
 			ref="timeline-container"
 			class="w-9-10"
+			:style="style"
 		>
 			<timeline-axis
 				:bounds="bounds"
@@ -52,9 +56,8 @@
 			/>
 			<div
 				style="min-width: 100%; min-height: 100%; position: relative"
-                :style="style"
 			>
-				<ErrorDisplay 
+				<Error 
 					v-for="(error, index) in errors"
 					:key="`error-${index}`"
 					:startTime="error.startTime"
@@ -93,6 +96,7 @@
 					:formatter="timeFormatter"
                     :errors="errors"
                     :violationClicked="violationClicked"
+                    @changeNumericHeight="changeNumericLabelHeight"
 				/>
 			</div>
 		</div>
@@ -110,16 +114,15 @@
 <script>
 import axios from 'axios';
 import config from '../../../apresConfig.js';
-import TimelineLegend from './TimelineLegend.vue';
+import TimelineLegend from './timelineLegend.vue';
+import TimelineLegendLabel from './timelineLegendLabel.vue';
 import TimelineChronicleLegend from './stateChronicles/TimelineChronicleLegend.vue';
-import TimelineLegendLabel from './TimelineLegendLabel.vue';
-import TimelineAxis from './TimelineAxis.vue';
-import ViolationsTable from './violations/ViolationsTable.vue';
+import TimelineAxis from './timeSystemAxis.vue';
+import ViolationsTable from './violations/table.vue';
 
 import timelineUtil from '../../lib/timelineUtil';
 
-import ErrorDisplay from './ErrorDisplay.vue';
-import Moment from 'moment';
+import Error from './error.vue';
 import lodash from 'lodash';
 import uuid from 'uuid'
 
@@ -127,7 +130,7 @@ const PIXEL_MULTIPLIER = 0.05;
 const TIMELINE_PADDING = 1000 * 60 * 15; //  mins of padding for timeline center action
 
 export default {
-    inject: ['openmct', 'objectPath'],
+    inject: ['openmct', 'objectPath', 'initialProjectJSON'],
     props: {
         isEditing: {
             type: Boolean
@@ -140,9 +143,8 @@ export default {
         TimelineLegend,
         TimelineLegendLabel,
         TimelineAxis,
-		ErrorDisplay,
+		Error,
 		ViolationsTable,
-		ErrorDisplay,
         TimelineChronicleLegend,
     },
     computed: {
@@ -154,11 +156,10 @@ export default {
         },
         style() {
             return {
-                'overflow': 'hidden',
+                'overflow': 'hidden'
             }
 		},
-		/** @returns {import('@vue/runtime-dom').CSSProperties} */
-		containerStyle() {
+		containerStyle(){
 			return {
 				'width': '100%',
                 'height': '100%',
@@ -166,22 +167,12 @@ export default {
     			'flex-direction': 'column',
             }
 		},
-        timelineStyle(){
-            return {
-                'overflow-x': 'hidden',
-                'max-height': '80%',
-                'overflow-y': 'auto',
-            }
-        },
         legends() {
             return Object.keys(this.timelineLegends);
         },
-        chronicleLegends() {
-            return Object.keys(this.chronicles);
-        },
         liveDomainObject() {
             return this.domainObject;
-        }, 
+        },
         projectEndTime() {
             return this.domainObject.configuration.endTime;
         },
@@ -200,6 +191,7 @@ export default {
             errors: [],
             violations: [],
             violationClicked: false,
+            numericHeightInfo: [],
             timeSystem,
             timeFormatter,
         }
@@ -210,10 +202,15 @@ export default {
 
             if (!this.domainObject.configuration.activities[keystring]) {
                 const configuration = lodash.cloneDeep(activityDomainObject.configuration);
-                let startTime;
 
                 if (!fromFile) {
-                    configuration.startTime = this.timeFormatter.parse(this.domainObject.configuration.startTime);
+                    const startTimeSeconds = this.timeFormatter.parse(this.domainObject.configuration.startTime);
+                    const endTimeSeconds  = startTimeSeconds + configuration.duration;
+                    const startTimeFormatted = this.timeFormatter.format(startTimeSeconds);
+                    const endTimeFormatted = this.timeFormatter.format(endTimeSeconds);
+
+                    configuration.startTime = startTimeFormatted;
+                    configuration.endTime = endTimeFormatted;
                 }
 
                 this.openmct.objects.mutate(this.domainObject, `configuration.activities[${keystring}]`, configuration);
@@ -242,13 +239,34 @@ export default {
             if (this.timelineLegends[activityTimelineLegend]) {
                 this.timelineLegends[activityTimelineLegend].push(activityDomainObjectCopy);
             } else {
-                this.timelineLegends[activityTimelineLegend] = [activityDomainObjectCopy];
+                this.$set(this.timelineLegends, activityTimelineLegend, [activityDomainObjectCopy]);
             }
+            
 
+            // Remove action from composition. We should allow multiple of the same action.
             this.openmct.objects.mutate(this.domainObject, 'composition', []);
         },
-        addActivitiesFromConfiguration() {
-            Object.entries(this.domainObject.configuration.activities).forEach(([key, configuration]) => {
+        removeAction(payload) {
+            const { actionId, legendId } = payload;
+            const filteredLegendActivities = this.timelineLegends[legendId].filter((activity) => activity.identifier.key !== actionId);
+            const activitiesConfiguration = lodash.cloneDeep(this.domainObject.configuration.activities);
+            delete activitiesConfiguration[actionId]; // Remove action from domainObject configuration.
+
+            // If no actions remain in legend, remove legend. Else set filtered actions array to legend.
+            if (filteredLegendActivities.length === 0) {
+                const copiedLegends = lodash.cloneDeep(this.timelineLegends);
+                delete copiedLegends[legendId];
+                this.timelineLegends = copiedLegends;
+            } else {
+                this.$set(this.timelineLegends, legendId, filteredLegendActivities);
+            }
+
+            // Remove action from activities array.
+            this.activities = this.activities.filter((activity) => activity.identifier.key !== actionId);
+            this.openmct.objects.mutate(this.domainObject, 'configuration.activities', activitiesConfiguration);
+        },
+        addActivitiesFromConfiguration(configuration) {
+            Object.entries(configuration.activities).forEach(([key, configuration]) => {
                 let activityDomainObject = {
                     name: configuration.name,
                     identifier: {
@@ -267,15 +285,11 @@ export default {
 		clearErrors() {
 			this.errors = [];
         },
-        removeActivity(activityIdentifier) {
-            console.log(activityIdentifier);
-        },
         reorderActivities(reorderPlan) {
             let oldActivities = this.activities.slice();
 
             reorderPlan.forEach((reorderEvent) => {
-                this.activities[reorderEvent.newIndex] = oldActivities[reorderEvent.oldIndex];
-
+                this.$set(this.activities, reorderEvent.newIndex, oldActivities[reorderEvent.oldIndex]);
             });
         },
         initializeTimeBounds(timeBounds, tick) {
@@ -294,6 +308,17 @@ export default {
             let boundsDiff = this.bounds.end - this.bounds.start;
 
             this.pixelMultiplier = boundsDiff / width;
+        },
+        getViewContext() {
+            return {
+                type: 'timeline-component',
+                centerTimeline: this.setTimeBoundsFromConfiguration,
+                zoomIn: this.zoomIn,
+                zoomOut: this.zoomOut,
+                importTimeline: this.importTimeline,
+                validateTimeline: this.validateTimeline,
+                deleteTimeline: this.deleteTimeline
+            }
         },
         getFormatter(key) {
             return this.openmct.telemetry.getValueFormatter({
@@ -362,30 +387,30 @@ export default {
                 this.centerTimeline();
             }
 		},
-	    addErrorsOnLoad(value) {
-	        this.addError(value.violation);
-            this.violationClicked = value.violationClicked;
-	    },
-	    onViolationClicked(value) {
-            let violationTime = this.timeFormatter.parse(value.violation.violationTime);
-            let end = Math.ceil(violationTime + TIMELINE_PADDING);
-            let start = Math.floor(violationTime - TIMELINE_PADDING);
-            
-            this.openmct.time.bounds({start, end});
-	        this.clearErrors();
-            this.violationClicked = value.violationClicked;
-	        this.addError({
-		        startTime: value.violation.violationTime,
-                actionID: value.violation.violatedObj.objID,
-		        violators: value.violation.violators,
-            });
-	    },
-        resetTimeBoundsFromViolationClick(value) {
-        	this.centerTimeline();
+        addErrorsOnLoad(value) {
+            this.addError(value.violation);
+                this.violationClicked = value.violationClicked;
         },
-	    clearErrorsWithUpdates(value){
-	        this.clearErrors();
-	    },
+        onViolationClicked(value) {
+                let violationTime = this.timeFormatter.parse(value.violation.violationTime);
+                let end = Math.ceil(violationTime + TIMELINE_PADDING);
+                let start = Math.floor(violationTime - TIMELINE_PADDING);
+
+                this.openmct.time.bounds({start, end});
+            this.clearErrors();
+                this.violationClicked = value.violationClicked;
+            this.addError({
+            startTime: value.violation.violationTime,
+                    actionID: value.violation.violatedObj.objID,
+            violators: value.violation.violators,
+                });
+        },
+            resetTimeBoundsFromViolationClick(value) {
+                this.centerTimeline();
+            },
+        clearErrorsWithUpdates(value){
+            this.clearErrors();
+        },
         getFormModel() {
             return {
                 name: "Import Timeline",
@@ -424,7 +449,7 @@ export default {
             let colorHex = config.colorHex || '#4f6ffe';
             let timelineLegend = config.timelineLegend || 'Default';
             const startTime = this.timeFormatter.parse(action.actionStart);
-            const endTime = this.timeFormatter.parse(action.actionEnd);
+            const endTime = this.timeFormatter.parse(action.actionEnd)
 
             const configuration = {
                 name: action.actionName,
@@ -491,13 +516,23 @@ export default {
             this.openmct.$injector.get('dialogService')
                 .getUserInput(this.getFormModel(), {}).then(this.processJsonTimeline);
         },
-        saveTimeline() {
-            const saveUrl = `${config['apres_service_root_url']}/save`;
+        validateTimeline() {
+            const validateUrl = `${config['apres_service_root_url']}/validateplan`;
             const projectJSON = timelineUtil.getProjectJsonFromTimelineObject(this.domainObject);
 
-            axios.put(saveUrl, projectJSON).then((success) => {
-                this.openmct.notifications.info('Success: Project Saved to APRES Service.');
-            });
+            return axios.put(validateUrl, projectJSON)
+                .then(({ data }) => {
+                    const newProjectJSON = lodash.cloneDeep(this.initialProjectJSON);
+                    newProjectJSON.planningProject = data;
+
+                    const domainObject = timelineUtil.getTimelineDomainObject(newProjectJSON);
+                    
+                    this.initializeTimeline(domainObject.configuration);
+                    this.openmct.objects.mutate(this.domainObject, 'configuration', domainObject.configuration);
+                })
+                .catch((error) => {
+                    console.log(error);
+                });
         },
         deleteTimeline() {
             const deleteUrl = `${config['apres_service_root_url']}/delete?projectname=${this.domainObject.name}`;
@@ -527,24 +562,32 @@ export default {
                 ]
             });
         },
-        removeAction(payload) {
-            const { actionId, legendId } = payload;
-            const filteredLegendActivities = this.timelineLegends[legendId].filter((activity) => activity.identifier.key !== actionId);
-            const activitiesConfiguration = lodash.cloneDeep(this.domainObject.configuration.activities);
-
-            delete activitiesConfiguration[actionId]; // Remove action from domainObject configuration.
-
-            // If no actions remain in legend, remove legend. Else set filtered actions array to legend.
-            if (filteredLegendActivities.length === 0) {
-                this.$set(this.timelineLegends, legendId, undefined);
+        changeNumericLabelHeight(val) {
+            if (this.numericHeightInfo.length === 0) {
+                this.numericHeightInfo.push(val);
             } else {
-                this.$set(this.timelineLegends, legendId, filteredLegendActivities);
+                for (const chronicle of this.numericHeightInfo) {
+                    if (chronicle.name === val.name) {
+                        chronicle.height = val.height;
+                        break;
+                    }
+                }
+            }
+        },
+        initializeTimeline(configuration) {
+            this.activities = [];
+            this.timelineLegends = {};
+
+            this.addActivitiesFromConfiguration(configuration);
+
+            if (configuration.violations) {
+                this.violations = configuration.violations;
             }
 
-            // Remove action from activities array.
-            this.activities = this.activities.filter((activity) => activity.identifier.key !== actionId);
-            this.openmct.objects.mutate(this.domainObject, 'configuration.activities', activitiesConfiguration);
-        }
+            if (configuration.chronicles) {
+                this.chronicles = configuration.chronicles;
+            }
+        },
     },
     mounted() {
         this.openmct.time.on('bounds', this.initializeTimeBounds);
@@ -554,28 +597,16 @@ export default {
         const composition = this.openmct.composition.get(this.domainObject);
 
         composition.on('add', this.addActivity);
-        composition.on('remove', this.removeActivity);
         composition.on('reorder', this.reorderActivities);
         composition.load();
 
         this.unsubscribeFromComposition = () => {
             composition.off('add', this.addActivity);
-            composition.off('remove', this.removeActivity);
         }
         
-        this.addActivitiesFromConfiguration();
-
-        const selectedProject = localStorage.getItem('apres_selected_project');
-
-        if (this.domainObject.configuration.violations) {
-            this.violations = this.domainObject.configuration.violations;
-        }
-        if (this.domainObject.configuration.chronicles) {
-            this.chronicles = this.domainObject.configuration.chronicles;
-        }
+        this.initializeTimeline(this.domainObject.configuration);
     },
-    beforeUnmount() {
-        this.openmct.objects.mutate(this.domainObject, 'composition', []); // Clear composition to prevent duplicate actions.
+    beforeDestroy() {
         this.unsubscribeFromComposition();
         this.openmct.time.off('bounds', (this.initializeTimeBounds));
     }

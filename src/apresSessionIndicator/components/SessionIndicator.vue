@@ -8,10 +8,12 @@
 
 <script>
 export default {
+    inject: ['openmct'],
     methods: {
         destroyOpenmct() {
             localStorage.clear();
-            window.location = '/';
+            this.openmct.destroy();
+            window.location.reload();
         }
     }
 };

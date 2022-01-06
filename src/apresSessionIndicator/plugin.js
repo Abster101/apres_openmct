@@ -1,15 +1,20 @@
-import {createApp} from 'vue';
+import Vue from 'vue';
 import SessionIndicator from './components/SessionIndicator.vue';
 
 const plugin = () => {
     return (openmct) => {
-        const vueApp = createApp(SessionIndicator)
-
-        const div = document.createElement('div')
-        vueApp.mount(div)
+        let component = new Vue ({
+            components: {
+                SessionIndicator: SessionIndicator
+            },
+            provide: {
+                openmct
+            },
+            template: '<SessionIndicator></SessionIndicator>'
+        });
 
         let indicator = {
-            element: div
+            element: component.$mount().$el
         };
 
         openmct.indicators.add(indicator);

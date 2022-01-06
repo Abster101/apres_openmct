@@ -1,9 +1,9 @@
-import ChroniclesViewProvider from '../apresStateChronicle/ChroniclesViewProvider';
-import ActivityViewProvider from "../apresActivities/ActivityViewProvider";
-import TimelineViewProvider from "./TimelineViewProvider";
+import ChroniclesViewProvider from '../apresStateChronicle/chroniclesViewProvider';
+import ActivityViewProvider from "../apresActivities/activityViewProvider";
+import TimelineViewProvider from "./timelineViewProvider";
 import viewActions from "./viewActions";
 
-export default function () {
+export default function (projectJSON) {
     return function install(openmct) {
         openmct.types.addType(
             'apres.timeline.type',
@@ -48,7 +48,7 @@ export default function () {
         viewActions.forEach(action => {
             openmct.actions.register(action);
         });
-        openmct.objectViews.addProvider(new TimelineViewProvider(openmct));
+        openmct.objectViews.addProvider(new TimelineViewProvider(openmct, projectJSON));
         openmct.objectViews.addProvider(new ActivityViewProvider(openmct));
         openmct.objectViews.addProvider(new ChroniclesViewProvider(openmct));
     }

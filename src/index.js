@@ -1,9 +1,16 @@
-import { createApp } from 'vue';
-import StartScreen from './startScreen/StartScreen.vue';
+import Vue from 'vue';
+import StartScreen from './startScreen/startScreen.vue';
 
 function initializeApp() {
     const element = document.querySelector('#app');
-    createApp(StartScreen).mount(element)
+
+    const appComponent = new Vue({
+        el: element,
+        components: {
+            StartScreen
+        },
+        template: '<StartScreen />'
+    });
 }
 
 document.addEventListener('DOMContentLoaded', initializeApp);

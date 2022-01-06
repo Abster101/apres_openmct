@@ -1,24 +1,29 @@
 <template>
     <div 
-        style="display: flex; justify-content: center; position: relative;"
+        style="display: flex; justify-content: center; position: relative; height: 100vh; width: 100vw;"
+        class="app-color"
     >
         <div 
             v-if="isLoading"
-            style="height: 100vh; width: 100vw; position: absolute; z-index: 10001; background: white; display: flex; justify-content: center;"
+            style="height: 100vh; width: 100vw; position: absolute; z-index: 10001; display: flex; justify-content: center; align-content: center;"
         >
-            <h1>Loading...</h1>
+            <h2>Loading...</h2>
         </div>
-        <div 
+        <div
+            class="flex flex-column align-content-center justify-content-center" 
             v-if="!openmctStarted && !isLoading"
         >
-            <h1>Welcome to APRES</h1>
+            <img
+                style="margin: 30px;"
+                :src="logo" 
+            />
 
             <div 
                 v-if="!newProjectData"
                 style="display: flex; flex-direction: column; justify-content: center;"
             >
                 
-                <div>
+                <div style="margin-left: auto; margin-right: auto;">
                     <label for="projects">Choose a project:</label>
 
                     <select 
@@ -33,89 +38,221 @@
                             :value="project">{{ project }}</option>
                     </select>
                 </div>
-                <button 
-                    @click="initializeApp"
-                    style="margin-top: 20px;"
-                >
-                    Start
+                <div class="w-full flex flex-row justify-content-center mt-10">
+                    <button 
+                        @click="initializeApp"
+                        class="primary-button"
+                        style="margin-top: 20px;"
+                    >
+                        Start
                 </button>
+                </div>
             </div>
 
-            <div v-else>
-                <h2>Create a New Project</h2>
-                <div style="margin-top: 20px;">
-                    <label for="configuration">Configuration:</label>
-
-                    <select 
-                        name="configuration"
-                        id="configuration"
-                        @change="setSelectedConfiguration"
-                    >
-                        <option
-                            v-for="(configuration, index) in newProjectData.configurations"
-                            :key="index"
-                            :value="configuration">{{ configuration }}</option>
-                    </select>
-                </div>
-                <div style="margin-top: 20px;">
-                    <label for="model">Model:</label>
-
-                    <select 
-                        name="model"
-                        id="model"
-                        @change="setSelectedModel"
-                    >
-                        <option
-                            v-for="(model, index) in newProjectData.models"
-                            :key="index"
-                            :value="model">{{ model }}</option>
-                    </select>
-                </div>
-                <div style="margin-top: 20px;">
-                    <label for="problem">Problem:</label>
-
-                    <select 
-                        name="problem"
-                        id="problem"
-                        @change="setSelectedProblem"
-                    >
-                        <option
-                            v-for="(problem, index) in newProjectData.problems"
-                            :key="index"
-                            :value="problem">{{ problem }}</option>
-                    </select>
-                </div>
-
-                <div style="margin-top: 20px;">
-                    <label for="author">Author:</label>
-                    <input 
-                        id="author"
-                        @change="setAuthor"
-                    />
-                </div>
-
-                <div style="margin-top: 20px;">
-                    <label for="note">Note:</label>
-                    <textarea 
-                        id="note"
-                        @change="setNote"
-                    />
-                </div>
-
-                <div style="margin-top: 20px;">
-                    <label for="project_name">Project Name:</label>
-                    <input 
-                        id="project_name"
-                        @change="setProjectName"
-                    />
-                </div>
-
-                <button 
-                    @click="initializeNewProject"
-                    style="margin-top: 20px;"
+            <div
+                v-else
+                class="flex flex-column"
+            >
+                <h2 class="align-self-center">Create a New Project</h2>
+                <div 
+                    class="table"
                 >
-                    Start
-                </button>
+                    <div
+                        style="margin-top: 20px;"
+                        class="row"
+                    >
+                        <label 
+                            for="configuration"
+                            class="cell padding-y-10 text-right"
+                        >
+                            Configuration:
+                        </label>
+
+                        <select 
+                            name="configuration"
+                            id="configuration"
+                            class="cell text-left"
+                            @change="setSelectedConfiguration"
+                        >
+                            <option
+                                v-for="(configuration, index) in newProjectData.configurations"
+                                :key="index"
+                                :value="configuration">{{ configuration }}</option>
+                        </select>
+                    </div>
+                    <div 
+                        style="margin-top: 20px;"
+                        class="row"
+                    >
+                        <label 
+                            for="model"
+                            class="cell padding-y-10 text-right"
+                        >
+                            Model:
+                        </label>
+
+                        <select 
+                            name="model"
+                            id="model"
+                            class="cell text-left"
+                            @change="setSelectedModel"
+                        >
+                            <option
+                                v-for="(model, index) in newProjectData.models"
+                                :key="index"
+                                :value="model">{{ model }}</option>
+                        </select>
+                    </div>
+                    <div 
+                        style="margin-top: 20px;"
+                        class="row"
+                    >
+                        <label 
+                            for="problem"
+                            class="cell padding-y-10 text-right"
+                        >
+                            Problem:
+                        </label>
+
+                        <select 
+                            name="problem"
+                            id="problem"
+                            class="cell text-left"
+                            @change="setSelectedProblem"
+                        >
+                            <option
+                                v-for="(problem, index) in newProjectData.problems"
+                                :key="index"
+                                :value="problem">{{ problem }}</option>
+                        </select>
+                    </div>
+
+                    <div 
+                        style="margin-top: 20px;"
+                        class="row"
+                    >
+                        <label 
+                            for="author"
+                            class="cell padding-y-10 text-right"
+                        >
+                            Author:
+                        </label>
+                        <input 
+                            id="author"
+                            class="cell text-left"
+                            @change="setAuthor"
+                        />
+                    </div>
+
+                    <div 
+                        style="margin-top: 20px;"
+                        class="row"
+                    >
+                        <label
+                            for="note"
+                            class="cell text-right"
+                        >
+                            Note:
+                        </label>
+                        <textarea 
+                            id="note"
+                            class="cell padding-y-10 text-left"
+                            @change="setNote"
+                        />
+                    </div>
+
+                    <div 
+                        style="margin-top: 20px;"
+                        class="row"
+                    >
+                        <label 
+                            for="project_name"
+                            class="cell padding-y-10 text-right"
+                        >
+                            Project Name*:
+                        </label>
+                        <input 
+                            id="project_name"
+                            class="cell text-left"
+                            :value="projectName"
+                            @change="setProjectName"
+                        />
+                        <div 
+                            style="color: red;"
+                            class="timestring-error"
+                        >
+                            {{ errors.projectName }}
+                        </div>
+                    </div>
+                    <div 
+                        style="margin-top: 20px;"
+                        class="row"
+                    >
+                        <label
+                            for="timeline_start_time"
+                            class="cell padding-y-10 text-right"
+                        >
+                            Timeline Start Time:
+                        </label>
+                        <input 
+                            style="width: 200px;"
+                            id="timeline_start_time"
+                            class="cell text-left"
+                            :value="timelineStartTime"
+                            @change="setTimelineStartTime"
+                        />
+                        <div 
+                            style="color: red;"
+                            class="timestring-error"
+                        >
+                            {{ errors.timelineStartTime }}
+                        </div>
+                    </div>
+                    <div
+                        style="margin-top: 20px;"
+                        class="row"
+                    >
+                        <label
+                            for="timeline_end_time"
+                            class="cell padding-y-10 text-right"
+                        >
+                            Timeline End Time:
+                        </label>
+                        <input 
+                            style="width: 200px;"
+                            id="timeline_end_time"
+                            class="cell text-left"
+                            :value="timelineEndTime"
+                            @change="setTimelineEndTime"
+                        />
+                        <div 
+                            style="color: red;"
+                            class="timestring-error"
+                        >
+                            {{ errors.timelineEndTime }}
+                        </div>
+                    </div>
+                </div>
+                <div 
+                    class="flex align-content-center justify-content-center mb-10"
+                >
+                    <button 
+                        @click="clearNewProjectData"
+                        class="secondary-button mr-10"
+                        style="margin-top: 20px;"
+                    >
+                        Back
+                    </button>
+
+                    <button 
+                        @click="initializeNewProject"
+                        class="primary-button"
+                        style="margin-top: 20px;"
+                        :disabled="shouldStartBeDisabled"
+                    >
+                        Start
+                    </button>
+                </div>
             </div>
         </div>
         <div 
@@ -131,11 +268,14 @@ import openmct from 'openmct';
 import axios from 'axios';
 import apresTimeline from '../timeline/plugin'
 import apresActivities from '../apresActivities/plugin';
+import persistencePlugin from '../persistence/plugin';
 import apresDataset from '../apresDataset/plugin';
-import apresStateChronicle from '../apresStateChronicle/plugin';
 import apresSessionIndicator from '../apresSessionIndicator/plugin';
 import config from '../../apresConfig.js';
 import domainObjectUtil from '../lib/domainObjectUtil';
+import timelineUtil from '../lib/timelineUtil';
+import lodash from 'lodash';
+import logo from '../assets/APRES-logo.png';
 
 const THIRTY_SECONDS = 30 * 1000;
 const ONE_MINUTE = THIRTY_SECONDS * 2;
@@ -145,6 +285,9 @@ const THIRTY_MINUTES = FIFTEEN_MINUTES * 2;
 const ONE_HOUR = THIRTY_MINUTES * 2;
 const TWO_HOURS = ONE_HOUR * 2;
 const ONE_DAY = ONE_HOUR * 24;
+const TIMESTRING_ERROR = 'Please enter the correct format \n "1975-08-19T23:15:30.000Z."';
+const PROJECT_NAME_ERROR = 'Please enter a project name.';
+const HASH_TO_TIMELINE = '#/browse/mine/apres.timeline';
 
 export default {
     computed: {
@@ -157,6 +300,9 @@ export default {
             } else {
                 return {}
             }
+        },
+        shouldStartBeDisabled() {
+            return this.errors.projectName || this.errors.timelineStartTime || this.errors.timelineEndTime;
         }
     },
     data() {
@@ -165,7 +311,12 @@ export default {
             projects: [],
             globalAttributes: undefined,
             isLoading: true,
-            newProjectData: undefined
+            newProjectData: undefined,
+            timelineStartTime: new Date(Date.now()).toJSON(),
+            timelineEndTime: new Date(Date.now() + ONE_DAY).toJSON(),
+            projectName: 'new.project',
+            errors: {},
+            logo
         }
     },
     methods: {
@@ -192,21 +343,23 @@ export default {
             this.installDefaultPlugins(timelineBounds);
             
             const actionAttributes = this.globalAttributes.modelAttributes && this.globalAttributes.modelAttributes.actionAttributes;
+            const parsedProjectJSON = timelineUtil.getProjectJsonFromTimelineObject(mctObject['apres.timeline']);
 
+            openmct.install(persistencePlugin(parsedProjectJSON));
             openmct.install(apresActivities(actionAttributes));
-            // openmct.install(apresStateChronicle());
-            openmct.install(apresTimeline());
+            openmct.install(apresTimeline(projectJSON));
             openmct.install(apresDataset(projectJSON.configuration));
             openmct.install(apresSessionIndicator())
 
             localStorage.setItem('apres_session', true);
             
             this.openmctStarted = true;
+            window.location.href = this.getUrlToTimeline(); // Sets url to current timeline.
             openmct.start(this.$refs.openmct);
 
             window.setTimeout(() => {
                 this.isLoading = false;
-            }, 2000);
+            }, 0);
         },
         initializeApp() {
             const selectedProject = localStorage.getItem('apres_selected_project');
@@ -233,7 +386,6 @@ export default {
                 openmct.legacyRegistry.enable.bind(openmct.legacyRegistry)
             );
 
-            openmct.install(openmct.plugins.LocalStorage());
             openmct.install(openmct.plugins.Espresso());
             openmct.install(openmct.plugins.MyItems());
             openmct.install(openmct.plugins.Generator());
@@ -392,7 +544,15 @@ export default {
             this.note = event.target.value;
         },
         setProjectName(event) {
-            this.projectName = event.target.value;
+            const projectName = event.target.value;
+
+            if (projectName === '') {
+                this.$set(this.errors, 'projectName', PROJECT_NAME_ERROR);
+            } else {
+                this.$set(this.errors, 'projectName', undefined);
+            }
+
+            this.projectName = projectName;
         },
         initializeNewProject() {
             const initNewProjectUrl = `${config['apres_service_root_url']}/initproject`;
@@ -406,6 +566,11 @@ export default {
                     modelRef: this.model,
                     configRef: this.configuration,
                     problemRef: this.problem
+                },
+                activityPlan: {
+                    planStart: this.timelineStartTime,
+                    planEnd: this.timelineEndTime,
+                    actions: []
                 }
             };
 
@@ -416,7 +581,42 @@ export default {
                     }
                 })
                 .catch((error) => console.log(error));
+        },
+        clearNewProjectData() {
+            this.newProjectData = undefined;
+        },
+        isValidTimeString(timeString) {
+            return Boolean(Date.parse(timeString));
+        },
+        setTimelineStartTime(event) {
+            const timeString = event.target.value;
+            
+            if (!this.isValidTimeString(timeString)) {
+                this.$set(this.errors, 'timelineStartTime', TIMESTRING_ERROR);
+            } else {
+                this.$set(this.errors, 'timelineStartTime', undefined);
+            }
+
+            this.timelineStartTime = timeString;
+        },
+        setTimelineEndTime(event) {
+            const timeString = event.target.value;
+            
+            if (!this.isValidTimeString(timeString)) {
+                this.$set(this.errors, 'timelineEndTime', TIMESTRING_ERROR);
+            } else {
+                this.$set(this.errors, 'timelineEndTime', undefined);
+            }
+
+            this.timelineEndTime = timeString;
+        },
+        getUrlToTimeline() {
+            const { protocol, host } = window.location;
+            return `${protocol}//${host}/${HASH_TO_TIMELINE}`;
         }
+    },
+    onDestroy() {
+        openmct.onDestroy();
     },
     mounted() {
         const session = Boolean(localStorage.getItem('apres_session'));

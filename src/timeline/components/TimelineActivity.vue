@@ -10,6 +10,7 @@
     </li>
 </template>
 <script>
+
 const ACTIVITY_HEIGHT = 40;
 
 export default {
@@ -214,15 +215,18 @@ export default {
                 key: 'apres:remove-action',
                 cssClass: 'icon-trash',
                 description: 'Remove action from timeline.',
-                callBack: (objectPath, viewProvider) => {
+                onItemClicked: () => {
                     this.$emit('removeAction', this.keystring);
                 },
                 group: 'view'
             }
         },
         showContextMenu(event) {
-            const removeAction = this.getRemoveActionObject();
+            if (!this.isEditing) {
+                return;
+            }
 
+            const removeAction = this.getRemoveActionObject();
             this.openmct.menus.showMenu(event.x, event.y, [removeAction]);
         }
     },
@@ -233,7 +237,7 @@ export default {
 
         this.initializeSelectable();
     },
-    beforeUnmount() {
+    beforeDestroy() {
         this.removeSelectable();
     }
 }

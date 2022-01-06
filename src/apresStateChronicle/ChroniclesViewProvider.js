@@ -1,8 +1,6 @@
-import { createApp } from 'vue';
-
-export default class ChroniclesViewProvider{
-    constructor(openmct) {
-        this.openmct = openmct
+import Vue from 'vue';
+export default class chroniclesViewProvider{
+    constructor() {
         this.name = 'chronicle';
         this.key = 'apres.chronicle.view';
         this.priority = 1;
@@ -17,22 +15,26 @@ export default class ChroniclesViewProvider{
     }
 
     view(domainObject, objectPath, isEditing) {
-        /** @type {import('vue').App<Element>} */
-        let vueApp;
+        let component;
 
         return {
             show: (element) => {
-                const TodoSomeComponent = {}
-
-                vueApp = createApp(TodoSomeComponent)
-                    .provide('openmct', this.openmct)
-                    .provide('domainObject', domainObject)
-                    .provide('objectPath', objectPath)
-                
-                vueApp.mount(element)
+                component = new Vue({
+                    el: element,
+                    data() {
+                        return {
+                            isEditing: isEditing
+                        }
+                    },
+                    provide: {
+                        openmct,
+                        domainObject,
+                        objectPath
+                    },
+                });
             },
             destroy: () => {
-                vueApp.unmount();
+                component.$destroy();
             }
         }
     }

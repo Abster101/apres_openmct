@@ -1,10 +1,11 @@
-import {createApp, reactive} from 'vue';
-import ApresTimeline from './components/ApresTimeline.vue';
+import Vue from 'vue';
+import TimelineComponent from './components/timeline.vue';
 
-export default class TimelineViewProvider {
-    constructor(openmct) {
+export default class TimelineViewProvider{
+    constructor(openmct, projectJSON) {
         this._openmct = openmct;
 
+        this.projectJSON = projectJSON;
         this.name = 'Timeline';
         this.key = 'apres.timeline.view';
         this.priority = 1;
@@ -19,54 +20,52 @@ export default class TimelineViewProvider {
     }
 
     view(domainObject, objectPath, isEditing) {
-        /** @type {import('vue').App} */
-        let vueApp;
-
-        /** @type {import('vue').ComponentPublicInstance} */
         let component;
-        
-        let props = reactive({ isEditing, domainObject })
 
-        return {
-            type: 'apres-timeline',
-            show: (/** @type {HTMLElement} */element) => {
-                element.style.setProperty('overflow-y', 'auto')
-                
-                vueApp = createApp(ApresTimeline, props)
-                    .provide('openmct', this._openmct)
-                    .provide('objectPath', objectPath)
-                
-                component = vueApp.mount(element)
+        const view =  {
+            show: (element) => {
+                component = new Vue({
+                    el: element,
+                    components: {
+                        TimelineComponent
+                    },
+                    data() {
+                        return {
+                            isEditing,
+                            domainObject
+                        }
+                    },
+                    provide: {
+                        openmct: this._openmct,
+                        initialProjectJSON: this.projectJSON,
+                        objectPath,
+                    },
+                    template: ` <timeline-component
+                                    ref="timelineComponent"
+                                    :isEditing="isEditing"
+                                    :domainObject="domainObject"
+                                /> `
+                });
             },
             onEditModeChange: (isEditing) => {
-                props.isEditing = isEditing
+                component.isEditing = isEditing;
+            },
+            getViewContext() {
+                if (component) {
+                    let ref = component.$refs.timelineComponent;
+
+                    return ref && ref.getViewContext();
+                } else {
+                    return {
+                        type: 'timeline-component'
+                    };
+                }
             },
             destroy() {
-                vueApp.unmount();
-            },
-            
-            // The following methods proxy to the Vue component {{
-
-            centerTimeline() {
-                component.setTimeBoundsFromConfiguration()
-            },
-            zoomIn() {
-                component.zoomIn()
-            },
-            zoomOut() {
-                component.zoomOut()
-            },
-            importTimeline() {
-                component.importTimeline()
-            },
-            saveTimeline() {
-                component.saveTimeline()
-            },
-            deleteTimeline() {
-                component.deleteTimeline()
-            },
-                    
-            // }}
+                component.$destroy();
+            }
         }
+
+        return view;
     }
 };

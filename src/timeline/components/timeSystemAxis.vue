@@ -78,7 +78,7 @@ export default {
         this.drawAxis(this.bounds, this.timeSystem);
         this.resizeTimer = setInterval(this.resize, RESIZE_POLL_INTERVAL);
     },
-    unmounted() {
+    destroyed() {
         clearInterval(this.resizeTimer);
     },
     methods: {

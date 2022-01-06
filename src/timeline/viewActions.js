@@ -1,17 +1,12 @@
-const appliesTo = (objectPath, viewProvider = {}) => {
-    return viewProvider.type === 'apres-timeline'
-};
-
 const centerTimeline = {
     name: 'Center Timeline',
     key: 'apres:center-timeline',
     description: "Set time bounds to center timeline",
     cssClass: 'icon-timeline labeled',
     invoke: (objectPath, viewProvider) => {
-        viewProvider.centerTimeline();
+        viewProvider.getViewContext().centerTimeline();
     },
     group: 'view',
-    appliesTo,
 };
 
 const zoomIn = {
@@ -20,10 +15,9 @@ const zoomIn = {
     description: "Zoom in by 5 minutes",
     cssClass: 'icon-plus labeled',
     invoke: (objectPath, viewProvider) => {
-        viewProvider.zoomIn();
+        viewProvider.getViewContext().zoomIn();
     },
     group: 'view',
-    appliesTo,
 };
 
 const zoomOut = {
@@ -32,10 +26,9 @@ const zoomOut = {
     description: "Zoom in by 5 minutes",
     cssClass: 'icon-minus labeled',
     invoke: (objectPath, viewProvider) => {
-        viewProvider.zoomOut();
+        viewProvider.getViewContext().zoomOut();
     },
     group: 'view',
-    appliesTo,
 };
 
 const importTimeline = {
@@ -44,22 +37,20 @@ const importTimeline = {
     description: 'Import timeline from JSON file',
     cssClass: 'icon-import',
     invoke: (objectPath, viewProvider) => {
-        viewProvider.importTimeline();
+        viewProvider.getViewContext().importTimeline();
     },
-    group: 'view',
-    appliesTo,
+    group: 'view'
 }
 
-const saveTimeline = {
-    name: 'Save',
-    key: 'apres:save-timeline',
-    description: 'Save Timeline to APRES Service',
-    cssClass: 'icon-save',
+const validateTimeline = {
+    name: 'Validate',
+    key: 'apres:validate-timeline',
+    cssClass: 'icon-connectivity',
+    description: 'Validate timeline with EPSIM',
     invoke: (objectPath, viewProvider) => {
-        viewProvider.saveTimeline();
+        viewProvider.getViewContext().validateTimeline();
     },
-    group: 'view',
-    appliesTo,
+    group: 'view'
 }
 
 const deleteTimeline = {
@@ -68,19 +59,29 @@ const deleteTimeline = {
     cssClass: 'icon-trash',
     description: 'Delete Timeline from APRES Service',
     invoke: (objectPath, viewProvider) => {
-        viewProvider.deleteTimeline();
+        viewProvider.getViewContext().deleteTimeline();
     },
-    group: 'view',
-    appliesTo,
+    group: 'view'
 }
 
 const viewActions = [
     centerTimeline,
-    zoomIn,
-    zoomOut,
-    importTimeline,
-    saveTimeline,
-    deleteTimeline,
+    validateTimeline,
+    deleteTimeline
 ];
+
+viewActions.forEach(action => {
+    action.appliesTo = (objectPath, viewProvider = {}) => {
+        let viewContext = viewProvider.getViewContext && viewProvider.getViewContext();
+
+        if (viewContext) {
+            let type = viewContext.type;
+
+            return type === 'timeline-component';
+        }
+
+        return false;
+    };
+})
 
 export default viewActions;

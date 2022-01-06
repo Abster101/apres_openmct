@@ -1,4 +1,4 @@
-import ChroniclesViewProvider from "./ChroniclesViewProvider";
+import chroniclesViewProvider from "./chroniclesViewProvider";
 
 export default function (activityTypes) {
     return function install (openmct) {
@@ -41,6 +41,6 @@ export default function (activityTypes) {
 
         }
 
-        openmct.objectViews.addProvider(new ChroniclesViewProvider(openmct));
+        openmct.objectViews.addProvider(new chroniclesViewProvider(openmct));
     }
 }

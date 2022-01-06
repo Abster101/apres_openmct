@@ -19,8 +19,6 @@
  * this source code distribution or the Licensing information page available
  * at runtime from the About dialog for additional information.
  *****************************************************************************/
-    
-// TODO This file seems to be unused.
 
 import StyleRuleManager from "./StyleRuleManager";
 import {getStylesWithoutNoneValue} from "./styleUtils";
@@ -40,7 +38,7 @@ export default {
         this.objectStyle = this.getObjectStyleForItem(this.parentDomainObject.configuration.objectStyles);
         this.initObjectStyles();
     },
-    unmounted() {
+    destroyed() {
         if (this.stopListeningObjectStyles) {
             this.stopListeningObjectStyles();
         }
