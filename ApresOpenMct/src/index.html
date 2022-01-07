@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+	<title>APRES</title>
+    <style type="text/css">
+        input, textarea, select, button {
+            all: unset;
+        }
+        .flex{
+            display: flex;
+        }
+        .flex-row{
+            flex-direction: row;
+        }
+        .flex-column{
+            flex-direction: column;
+        }
+        .table{
+            display: table;
+        }
+        .column{
+            display: table-column;
+        }
+        .cell{
+            display: table-cell;
+            margin: 0 10px;
+        }
+        .text-right{
+            text-align: end;
+        }
+        .text-left{
+            text-align: start;
+        }
+        .timestring-error{
+            white-space: pre-line;
+            margin-top: -15px;
+            margin-left: 10px;
+        }
+        .row{
+            display: table-row;
+        }
+        .caption{
+            display: table-caption;
+        }
+        .row-group{
+            display: table-row-group;
+        }
+        .w-full{
+            width: 100%;
+        }
+        .w-9-10{
+            width: 90%;
+        }
+        .w-10-10{
+            width: 10%;
+        }
+        .w-10{
+            width: 10px;
+        }
+        .h-40{
+            height: 40px;
+        }
+        .align-self-center{
+            align-self: center;
+        }
+        .align-content-center{
+            align-content: center;
+        }
+        .justify-content-center{
+            justify-content: center;
+        }
+        .text-align-center{
+            text-align: center;
+        }
+        .mt-10{
+            margin-top: 10px;
+        }
+        .mr-10{
+            margin-right: 10px;
+        }
+        .ml-10{
+            margin-left: 10px;
+        }
+        .mb-10{
+            margin-bottom: 10px;
+        }
+        .p-2{
+            padding: 2px;
+        }
+        .text-gray{
+            color: rgb(221, 221, 221);
+        }
+        .text-shadow-gray{
+            text-shadow: 1px 1px 2px black;
+        }
+        .cursor-ew-resize{
+            cursor: ew-resize;
+        }
+
+        .timeline-activity{
+            position: absolute;
+            display: flex;
+            justify-content: space-between;
+            align-content: center;
+            border: 2px solid transparent;
+        }
+        .timeline-activity[s-selected] {
+            border: 2px solid #0099cc !important;
+            opacity: 0.8;
+        }
+        .background-app-color {
+            background: #393939;;
+        }
+        .margin-0 {
+            margin: 0;
+        }
+        .padding-y-10{
+            padding: 10px 0;
+        }
+        .app-font {
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+        }
+        .app-color {
+            color: #aaaaaa;
+            color: white;
+        }
+        .primary-button {
+            background-color: #0099cc;
+            color: white;
+            display: flex;
+            justify-content: center;
+            width: 50px;
+            padding: 5px 10px;
+        }
+        .secondary-button {
+            background-color: white;
+            color: #aaaaaa;
+            display: flex;
+            justify-content: center;
+            width: 50px;
+            padding: 5px 10px;
+        }
+        input, textarea, select {
+            padding: 5px 10px;
+            background-color: #2e2e2e;
+            color: #aaaaaa;
+        }
+
+        /* Override OpenMCT inspetor field label style to turn off uppercase. */
+        .c-inspect-properties__header {
+            text-transform: none !important;
+        }
+    </style>
+</head>
+<body class="background-app-color margin-0 app-font app-color">
+    <div id="app"></div>
+    <script src="main.js"></script>
+</body>
+</html>
