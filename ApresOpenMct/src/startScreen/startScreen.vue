@@ -288,18 +288,6 @@ const TIMESTRING_ERROR = 'Please enter the correct format \n "1975-08-19T23:15:3
 const PROJECT_NAME_ERROR = 'Please enter a project name.';
 const HASH_TO_TIMELINE = '#/browse/mine/apres.timeline';
 
-/** @type {ModelAttribute[]} */
-const defaultActionAttributes = [
-    {
-        name: 'name',
-        editable: true,
-    },
-    {
-        name: 'type',
-        editable: false,
-    }
-];
-
 export default {
     computed: {
         openmctContainerStyle() {
@@ -364,11 +352,14 @@ export default {
             /** @type {GlobalInfo} */
             const globalAttributes = this.globalAttributes
             
-            const actionAttributes = [...defaultActionAttributes, ...globalAttributes.modelAttributes.actionAttributes];
+            // const actionAttributes = [...defaultActionAttributes, ...globalAttributes.modelAttributes.actionAttributes];
+            // const processAttributes = [...defaultProcessAttributes, ...globalAttributes.modelAttributes.processAttributes];
+            const actionAttributes = [...globalAttributes.modelAttributes.actionAttributes];
+            const processAttributes = [...globalAttributes.modelAttributes.processAttributes];
             const parsedProjectJSON = timelineUtil.getProjectJsonFromTimelineObject(mctObject['apres.timeline'], projectJSON.planningProject);
 
             openmct.install(persistencePlugin(parsedProjectJSON));
-            openmct.install(apresActivities(actionAttributes, projectJSON));
+            openmct.install(apresActivities(actionAttributes, processAttributes, projectJSON));
             openmct.install(apresTimeline(projectJSON));
             openmct.install(apresDataset(projectJSON));
             openmct.install(apresSessionIndicator())

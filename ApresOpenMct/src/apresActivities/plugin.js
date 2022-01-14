@@ -1,12 +1,12 @@
-import ActivityViewProvider from './activityViewProvider';
 import ActivityInspectorViewProvider from './activityInspectorViewProvider';
 
 /**
-@param {Array<ModelAttribute>} modelAttributes
+@param {GlobalModelAttribute[]} actionAttributes
+@param {GlobalModelAttribute[]} processAttributes
 @param {PlanningProjectJson} projectJSON
 @returns {(mct: import('openmct')) => void}
 */
-export default function (modelAttributes, projectJSON) {
+export default function (actionAttributes, processAttributes, projectJSON) {
     return function install (openmct) {
 
         const actionTypeDef = {
@@ -15,7 +15,6 @@ export default function (modelAttributes, projectJSON) {
         }
 
         openmct.types.addType('apres.action.type', actionTypeDef);
-        openmct.objectViews.addProvider(new ActivityViewProvider(openmct));
-        openmct.inspectorViews.addProvider(new ActivityInspectorViewProvider(openmct, modelAttributes, projectJSON));
+        openmct.inspectorViews.addProvider(new ActivityInspectorViewProvider(openmct, actionAttributes, processAttributes, projectJSON));
     }
 }

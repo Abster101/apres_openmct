@@ -23,19 +23,11 @@ interface PlanningProject {
         configRef: string;
         problemRef?: string;
     };
-    activityPlan?: {
+    activityPlan: {
         planStart: string;
         planEnd: string;
-        actions?: PlanningProjectActivity[];
-        processes?: Array<{
-            note?: string;
-            name?: string;
-            uuid: string;
-            processType: string;
-            processStart: string;
-            processEnd: string;
-            parameters?: ActivityParameter[];
-        }>;
+        actions: PlanningProjectAction[];
+        processes: PlanningProjectProcess[];
         constraints?: Array<{
             note?: string;
             uuid: string;
@@ -53,28 +45,49 @@ interface PlanningProject {
             };
             // ...TODO...
         }>;
-        simulationInfo?: {
-            chronicles?: Array<{
-                variable: string;
-                episodes: {
-                    time: string;
-                    value: string;
-                };
-            }>;
-            violations?: Array<{
-                violationTime: string;
-                violationType:
-                    | 'variable-bounds'
-                    | 'unsatisfied-condition'
-                    | 'violated-condition'
-                    | 'inconsistent-effect'
-                    | 'inconsistent-assignment'
-                    | 'duplicate-action'
-                    | 'temporal-constraint';
-                violatedObj: TODO;
-            }>;
-        };
     };
+    simulationInfo?: SimulationInfo;
+}
+
+interface TimelineStateChronicle {
+    name: string;
+    chronicleType: string;
+    timelineLegend: string;
+    episodes: TimelineChronicleEpisode[];
+}
+
+interface TimelineNumericChronicle extends TimelineStateChronicle {
+    endPoints: {
+        min: number;
+        max: number;
+    };
+    limits?: {
+        minLimit?: number;
+        maxLimit?: number;
+    };
+}
+
+interface Chronicle {
+    variable: string;
+    episodes: ChronicleEpisode[];
+}
+
+interface ChronicleEpisode {
+    time: string;
+    value: string;
+}
+
+interface Violation {
+    violationTime: string;
+    violationType:
+        | 'variable-bounds'
+        | 'unsatisfied-condition'
+        | 'violated-condition'
+        | 'inconsistent-effect'
+        | 'inconsistent-assignment'
+        | 'duplicate-action'
+        | 'temporal-constraint';
+    violatedObj: TODO;
 }
 
 interface GlobalInfo {
@@ -83,57 +96,83 @@ interface GlobalInfo {
 }
 
 interface GlobalModelAttributes {
-    actionAttributes: ModelAttribute[];
+    actionAttributes: GlobalModelAttribute[];
+    processAttributes: GlobalModelAttribute[];
 }
 
 interface PlanninProjectConfiguration {
-    modelConfig?: TimelineModelConfig[];
-    numericChronicleConfig?: TimelineNumericChronicleConfig[];
-    stateChronicleConfig?: TimelineStateChronicleConfig[];
+    modelConfig: TimelineModelConfig[];
+    numericChronicleConfig: TimelineNumericChronicleConfig[];
+    stateChronicleConfig: TimelineStateChronicleConfig[];
 }
 
 interface ActivityType {
     name: string;
-    /** A string that contains a mathematical formula on how to calculate the duration for an action of the given ActionType. */
+    /**
+     * A string that contains a mathematical formula on how to calculate the
+     * duration for an action of the given ActionType. Any time values are in
+     * seconds. The duration formula itself can be a number value.
+     */
     duration: string;
     parameters?: ActivityParameterType[];
+}
+
+interface ModelTypeObject {
+    name: DataType;
+    restrictRange?: BoundedNumberJson[];
+    restictSet?: unknown[];
 }
 
 interface ActivityParameterType {
     name: string;
     units?: string;
     defaultVal?: string;
-    modelType: {
-        name: DataType;
-        restrictRange?: BoundedNumberJson[];
-        restictSet?: unknown[];
-    };
+    modelType: ModelTypeObject;
 }
 
-interface ModelAttribute {
+interface GlobalModelAttribute {
     name: string;
-    units?: string;
-    default?: TODO;
     editable?: boolean;
     userRequired?: boolean;
-    modelType?: {
-        name: DataType;
-        restrictRange?: BoundedNumberJson;
-        restictSet?: unknown[];
-    };
+    modelType?: DataType
 }
 
-type DataType = 'integer' | 'string' | '...';
+interface TimelineModelAttribute {
+    name: string;
+    default: string;
+    units?: string;
+    editable?: boolean;
+    userRequired?: boolean;
+    modelType?: DataType | ModelTypeObject
+}
+
+type DataType = 'integer' | 'string' | 'rational' | '...';
 
 interface PlanningProjectActivity {
     note?: string;
     uuid: string;
+    parameters?: ActivityParameter[];
+}
+
+interface PlanningProjectAction extends PlanningProjectActivity {
     // name?: string; // some other workspace seems to have had "name"
     actionName: string;
     actionType: string;
     actionStart: string;
     actionEnd: string;
-    parameters?: ActivityParameter[];
+}
+
+interface PlanningProjectProcess extends PlanningProjectActivity {
+    processName: string;
+    processType: string;
+    processStart: string;
+    processEnd: string;
+}
+
+interface SimulationInfo {
+    stateChronicles?: Chronicle[];
+    numericChronicles?: Chronicle[];
+    violations?: Violation[];
 }
 
 interface ActivityParameter {
@@ -156,9 +195,19 @@ interface TimelineModelConfig {
     timelineLegend: string;
 }
 
+interface TimelineChronicleEpisode extends ChronicleEpisode {
+    colorHex: string;
+    textColorHex: string;
+    duration: number;
+}
+
 interface TimelineNumericChronicleConfig {
     varName: string;
     colorHex: string;
+    minBound: string;
+    maxBound: string;
+    minLimit?: string;
+    maxLimit?: string;
 }
 
 interface TimelineStateChronicleConfig {
@@ -193,12 +242,6 @@ interface NewProjectData {
     configurations: string[];
 }
 
-interface TimelineChronicle {
-    name: string;
-    timelineLegend: TODO;
-    episodes: TODO;
-}
-
 interface TimelineDomainObject {
     configuration: TimelineConfig;
     identifier: { key: string; namespace: string };
@@ -215,8 +258,9 @@ interface TimelineConfig {
     startTime: string;
     endTime: string;
     activities: Record<string, ActivityConfig>;
-    chronicles: TimelineChronicle[];
-    violations: TODO[];
+    processes: Record<string, ActivityConfig>;
+    chronicles: TimelineStateChronicle[];
+    violations: Violation[];
     projectInfo: TODO;
 }
 

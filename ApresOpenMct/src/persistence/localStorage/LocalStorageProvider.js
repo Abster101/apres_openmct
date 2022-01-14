@@ -2,7 +2,7 @@ const APRES_TIMELINE_KEY = 'apres.timeline';
 import axios from 'axios';
 import config from '../../../apresConfig.js';
 import timelineUtil from '../../lib/timelineUtil';
-import lodash from 'lodash';
+import cloneDeep from 'lodash/cloneDeep';
 
 class LocalStorageProvider {
     constructor(space, openmct, projectJSON) {
@@ -11,7 +11,7 @@ class LocalStorageProvider {
         this.openmct = openmct;
         this.localStorage = window.localStorage;
         this.cachedModel = projectJSON;
-        this.initialProjectJSON = lodash.cloneDeep(projectJSON);
+        this.initialProjectJSON = cloneDeep(projectJSON);
     }
 
     setValue(key, value) {
@@ -31,7 +31,10 @@ class LocalStorageProvider {
         return Promise.resolve(Object.keys(this.getValue(this.space)));
     }
 
+    /** @param {TimelineDomainObject} model */
     create(model) {
+        // TODO Don't save if any activities have invalid values.
+
         const spaceObj = this.getValue(this.space);
         spaceObj[model.identifier.key] = model;
 
@@ -40,6 +43,8 @@ class LocalStorageProvider {
         if (model.identifier.key === APRES_TIMELINE_KEY) {
             const saveUrl = `${config['apres_service_root_url']}/save`;
             const projectJSON = timelineUtil.getProjectJsonFromTimelineObject(model, this.initialProjectJSON);
+
+            console.log('SAVE PROJECT!!!!!')
 
             return axios.put(saveUrl, projectJSON)
                 .then((success) => {

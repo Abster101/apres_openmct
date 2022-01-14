@@ -6,20 +6,25 @@ export default class ActivityInspectorViewProvider {
     /** @type {TODO} */
     openmct
 
-    /** @type {ModelAttribute[]} */
+    /** @type {GlobalModelAttribute[]} */
     actionAttributes
+
+    /** @type {GlobalModelAttribute[]} */
+    #processAttributes
 
     /** @type {PlanningProjectJson} */
     #projectJSON
 
     /**
     @param {TODO} openmct
-    @param {ModelAttribute[]} actionAttributes
+    @param {GlobalModelAttribute[]} actionAttributes
+    @param {GlobalModelAttribute[]} processAttributes
     @param {PlanningProjectJson} projectJSON
     */
-    constructor(openmct, actionAttributes, projectJSON) {
+    constructor(openmct, actionAttributes, processAttributes, projectJSON) {
         this.openmct = openmct
         this.actionAttributes = actionAttributes
+        this.#processAttributes = processAttributes
         this.#projectJSON = projectJSON
 
         this.key = 'apres.activity.inspector'
@@ -50,6 +55,12 @@ export default class ActivityInspectorViewProvider {
     view(selection) {
         let component;
 
+        // FIXME this doesn't seem to return ActivityConfig, actionObject here is missing a bunch of properties.
+        const actionObject = this.#getActionObject(selection)
+
+        /** @type {TimelineModelAttribute[]} */
+        const globalAttributes = this.#getGlobalAttributes(selection)
+
         return {
             show: element => {
                 component = new Vue({
@@ -59,7 +70,7 @@ export default class ActivityInspectorViewProvider {
                     },
                     data: () => {
                         return {
-                            actionObject: this.#getActionObject(selection),
+                            actionObject,
                             parentDomainObject: selection[0][1].context.item,
                             uniqueAttributes: this.#getUniqueAttributes(selection),
                             // TODO, for now we assume formulas are only for the
@@ -70,7 +81,7 @@ export default class ActivityInspectorViewProvider {
                     },
                     provide: {
                         openmct: this.openmct,
-                        actionAttributes: this.actionAttributes
+                        globalAttributes,
                     },
                     template: /*html*/ `
                         <activity-inspector
@@ -105,7 +116,7 @@ export default class ActivityInspectorViewProvider {
     @param {TODO} selection
     @returns {PlanningProjectActivity}
     */
-    #getSelectedAction(selection) {
+    #getSelectedActivity(selection) {
         // Get the selected action from the backend object.
         const {id: selectionActionId, activityType} = this.#getActionObject(selection)
 
@@ -132,55 +143,82 @@ export default class ActivityInspectorViewProvider {
     }
 
     /**
+    @param {TODO} selection
+    @returns {TimelineModelAttribute[]}
+    */
+    #getGlobalAttributes(selection) {
+        const actionObject = this.#getActionObject(selection)
+
+        // FIXME actionObject.activityType is undefined here if we have an action, but if we have a process then activityType is "process"
+
+        /** @type {TimelineModelAttribute[]} */
+        const globalAttributes = (actionObject.activityType === 'process' ? this.#processAttributes : this.actionAttributes)
+            .map(a => {
+                /** @type {TimelineModelAttribute} */
+                const attrs = {
+                    ...a,
+                    default: "",
+                }
+                return attrs
+            })
+
+        return globalAttributes
+    }
+
+    /**
     Returns an array of the attribute types that are unique to the currently selected timeline action.
     @param {TODO} selection
-    @returns {ModelAttribute[]}
+    @returns {TimelineModelAttribute[]}
     */
     #getUniqueAttributes(selection) {
-        const selectedAction = this.#getSelectedAction(selection)
+        const selectedActivity = this.#getSelectedActivity(selection)
 
         // Get the action's current param values.
         // F.e. [ { name: "NIRVSS_Dur", value: "12345" } ]
         // Are these the action's current values (persisted from database) or default values?
-        const initialInputParams = selectedAction.parameters 
+        const initialInputParams = selectedActivity.parameters 
 
         // F.e. "NIRVSS_Operate" (which depends on the "NIRVSS_Dur" input).
-        const actionTypeName = selectedAction.actionType
+        const activityTypeName = this.#activityTypeName(selectedActivity)
 
         // Find the custom parameters for the selected actionType.
-        const actionType = timelineUtil.getActionTypeObject(this.#projectJSON, actionTypeName)
+        const actionType = timelineUtil.getActionTypeObject(this.#projectJSON, activityTypeName)
 
-        /** @type {ModelAttribute[] | undefined} */
-        const uniqueAttributes = actionType?.parameters?.map(param => ({
-            name: param.name,
-            units: param.units,
+        const uniqueAttributes = actionType?.parameters?.map(param => {
+            
+            const attribute = /** @type {TimelineModelAttribute} */ ({
+                name: param.name,
+                units: param.units,
 
-            // TODO Is this correct for the initial values to show in the UI?
-            default:
-                initialInputParams?.find(input => input.name === param.name)?.value ??
-                param.defaultVal ??
-                // TODO What is the default value if not found?
-                '',
+                // TODO Is this correct for the initial values to show in the UI?
+                default:
+                    initialInputParams?.find(input => input.name === param.name)?.value ??
+                    param.defaultVal ??
+                    // TODO What is the default value if not found?
+                    '1',
 
-            // I assume always true because this is an input parameter for the user.
-            editable: true,
+                // I assume always true because this is an input parameter for the user.
+                editable: true,
 
-            // I assume always true otherwise the formula cannot work without the input value.
-            userRequired: true,
+                // I assume always true otherwise the formula cannot work without the input value.
+                userRequired: true,
 
-            modelType: {
-                name: param.modelType.name,
-                restictSet: param.modelType.restictSet,
+                modelType: {
+                    name: param.modelType.name,
+                    restictSet: param.modelType.restictSet,
 
-                // FIXME Discrepancy in data models: the destination type (from
-                // ModelAttributesSchema) expects a single range object, while
-                // the source type (from InterfaceModelSchema) has an array of
-                // range objects.
-                //
-                // For now, I just pull the first item from the source array.
-                restrictRange: param.modelType.restrictRange?.[0],
-            },
-        }))
+                    // FIXME Discrepancy in data models: the destination type (from
+                    // ModelAttributesSchema) expects a single range object, while
+                    // the source type (from InterfaceModelSchema) has an array of
+                    // range objects.
+                    //
+                    // For now, I just pull the first item from the source array.
+                    restrictRange: param.modelType.restrictRange?.[0],
+                },
+            })
+
+            return attribute
+        })
 
         return uniqueAttributes ?? []
     }
@@ -191,9 +229,9 @@ export default class ActivityInspectorViewProvider {
     @returns {string}
     */
     #getDurationFormula(selection) {
-        const selectedAction = this.#getSelectedAction(selection)
-
-        const actionType = timelineUtil.getActionTypeObject(this.#projectJSON, selectedAction.actionType)
+        const selectedActivity = this.#getSelectedActivity(selection)
+        const activityTypeName = this.#activityTypeName(selectedActivity)
+        const actionType = timelineUtil.getActionTypeObject(this.#projectJSON, activityTypeName)
 
         // An empty string means no formula.
         if (!actionType) return ""
@@ -202,4 +240,29 @@ export default class ActivityInspectorViewProvider {
 
         return formula
     }
+
+    /** @param {PlanningProjectActivity} activity */
+    #activityTypeName(activity) {
+        return isAction(activity) 
+            ? activity.actionType
+            : isProcess(activity)
+            ? activity.processType
+            : ""
+    }
+}
+
+/**
+@param {PlanningProjectActivity} obj
+@returns {obj is PlanningProjectAction}
+*/
+function isAction(obj) {
+    return "actionName" in obj || "actionType" in obj
+}
+
+/**
+@param {PlanningProjectActivity} obj
+@returns {obj is PlanningProjectProcess}
+*/
+function isProcess(obj) {
+    return "processName" in obj || "processName" in obj
 }

@@ -30,6 +30,8 @@
     </div>
 </template>
 <script>
+import debounce from 'lodash/debounce'
+
 export default {
     props: {
         label: {
@@ -64,9 +66,17 @@ export default {
                 return this.value
             },
             set(newValue) {
-                this.$emit('valueChanged', newValue);
+                this.onValueChangedDebounced(newValue)
             },
         }
-    }
+    },
+    created() {
+        /** @type {(value: string) => void} */
+        const onValueChanged = (value) => {
+            this.$emit('valueChanged', value);
+        }
+
+        this.onValueChangedDebounced = debounce(onValueChanged, 500)
+    },
 };
 </script>

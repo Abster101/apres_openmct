@@ -154,8 +154,8 @@ import timelineUtil from '../../lib/timelineUtil';
 // Error class.
 import ErrorView from './error.vue';
 
-import lodash from 'lodash';
-import uuid from 'uuid'
+import cloneDeep from 'lodash/cloneDeep';
+import {v4 as uuid} from 'uuid'
 
 const PIXEL_MULTIPLIER = 0.05;
 const TIMELINE_PADDING = 1000 * 60 * 15; //  mins of padding for timeline center action
@@ -279,7 +279,7 @@ export default {
 
             /** @type {TimelineDomainObject} */
             const timelineDomainObject = this.liveDomainObject
-            const actionConfig = lodash.cloneDeep(actionDomainObject.configuration);
+            const actionConfig = cloneDeep(actionDomainObject.configuration);
 
             // NOTE! A new actionDomainObject's startTime is set to null in
             // ApresObjectProvider.getAction to cause the value to be set to tiemline's startTime here.
@@ -304,7 +304,7 @@ export default {
         @param {boolean} skipMutate
         */
         addActivity(activityDomainObject, skipMutate) {
-            const activityDomainObjectCopy = lodash.cloneDeep(activityDomainObject);
+            const activityDomainObjectCopy = cloneDeep(activityDomainObject);
 
             // If its a dataset action, replace the key with a new uuid to allow multiple in one timeline.
             if (activityDomainObjectCopy.identifier.key.includes('actionsType')) {
@@ -326,7 +326,7 @@ export default {
         },
         removeAction(payload) {
             const { actionId } = payload;
-            const activitiesConfiguration = lodash.cloneDeep(this.liveDomainObject.configuration.activities);
+            const activitiesConfiguration = cloneDeep(this.liveDomainObject.configuration.activities);
             delete activitiesConfiguration[actionId]; // Remove action from domainObject configuration.
 
             this.openmct.objects.mutate(this.liveDomainObject, 'configuration.activities', activitiesConfiguration);
@@ -471,7 +471,7 @@ export default {
             return planningProject;
         },
         /**
-        @param {PlanningProjectActivity} action
+        @param {PlanningProjectAction} action
         @param {Partial<TimelineModelConfig>} config
         @param {ActivityType=} actionType
         */
@@ -540,7 +540,7 @@ export default {
                         this.openmct.editor.edit();
                     }
 
-                    const newProjectJSON = lodash.cloneDeep(this.initialProjectJSON);
+                    const newProjectJSON = cloneDeep(this.initialProjectJSON);
                     newProjectJSON.planningProject = data;
                     
                     const domainObject = timelineUtil.getTimelineDomainObject(newProjectJSON);

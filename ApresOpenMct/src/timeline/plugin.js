@@ -1,5 +1,3 @@
-import ChroniclesViewProvider from '../apresStateChronicle/chroniclesViewProvider';
-import ActivityViewProvider from "../apresActivities/activityViewProvider";
 import TimelineViewProvider from "./timelineViewProvider";
 import viewActions from "./viewActions";
 
@@ -49,7 +47,5 @@ export default function (projectJSON) {
             openmct.actions.register(action);
         });
         openmct.objectViews.addProvider(new TimelineViewProvider(openmct, projectJSON));
-        openmct.objectViews.addProvider(new ActivityViewProvider(openmct));
-        openmct.objectViews.addProvider(new ChroniclesViewProvider(openmct));
     }
 };

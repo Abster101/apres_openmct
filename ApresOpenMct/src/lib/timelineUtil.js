@@ -1,4 +1,4 @@
-import lodash from 'lodash';
+import cloneDeep from 'lodash/cloneDeep';
 
 const PSEUDO_ACTION = "Pseudo_Action";
 
@@ -8,23 +8,29 @@ const timelineUtil = {
      * @param {PlanningProject=} planningProject
      */
     getProjectJsonFromTimelineObject(timelineObject, planningProject) {
-        if (!planningProject) {
-            planningProject = {
-                $schema: '../../../Schemas/PlanningProject.schema.json',
-                projectInfo: timelineObject.configuration.projectInfo,
-            };
-        } else {
-            planningProject = lodash.cloneDeep(planningProject);
-        }
+        /** @type {PlanningProject} */
+        let _planningProject
 
-        planningProject.activityPlan = {
+        const activityPlan = {
             actions: [],
             processes: [],
             planStart: timelineObject.configuration.startTime,
             planEnd: timelineObject.configuration.endTime
         };
 
+        if (!planningProject) {
+            _planningProject = {
+                $schema: '../../../Schemas/PlanningProject.schema.json',
+                projectInfo: timelineObject.configuration.projectInfo,
+                activityPlan,
+            };
+        } else {
+            _planningProject = cloneDeep(planningProject);
+            _planningProject.activityPlan = activityPlan
+        }
+
         if (timelineObject.configuration.violations || timelineObject.configuration.chronicles) {
+            /** @type {SimulationInfo} */
             const simulationInfo = {}
             
             if (timelineObject.configuration.violations) {
@@ -69,7 +75,7 @@ const timelineUtil = {
             }
             
             if(Object.getOwnPropertyNames(simulationInfo).length !== 0){
-                planningProject.simulationInfo = simulationInfo;
+                _planningProject.simulationInfo = simulationInfo;
             }
         }
 
@@ -95,7 +101,9 @@ const timelineUtil = {
                 else parameters.push(param)
             }
 
-            /** @type {PlanningProjectActivity} */
+            if (!action.startTime) throw new Error('Expected activity.startTime during serialization.')
+
+            /** @type {PlanningProjectAction} */
             const actionObject = {
                 uuid,
                 // name: action.name,
@@ -107,27 +115,31 @@ const timelineUtil = {
                 note: action.note,
             }
 
-            planningProject.activityPlan.actions.push(actionObject);
+            _planningProject.activityPlan.actions.push(actionObject);
         });
         
 
         Object.entries(timelineObject.configuration.processes || []).forEach(([uuid, process]) => {
+            if (!process.startTime) throw new Error('Expected activity.startTime during serialization.')
+
+            /** @type {PlanningProjectProcess} */
             const processObject = {
                 uuid,
-                processName: process.name,
+                processName: process.name || "",
                 processStart: process.startTime,
                 processEnd: process.endTime,
                 processType: process.type,
             }
 
-            planningProject.activityPlan.processes.push(processObject);
+            _planningProject.activityPlan.processes.push(processObject);
         });
 
-        return planningProject;
+        return _planningProject;
     },
     /**
     @param {TODO} processJSON
     @param {TimelineModelConfig} config
+    @returns {ActivityConfig}
     */
     getProcessConfig(processJSON, config) {
         let colorHex = config.colorHex || '#4f6ffe';
@@ -135,6 +147,7 @@ const timelineUtil = {
         const startTime = Date.parse(processJSON.processStart);
         const endTime = Date.parse(processJSON.processEnd);
 
+        /** @type {ActivityConfig} */
         const configuration = {
             uuid: processJSON.uuid,
             name: processJSON.processName,
@@ -159,16 +172,22 @@ const timelineUtil = {
 
         return configuration;
     },
-    /** @param {string=} duration */
+    /** 
+    Given a possible default duration value in seconds from an activityType's
+    JSON, returns the milliseconds. If the value doesn't exist or is not a
+    number, returns a default value of 1 hour in milleseconds.
+
+    @param {string | number =} duration 
+    */
     getDuration(duration) {
-        if (duration && Number(duration)) {
+        if (duration != null && Number(duration)) {
             return Number(duration) * 1000;
         }
 
         return 3600000;
     },
     /**
-    @param {PlanningProjectActivity} activityJSON
+    @param {PlanningProjectAction} activityJSON
     @param {Partial<TimelineModelConfig>} config
     @param {ActivityType=} activityType
     @returns {ActivityConfig}
@@ -197,7 +216,12 @@ const timelineUtil = {
         }
         // Otherwise use default values.
         else {
+            // activityType.duration might be a formula and not a number
+            // value, in which case the next getDuration call will return a
+            // hard-coded default duration value that will be used until the
+            // user inputs parameter values for the formula.
             duration = this.getDuration(activityType?.duration)
+
             startTime = activityJSON.actionStart || new Date(defaultStart).toISOString();
             endTime = activityJSON.actionEnd || new Date(defaultStart + duration).toISOString();
         }
@@ -234,7 +258,7 @@ const timelineUtil = {
     },
     /**
     Returns an incomplete ActionConfig object.
-    @param {Partial<PlanningProjectActivity>} activityJSON
+    @param {Partial<PlanningProjectAction>} activityJSON
     @param {Partial<TimelineModelConfig>} config
     @param {ActivityType=} activityType
     @returns {Partial<ActivityConfig>}
@@ -263,53 +287,89 @@ const timelineUtil = {
             configuration: activityConfig
         };
     },
+    /**
+    @param {Chronicle} chronicleJSON
+    @param {Partial<TimelineStateChronicleConfig>} config
+    @param {string} projectEndTime
+    @returns {TimelineStateChronicle}
+    */
     getStateChroniclesConfig(chronicleJSON, config = {}, projectEndTime) {
         let timelineLegend = config.variable || 'Default';
+        if (typeof config.variable === 'undefined') console.warn('FIXME: config.variable property does not exist')
 
-        chronicleJSON.episodes.forEach((episode, index) => {
+        // Map instead of forEach to avoid modifying the original data
+        // (otherwise it can cause false expectations in other code that also
+        // receives the JSON payload)
+        const episodes = chronicleJSON.episodes.map((episode, index) => {
             const episodeStartTime = Date.parse(episode.time);
 
             const episodeConfig = config.stateColors?.filter((state) => {
                 return state.stateVal === episode.value;
             });
-            
-            episode.colorHex = episodeConfig && episodeConfig.length > 0 ? episodeConfig[0].colorHex : '#000000';
-            episode.textColorHex = episodeConfig && episodeConfig.length > 0 ? episodeConfig[0].textColorHex  : '#000000';
+
+            /** @type {TimelineChronicleEpisode} */
+            const timelineEpisode = {
+                ...episode,
+                colorHex: episodeConfig && episodeConfig.length > 0 ? episodeConfig[0].colorHex : '#000000',
+                textColorHex: episodeConfig && episodeConfig.length > 0 ? episodeConfig[0].textColorHex  : '#000000',
+                duration: 0,
+            }
 
             if (index < chronicleJSON.episodes.length - 1) {
                 const nextEpisodeStartTime = Date.parse(chronicleJSON.episodes[index + 1].time);
     
-                episode.duration = nextEpisodeStartTime - episodeStartTime;
+                timelineEpisode.duration = nextEpisodeStartTime - episodeStartTime;
             } else {
                 const endTime = Date.parse(projectEndTime);
     
-                episode.duration = endTime - episodeStartTime;
+                timelineEpisode.duration = endTime - episodeStartTime;
             }
+
+            return timelineEpisode
         });
 
+        /** @type {TimelineStateChronicle} */
         const configuration = {
             name: chronicleJSON.variable,
             chronicleType: "state",
-            timelineLegend: timelineLegend,
-            episodes: chronicleJSON.episodes,
+            timelineLegend,
+            episodes,
         };
 
         return configuration;
     },
+    /**
+    @param {Chronicle} chronicleJSON
+    @param {Partial<TimelineNumericChronicleConfig>} config
+    @param {string} projectEndTime
+    @returns {TimelineNumericChronicle}
+    */
     getNumericChroniclesConfig(chronicleJSON, config = {}, projectEndTime) {
         let timelineLegend = config.variable || 'Default';
-        let maxNumeric;
-        let minNumeric;
+        if (typeof config.variable === 'undefined') console.warn('FIXME: config.variable property does not exist')
 
-        chronicleJSON.episodes.forEach((episode, index) => {
+        /** @type {number | null} */
+        let maxNumeric = null;
+        /** @type {number | null} */
+        let minNumeric = null;
+
+        // Map instead of forEach to avoid modifying the original data
+        // (otherwise it can cause false expectations in other code that also
+        // receives the JSON payload)
+        const episodes = chronicleJSON.episodes.map((episode, index) => {
             const episodeStartTime = Date.parse(episode.time);
 
             const parsedValue = parseFloat(episode.value);
 
-            episode.colorHex = config.colorHex ? config.colorHex : '#000000';
-            episode.textColorHex =  config.colorHex ? config.colorHex : '#000000';
+            /** @type {TimelineChronicleEpisode} */
+            const timelineEpisode = {
+                ...episode,
+                colorHex: config.colorHex ? config.colorHex : '#000000',
+                textColorHex:  config.colorHex ? config.colorHex : '#000000',
+                duration: 0,
+            }
             
-            if(!maxNumeric){
+            if(maxNumeric === null){
                 maxNumeric = parsedValue;
             } else {
                 if (maxNumeric < parsedValue) {
@@ -317,7 +377,7 @@ const timelineUtil = {
                 }
             }
 
-            if (!minNumeric) {
+            if (minNumeric === null) {
                 minNumeric = parsedValue;
             } else {
                 if(minNumeric > parsedValue){
@@ -328,12 +388,14 @@ const timelineUtil = {
             if (index < chronicleJSON.episodes.length - 1) {
                 const nextEpisodeStartTime = Date.parse(chronicleJSON.episodes[index + 1].time);
 
-                episode.duration = nextEpisodeStartTime - episodeStartTime;
+                timelineEpisode.duration = nextEpisodeStartTime - episodeStartTime;
             } else {
                 const endTime = Date.parse(projectEndTime);
 
-                episode.duration = endTime - episodeStartTime;
+                timelineEpisode.duration = endTime - episodeStartTime;
             }
+
+            return timelineEpisode
         });
 
         if (config.minBound) {
@@ -344,11 +406,15 @@ const timelineUtil = {
             maxNumeric = parseFloat(config.maxBound);
         }
 
+        if (minNumeric === null || maxNumeric === null)
+            throw new Error('Expected min/max numeric values.')
+
+        /** @type {TimelineNumericChronicle} */
         const configuration = {
             name: chronicleJSON.variable,
             chronicleType: "numeric",
-            timelineLegend: timelineLegend,
-            episodes: chronicleJSON.episodes,
+            timelineLegend,
+            episodes,
             endPoints: {
                 min: minNumeric,
                 max: maxNumeric,
@@ -363,14 +429,14 @@ const timelineUtil = {
             }
 
             if (config.maxLimit) {
-                configuration.limits.maxLimit = parseFloat(config.minLimit);
+                configuration.limits.maxLimit = parseFloat(config.maxLimit);
             }
         }
 
         return configuration;
     },
 
-    /** @param {PlanningProjectJson['configuration']} configuration */
+    /** @param {PlanninProjectConfiguration} configuration */
     processConfiguration(configuration) {
         /** @type {Record<string, TimelineModelConfig>} */
         const configObject = {};
@@ -381,7 +447,9 @@ const timelineUtil = {
 
         return configObject;
     },
+    /** @param {PlanninProjectConfiguration} configuration */
     processStateChronicleConfiguration(configuration) {
+        /** @type {Record<string, TimelineStateChronicleConfig>} */
         const configObject = {};
 
         configuration.stateChronicleConfig.forEach((state) => {
@@ -390,7 +458,9 @@ const timelineUtil = {
 
         return configObject;
     },
+    /** @param {PlanninProjectConfiguration} configuration */
     processNumericChronicleConfiguration(configuration) {
+        /** @type {Record<string, TimelineNumericChronicleConfig>} */
         const configObject = {};
 
         configuration.numericChronicleConfig.forEach((state) => {
@@ -406,6 +476,7 @@ const timelineUtil = {
     @returns {ActivityType | undefined}
     */
     getActionTypeObject(projectJSON, typeName) {
+        // for (const type of projectJSON.interfaceModel.actionTypes) {
         for (const type of projectJSON.interfaceModel.actionTypes) {
             if (typeName === type.name) return type
         }
@@ -428,12 +499,7 @@ const timelineUtil = {
             activities: {},
             processes: {},
             chronicles: [],
-
-            // This line is wrong, or I have a new/older JSON schema file.
-            violations: projectJSON.planningProject.simulationInfo?.violations,
-            // In the schema I have, simulationInfo is inside of activityPlan.
-            // violations: projectJSON.planningProject.activityPlan.simulationInfo?.violations,
-
+            violations: projectJSON.planningProject.simulationInfo?.violations || [],
             projectInfo: projectJSON.planningProject.projectInfo
         };
 
@@ -441,6 +507,7 @@ const timelineUtil = {
         const stateChronicleConfiguration = timelineUtil.processStateChronicleConfiguration(projectJSON.configuration);
         const numericChronicleConfiguration = timelineUtil.processNumericChronicleConfiguration(projectJSON.configuration);
 
+        /** @type {TimelineDomainObject} */
         const domainObject = {
             configuration: domainObjectConfiguration,
             identifier: {

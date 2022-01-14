@@ -161,6 +161,9 @@ export default class ApresObjectProvider {
             const modelObject = this.stateChronicleDefinitions[varName];
             const location = `${identifier.namespace}:${keyArray.slice(2).join('::')}`;
 
+            // FIXME
+            if (typeof modelObject.colorHex === 'undefined') console.warn('FIXME: moduleObject.colorHex property does not exist.')
+
             return Promise.resolve({
                 identifier,
                 name: varName,
@@ -170,7 +173,8 @@ export default class ApresObjectProvider {
                 configuration: {
                     stateColors: modelObject.stateColors,
                     stateVal: "idle",
-                    colorHex: modelObject.colorHex, // FIXME The colorHex property does not exist on TimelineStateChronicleConfig objects, so this is always undefined.
+                    // FIXME The colorHex property does not exist on TimelineStateChronicleConfig objects, so this is always undefined.
+                    colorHex: modelObject.colorHex,
                     timelineLegend: modelObject.varName,
                     startTime: 0,
                     duration: 360000,

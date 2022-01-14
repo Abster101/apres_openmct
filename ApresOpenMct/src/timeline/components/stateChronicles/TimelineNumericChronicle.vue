@@ -3,7 +3,7 @@
 </template>
 
 <script>
-import Plotly from 'plotly';
+import { newPlot, relayout } from 'plotly.js';
 import { NUMERIC_HEIGHT } from '../shared-constants';
 
 export default {
@@ -157,7 +157,7 @@ export default {
         // TODO
         // TODO Can we re-use OpenMCT plotting?
         // TODO
-        Plotly.newPlot(this.$refs.graph, this.data, layout, {displayModeBar: false});
+        newPlot(this.$refs.graph, this.data, layout, {displayModeBar: false});
 
         this.plotLoaded = true;
     },
@@ -190,7 +190,7 @@ export default {
             return width;
         },
         resizeGraph: function(object){
-            Plotly.relayout(this.$refs.graph, object);
+            relayout(this.$refs.graph, object);
         },
         sortData: function(episodes){
             const xMax = new Date(this.projectEndTime);
