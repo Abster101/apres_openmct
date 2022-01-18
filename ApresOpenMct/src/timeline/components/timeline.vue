@@ -1,5 +1,8 @@
 <template>
-<div class="root">
+<div 
+    class="root"
+    @drop="handleDrop"
+>
     <!-- STICKY HEADER -->
     <div class="flex flex-row w-full"
 				style="height: 30px;"
@@ -284,7 +287,12 @@ export default {
             // NOTE! A new actionDomainObject's startTime is set to null in
             // ApresObjectProvider.getAction to cause the value to be set to tiemline's startTime here.
             /** @type {number} */
-            const startTimeMs = this.timeFormatter.parse(actionConfig.startTime || timelineDomainObject.configuration.startTime);
+            let startTimeMs = this.actionStart;
+
+            if (!startTimeMs) {
+                console.log('in here');
+                startTimeMs = this.timeFormatter.parse(actionConfig.startTime || timelineDomainObject.configuration.startTime);
+            }
 
             const endTimeMs  = startTimeMs + (actionConfig.duration);
             /** @type {string} */
@@ -597,6 +605,13 @@ export default {
 
                 this.numericHeightInfo.push(val);
             }
+        },
+        handleDrop(event) {
+            const dropPosition = event.x;
+            const timelineContainerRect = this.$refs['timeline-container'].getBoundingClientRect();
+            const dropDiff = dropPosition - timelineContainerRect.left;
+
+            this.actionStart = Math.floor(this.bounds.start + (dropDiff * this.pixelMultiplier));
         }
     },
     mounted() {
