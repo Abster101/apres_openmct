@@ -539,7 +539,7 @@ export default {
         },
         validateTimeline() {
             const validateUrl = `${config['apres_service_root_url']}/validateplan`;
-            const projectJSON = timelineUtil.getProjectJsonFromTimelineObject(this.liveDomainObject);
+            const projectJSON = timelineUtil.getProjectJsonFromTimelineObject(this.liveDomainObject, this.initialProjectJSON.planningProject);
 
             return axios.put(validateUrl, projectJSON)
                 .then(({ data }) => {

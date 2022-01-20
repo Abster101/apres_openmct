@@ -28,7 +28,24 @@ interface PlanningProject {
         planEnd: string;
         actions: PlanningProjectAction[];
         processes: PlanningProjectProcess[];
-        constraints?: Array<{
+        unaryConstraints?: Array<{
+            note?: string;
+            uuid: string;
+            timepointA: {
+                timepointType: string;
+                enum: 'start' | 'end';
+                instanceName: string;
+                instanceID: string;
+            };
+            timepointB: {
+                timepointType: string;
+                enum: 'start' | 'end';
+                instanceName: string;
+                instanceID: string;
+            };
+            // ...TODO...
+        }>;
+        binaryConstraints?: Array<{
             note?: string;
             uuid: string;
             timepointA: {
