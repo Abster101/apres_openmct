@@ -1,0 +1,34 @@
+// Initial values of variables at start of the plan
+
+[#D2022-08-12T06:00:00.0Z] {
+           DrillCam_sys := off ;
+           PanCam_sys := off ;
+           NSS_sys := off ;
+           NIRVSS_sys := off ;
+           Drill_sys := idle ;
+	   DrillArm_sys := stowed ;
+           Mobility_sys := idle ;
+	   survival_heating := false ;
+	   BatteryCharge := 3000.0 ;
+           }
+
+// Timed Initial Literals
+//Fraction of Solar Disk Visible
+// This is appropriate for a terrestrial RP field test
+// The data for the Moon would be much different
+
+[#D2022-08-12T00:00:00.0Z, #D2022-08-12T06:00:00.0Z) SolarDisk := 0.0 ;        // before 6am
+[#D2022-08-12T06:00:00.0Z, #D2022-08-12T10:00:00.0Z) SolarDisk := 0.3 ;        // until 10am
+[#D2022-08-12T10:00:00.0Z, #D2022-08-12T14:00:00.0Z) SolarDisk := 0.6 ;        // until 2pm
+[#D2022-08-12T14:00:00.0Z, #D2022-08-12T18:00:00.0Z) SolarDisk := 0.3 ;        // until 6pm
+[#D2022-08-12T18:00:00.0Z, #D2022-08-13T00:00:00.0Z) SolarDisk := 0.0 ;        // after 6pm
+[#D2022-08-13T00:00:00.0Z, #D2022-08-13T06:00:00.0Z) SolarDisk := 0.0 ;        // before 6am
+[#D2022-08-13T06:00:00.0Z, #D2022-08-13T10:00:00.0Z) SolarDisk := 0.3 ;        // until 10am
+[#D2022-08-13T10:00:00.0Z, #D2022-08-13T14:00:00.0Z) SolarDisk := 0.6 ;        // until 2pm
+[#D2022-08-13T14:00:00.0Z, #D2022-08-13T18:00:00.0Z) SolarDisk := 0.3 ;        // until 6pm
+[#D2022-08-13T18:00:00.0Z, #D2022-08-14T00:00:00.0Z) SolarDisk := 0.0 ;        // after 6pm
+[#D2022-08-14T00:00:00.0Z, #D2022-08-14T06:00:00.0Z) SolarDisk := 0.0 ;        // before 6am
+[#D2022-08-14T06:00:00.0Z, #D2022-08-14T10:00:00.0Z) SolarDisk := 0.3 ;        // until 10am
+[#D2022-08-14T10:00:00.0Z, #D2022-08-14T14:00:00.0Z) SolarDisk := 0.6 ;        // until 2pm
+[#D2022-08-14T14:00:00.0Z, #D2022-08-14T18:00:00.0Z) SolarDisk := 0.3 ;        // until 6pm
+[#D2022-08-14T18:00:00.0Z, #D2022-08-15T00:00:00.0Z) SolarDisk := 0.0 ;        // after 6pm

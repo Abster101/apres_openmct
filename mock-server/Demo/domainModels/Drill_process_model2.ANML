@@ -1,0 +1,225 @@
+/* 
+
+Simple RP Drill domain model with no continuous effects and no processes
+All chain-transition statement have been expanded to primitive statements
+
+*/
+
+// *********** EPOCH definition ***********
+
+epoch := #D2000-01-01T12:00:00 ;
+
+// *********** Type definitions ***********
+
+type PositiveInt < integer [0, infinity] ;
+type PositiveReal < rational [0.0, infinity] ;
+
+
+// These are for typing activity parameters and can be restricted as appropriate
+type instrumentStates {off, PwrOn, on, PwrOff} ;
+type drillStates  {idle, Auger} ;
+type drillArmStates  {stowed, Unstowing, unstowed, Stowing} ;
+type mobilityStates  {idle, Drive} ;
+
+
+// *********** Variable definitions ***********
+
+// System variables
+
+fluent instrumentStates  DrillCam_sys, PanCam_sys, NSS_sys, NIRVSS_sys  ;
+fluent drillStates Drill_sys ;
+fluent drillArmStates DrillArm_sys ;
+fluent mobilityStates  Mobility_sys ;		
+
+
+// Numeric Variables
+
+constant rational battery_capacity ::("units Wh") := 5000.0 ; 
+constant rational battery_minimum ::("units Wh") := 800.0 ; 
+fluent rational [0.0, battery_capacity] BatteryCharge ::("units Wh") ;
+
+
+// ***********  Conditions ***********
+
+[-infinity, infinity] BatteryCharge >= battery_minimum ;
+
+
+
+// ***********  Actions ***********
+
+
+// Drill Auger
+
+action DrillAuger (PositiveInt drillDur ::("units s")) { 
+  duration :=  drillDur ;
+  [start] {
+  	Drill_sys == idle ;
+    Drill_sys := Auger ;
+	   }
+  [all] {
+   	Mobility_sys == idle ;
+    DrillArm_sys == unstowed ;
+    DrillCam_sys == on ;
+    NSS_sys == on ;
+	 }
+  [end] {
+  	 Drill_sys := idle ;
+  	 BatteryCharge :-= duration * 0.0125 ; 
+	 }
+}
+
+// DrillUnstow and DrillStow
+
+action DrillUnStow () { 
+  duration := 1200 ;
+  [start] {
+  	    DrillArm_sys == stowed ;
+	    DrillArm_sys := Unstowing ;
+	    }
+   [all] Mobility_sys == idle ;
+   [end] {
+   	 DrillArm_sys := unstowed ;
+	 BatteryCharge :-= 8.333 ; 
+	 }
+  }
+
+action DrillStow () { 
+  duration := 1200 ;
+  [start] {
+  	   DrillArm_sys == unstowed ;
+	   DrillArm_sys := Stowing ;
+	   }
+   [all] {
+   	  Mobility_sys == idle ;
+	  Drill_sys == idle ;
+	  }
+   [end] {
+   	  DrillArm_sys := stowed ;
+	  BatteryCharge :-= 8.333 ; 
+	 }
+  }
+
+
+// DrillCam_PwrOn, DrillCam_PwrOff, and DrillCam_Operate
+
+action DrillCam_PwrOn () { 
+  duration := 30 ;
+  [start] {
+  	   DrillCam_sys == off ;
+	   DrillCam_sys := PwrOn ;
+	   }
+  [end] {
+  	 DrillCam_sys := on ;
+	 BatteryCharge :-= 0.0833 ; 
+	 }
+  }
+
+action DrillCam_PwrOff () { 
+  duration := 30 ;
+  [start] {
+  	   DrillCam_sys == on ;
+	   DrillCam_sys := PwrOff ;
+	   }
+  [end] {
+  	 DrillCam_sys := off ;
+	 BatteryCharge :-= 0.0833 ; 
+	 }
+  }
+
+process DrillCam_Operate ()  {
+  [all] DrillCam_sys == on ;
+  [end] BatteryCharge :-= duration * 0.00278 ; 
+  }
+
+// NSS_PwrOn, NSS_PwrOff, and NSS_Operate
+
+action NSS_PwrOn () { 
+  duration := 105 ;
+  [start] {
+    NSS_sys == off ;
+    NSS_sys := PwrOn ;
+  }
+  [end] {
+    NSS_sys := on ;
+    BatteryCharge :-= 0.148583 ; 
+	 }
+  }
+
+action NSS_PwrOff () { 
+  duration := 45 ;
+  [start] {
+      NSS_sys == on ;
+      NSS_sys := PwrOff ;
+  }
+  [end] {
+    BatteryCharge :-= 0.148583 ; 
+    NSS_sys := off ;
+	 }
+  }
+
+process NSS_Operate ()  {
+  [all] NSS_sys == on ;
+  [end] BatteryCharge :-= duration * 0.001239 ; 
+  }
+
+// NIRVSS_PwrOn, NIRVSS_PwrOff, and NIRVSS_Operate
+
+action NIRVSS_PwrOn () { 
+  duration := 105 ;
+  [start] {
+    NIRVSS_sys == off ;
+    NIRVSS_sys := PwrOn ;
+  }
+  [end] {
+    NIRVSS_sys := on ;
+    BatteryCharge :-= 0.148583 ; 
+	 }
+  }
+
+action NIRVSS_PwrOff () { 
+  duration := 45 ;
+  [start] {
+      NIRVSS_sys == on ;
+      NIRVSS_sys := PwrOff ;
+  }
+  [end] {
+    BatteryCharge :-= 0.148583 ; 
+    NIRVSS_sys := off ;
+	 }
+  }
+
+process NIRVSS_Operate ()  {
+  [all] NIRVSS_sys == on ;
+  [end] BatteryCharge :-= duration * 0.001239 ; 
+  }
+  
+  // PanCam_PwrOn, PanCam_PwrOff, and PanCam_Operate
+
+action PanCam_PwrOn () { 
+  duration := 30 ;
+  [start] {
+  	   PanCam_sys == off ;
+	   PanCam_sys := PwrOn ;
+	   }
+  [end] {
+  	 PanCam_sys := on ;
+	 BatteryCharge :-= 0.0833 ; 
+	 }
+  }
+
+action PanCam_PwrOff () { 
+  duration := 30 ;
+  [start] {
+  	   PanCam_sys == on ;
+	   PanCam_sys := PwrOff ;
+	   }
+  [end] {
+  	 PanCam_sys := off ;
+	 BatteryCharge :-= 0.0833 ; 
+	 }
+  }
+
+process PanCam_Operate ()  {
+  [all] PanCam_sys == on ;
+  [end] BatteryCharge :-= duration * 0.00278 ; 
+  }

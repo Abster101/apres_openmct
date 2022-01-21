@@ -1,0 +1,126 @@
+{
+  "$schema": "./PlanningProjectSchema.json",
+  "projectInfo": {
+    "author": "John Bresina",
+    "lastModDate": "2021-09-14",
+    "projRef": "SimpleDrill2_process_violation1.project",
+    "modelRef": "Drill_process_model2",
+    "configRef": "DrillConfig3",
+    "problemRef": "Simple_Drill_problem2",
+    "note": "SIMPLE Example project for testing the initial version of EpSim"
+  },
+  "activityPlan": {
+    "planStart": "2022-08-12T06:00:00Z",
+    "planEnd": "2022-08-19T20:00:00Z",
+    "actions": [
+      {
+        "uuid": "838f34e4-20f0-4e2a-81f5-7e5ed00a00b3",
+        "actionName": "nirvss_pwron1",
+        "actionType": "NIRVSS_PwrOn",
+        "actionStart": "2022-08-14T09:00:00Z",
+        "actionEnd": "2022-08-14T09:01:45Z",
+        "parameters": [
+          {
+            "name": "NIRVSS_Dur",
+            "value": "36000"
+          }
+        ]
+      },
+      {
+        "uuid": "792b0566-d685-4562-ad49-8588ddcd6c37",
+        "actionName": "nss_pwron1",
+        "actionType": "NSS_PwrOn",
+        "actionStart": "2022-08-14T11:00:00Z",
+        "actionEnd": "2022-08-14T11:01:45Z",
+        "note": "Required by DrillAuger"
+      },
+      {
+        "uuid": "1108205d-d21b-4555-b7ff-d941e9798b0c",
+        "actionName": "pancam_pwron1",
+        "actionType": "PanCam_PwrOn",
+        "actionStart": "2022-08-14T09:29:30Z",
+        "actionEnd": "2022-08-14T09:30:00Z"
+      },
+      {
+        "uuid": "075de3af-0670-4ea4-b572-41a68d4b752f",
+        "actionName": "pancam_pwroff1",
+        "actionType": "PanCam_PwrOff",
+        "actionStart": "2022-08-14T10:00:00Z",
+        "actionEnd": "2022-08-14T10:00:30Z",
+        "parameters": [
+          {
+            "name": "panCam_Dur",
+            "value": "1800"
+          }
+        ]
+      },
+      {
+        "uuid": "815ce7a2-6fbb-490a-875d-91dd94e7bf8f",
+        "actionName": "nss_pwron2",
+        "actionType": "NSS_PwrOn",
+        "actionStart": "2022-08-14T15:00:00Z",
+        "actionEnd": "2022-08-14T15:01:45Z",
+        "note": "Required by DrillAuger"
+      },
+      {
+        "uuid": "f9da8912-00f1-4c1f-899e-265a213e7896",
+        "actionName": "drillCam_pwron1",
+        "actionType": "DrillCam_PwrOn",
+        "actionStart": "2022-08-14T12:30:00Z",
+        "actionEnd": "2022-08-14T12:30:30Z",
+        "note": "Required by DrillAuger"
+      },
+      {
+        "uuid": "52b51d45-efae-4258-8e21-e28ea7ae5510",
+        "actionName": "drill_unstow1",
+        "actionType": "DrillUnStow",
+        "actionStart": "2022-08-14T12:25:00Z",
+        "actionEnd": "2022-08-14T12:45:00Z",
+        "note": "Required by DrillAuger"
+      },
+      {
+        "uuid": "1b129a37-d655-4858-aaef-e2fce4bd7207",
+        "actionName": "auger1",
+        "actionType": "DrillAuger",
+        "actionStart": "2022-08-14T13:00:00Z",
+        "actionEnd": "2022-08-14T14:00:00Z",
+        "parameters": [
+          {
+            "name": "drillDur",
+            "value": "3600"
+          }
+        ],
+        "note": "First auger at station A"
+      },
+      {
+        "uuid": "f2ece2c0-6c8f-4d74-af96-2119e6b5d553",
+        "actionName": "drill_stow1",
+        "actionType": "DrillStow",
+        "actionStart": "2022-08-14T14:30:00Z",
+        "actionEnd": "2022-08-14T14:50:00Z",
+        "note": "Required by Drive"
+      },
+      {
+        "uuid": "2c2f3df1-28f1-4d8f-909d-22a829e4197f",
+        "actionName": "drillCam_pwroff1",
+        "actionType": "DrillCam_PwrOff",
+        "actionStart": "2022-08-14T15:00:00Z",
+        "actionEnd": "2022-08-14T15:00:30Z"
+      },
+      {
+        "uuid": "159efea6-1d69-4910-9766-57faedcfee88",
+        "actionName": "NSS_pwroff1",
+        "actionType": "NSS_PwrOff",
+        "actionStart": "2022-08-14T17:01:45Z",
+        "actionEnd": "2022-08-14T17:02:30Z"
+      },
+      {
+        "uuid": "f04ea073-1798-4cfe-b000-b4478d7530d8",
+        "actionName": "NIRVSS_pwroff1",
+        "actionType": "NIRVSS_PwrOff",
+        "actionStart": "2022-08-14T19:01:45Z",
+        "actionEnd": "2022-08-14T19:02:30Z"
+      }
+    ]
+  }
+}

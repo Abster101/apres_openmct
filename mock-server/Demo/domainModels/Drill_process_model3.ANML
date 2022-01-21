@@ -1,0 +1,142 @@
+/* 
+
+Simple RP Drill domain model with no continuous effects; there is one process defined
+All chain-transition statement have been expanded to primitive statements
+
+*/
+
+// *********** EPOCH definition ***********
+
+epoch := #D2000-01-01T12:00:00 ;
+
+
+// *********** Type definitions ***********
+
+type PositiveInt < integer [0, infinity] ;
+type PositiveReal < rational [0.0, infinity] ;
+
+
+// These are for typing activity parameters and can be restricted as appropriate
+type instrumentStates {off, PwrOn, on, PwrOff} ;
+type drillStates  {idle, Auger} ;
+type drillArmStates  {stowed, Unstowing, unstowed, Stowing} ;
+type mobilityStates  {idle, Drive} ;
+type Fraction < PositiveReal [0.0, 1.0] ;
+
+
+// *********** Variable definitions ***********
+
+// System variables
+
+fluent instrumentStates  DrillCam_sys ;
+fluent drillStates Drill_sys ;
+fluent drillArmStates DrillArm_sys ;
+fluent mobilityStates  Mobility_sys ;		
+fluent Fraction SolarDisk ;
+
+
+// Numeric Variables
+
+constant rational battery_capacity ::("units Wh") := 5000.0 ; 
+// the following is only needed for discrete effects
+constant integer processMaxDur := 3600 ;   // maxumum duration for processes (currently 1 hour)
+constant rational solar_charge_rate ::("units W") := 400.0 ;
+fluent rational [0.0, battery_capacity] BatteryCharge ::("units Wh") ;
+
+
+// ***********  Actions ***********
+
+
+// Drill Auger
+
+action DrillAuger (PositiveInt drillDur) { 
+  duration :=  drillDur ;
+  [start] {
+  	   Drill_sys == idle ;
+           Drill_sys := Auger ;
+	   }
+  [all] {
+   	 Mobility_sys == idle ;
+         DrillArm_sys == unstowed ;
+         DrillCam_sys == on ;
+	 }
+  [end] {
+  	 Drill_sys := idle ;
+  	 BatteryCharge :-= duration * 0.0125 ; 
+	 }
+}
+
+// DrillUnstow and DrillStow
+
+action DrillUnStow () { 
+  duration := 1200 ;
+  [start] {
+  	    DrillArm_sys == stowed ;
+	    DrillArm_sys := Unstowing ;
+	    }
+   [all] Mobility_sys == idle ;
+   [end] {
+   	 DrillArm_sys := unstowed ;
+	 BatteryCharge :-= 8.333 ; 
+	 }
+  }
+
+action DrillStow () { 
+  duration := 1200 ;
+  [start] {
+  	   DrillArm_sys == unstowed ;
+	   DrillArm_sys := Stowing ;
+	   }
+   [all] {
+   	  Mobility_sys == idle ;
+	  Drill_sys == idle ;
+	  }
+   [end] {
+   	  DrillArm_sys := stowed ;
+	  BatteryCharge :-= 8.333 ; 
+	 }
+  }
+
+
+// DrillCam_PwrOn, DrillCam_PwrOff, and DrillCam_Operate
+
+action DrillCam_PwrOn () { 
+  duration := 30 ;
+  [start] {
+  	   DrillCam_sys == off ;
+	   DrillCam_sys := PwrOn ;
+	   }
+  [end] {
+  	 DrillCam_sys := on ;
+	 BatteryCharge :-= 0.0833 ; 
+	 }
+  }
+
+action DrillCam_PwrOff () { 
+  duration := 30 ;
+  [start] {
+  	   DrillCam_sys == on ;
+	   DrillCam_sys := PwrOff ;
+	   }
+  [end] {
+  	 DrillCam_sys := off ;
+	 BatteryCharge :-= 0.0833 ; 
+	 }
+  }
+
+process DrillCam_Operate ()  {
+  [all] DrillCam_sys == on ;
+  [end] BatteryCharge :-= duration * 0.00278 ; 
+  }
+
+
+// Battery Charging from the Solar Panel
+
+process Solar_Charge () {
+   duration <= processMaxDur ;
+   [all] { BatteryCharge < battery_capacity ;
+    	   SolarDisk > 0.0 ;
+	   }
+   [end] BatteryCharge := SolarDisk * solar_charge_rate * duration ;
+}
+

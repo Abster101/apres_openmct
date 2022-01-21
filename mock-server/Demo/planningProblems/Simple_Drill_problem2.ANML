@@ -1,0 +1,22 @@
+/* 
+
+Initial conditions for the Simple Drill model
+
+*/
+
+// *********** INCON  ***********
+
+[#D2022-08-12T06:10:00.0] {
+			  DrillCam_sys := off ;
+			  Drill_sys := idle ;
+			  Mobility_sys := idle ;
+			  DrillArm_sys := stowed ;
+			  NSS_sys := off ;
+			  NIRVSS_sys := off ;
+			  PanCam_sys := off ;
+			  BatteryCharge := 3000.0 ;
+			  } ;
+
+
+// *********** TILs  ***********
+// ** not included yet **
