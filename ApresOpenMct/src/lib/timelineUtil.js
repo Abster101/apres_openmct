@@ -545,7 +545,13 @@ const timelineUtil = {
         if (processes) {
             processes.forEach((process) => {
                 const processConfig = timelineUtil.getProcessConfig(process, configuration[process.processType]);
-                domainObject.configuration.processes[processConfig.uuid] = processConfig;
+                /**
+                 *  Note: Process UUID's are not unique per instance, there may be multiple instances with the same
+                 *  uuid, thus we have to create a uniqueProcessKey to uniquely identify each instance.
+                 */
+                const uniqueProcessKey = `${processConfig.uuid}:${processConfig.name}`;
+
+                domainObject.configuration.processes[uniqueProcessKey] = processConfig;
             });
         }
 
