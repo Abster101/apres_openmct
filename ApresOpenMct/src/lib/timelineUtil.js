@@ -15,7 +15,9 @@ const timelineUtil = {
             actions: [],
             processes: [],
             planStart: timelineObject.configuration.startTime,
-            planEnd: timelineObject.configuration.endTime
+            planEnd: timelineObject.configuration.endTime,
+            unaryConstraints: [],
+            binaryConstraints: [],
         };
 
         if (!planningProject) {
@@ -25,6 +27,9 @@ const timelineUtil = {
                 activityPlan,
             };
         } else {
+            activityPlan.unaryConstraints = planningProject.activityPlan.unaryConstraints;
+            activityPlan.binaryConstraints = planningProject.activityPlan.binaryConstraints;
+
             _planningProject = cloneDeep(planningProject);
             _planningProject.activityPlan = activityPlan
         }
