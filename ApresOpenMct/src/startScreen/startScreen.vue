@@ -326,7 +326,7 @@ export default {
     },
     methods: {
         /** @param {PlanningProjectJson} projectJSON */
-        initializeOpenMctProject(projectJSON) {
+        initializeProject(projectJSON) {
             if (!projectJSON.planningProject.activityPlan) {
                 projectJSON.planningProject.activityPlan = {
                     planStart: new Date(Date.now()).toJSON(),
@@ -374,23 +374,29 @@ export default {
                 this.isLoading = false;
             }, 0);
         },
+        initializeNewProjectScreen(newProjectData) {
+            this.isLoading = false;
+            this.newProjectData = newProjectData;
+
+            this.configuration = newProjectData.configurations[0];
+            this.model =  newProjectData.models[0];
+            this.problem = newProjectData.problems[0];
+        },
         initializeApp() {
             const selectedProject = localStorage.getItem('apres_selected_project');
 
             this.isLoading = true;
 
             if (selectedProject && selectedProject !== 'new') {
-                return this.getProjectDocs(selectedProject).then(this.initializeOpenMctProject);
+                return this.getProjectDocs(selectedProject)
+                    .then(this.initializeProject)
+                    .catch(() => {
+                        this.isLoading = false;
+                    });
             }
 
-            return this.getNewProjectData().then((newProjectData) => {
-                this.isLoading = false;
-                this.newProjectData = newProjectData;
-
-                this.configuration = newProjectData.configurations[0];
-                this.model =  newProjectData.models[0];
-                this.problem = newProjectData.problems[0];
-            });
+            return this.getNewProjectData()
+                .then(this.initializeNewProjectScreen);
         },
         /** @param {{start: number, end: number}} bounds */
         installDefaultPlugins(bounds) {
@@ -601,7 +607,7 @@ export default {
             axios.post(initNewProjectUrl, payload)
                 .then((resp) => {
                     if (resp && resp.data) {
-                        this.initializeOpenMctProject(resp.data);
+                        this.initializeProject(resp.data);
                     }
                 })
                 .catch((error) => console.log(error));
